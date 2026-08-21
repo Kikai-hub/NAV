@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using NAV.Presentation.Camera;
+using NAV.Gameplay.Interaction;
 
 namespace NAV.Gameplay.Player
 {
@@ -10,6 +11,7 @@ namespace NAV.Gameplay.Player
         [SerializeField] private PlayerInputHandler _inputHandler;
         [SerializeField] private ThirdPersonCameraController _cameraController;
         [SerializeField] private PlayerStamina _stamina;
+        [SerializeField] private PlayerInteractor _interactor;
 
         private bool _visible = true;
         private GUIStyle _style;
@@ -39,16 +41,21 @@ namespace NAV.Gameplay.Player
                 ? $"Stamina: {_stamina.CurrentStamina:F0}/{_stamina.MaxStamina:F0} (CanSprint: {_stamina.CanSprint})\n"
                 : string.Empty;
 
-            GUI.Box(new Rect(10, 10, 300, 150), GUIContent.none);
+            string interactLine = _interactor != null
+                ? $"Interact: {(_interactor.CurrentInteractable != null ? _interactor.CurrentPrompt : "-")}\n"
+                : string.Empty;
+
+            GUI.Box(new Rect(10, 10, 300, 170), GUIContent.none);
             GUI.Label(
-                new Rect(20, 15, 280, 140),
+                new Rect(20, 15, 280, 160),
                 $"Grounded: {_motor.IsGrounded}\n" +
                 $"Speed: {_motor.CurrentSpeed:F2} m/s\n" +
                 $"Sprinting: {_motor.IsSprinting}\n" +
                 $"Move Input: {_inputHandler.MoveInput}\n" +
                 $"Look Input: {_inputHandler.LookInput}\n" +
                 cameraLine +
-                staminaLine,
+                staminaLine +
+                interactLine,
                 _style);
         }
     }

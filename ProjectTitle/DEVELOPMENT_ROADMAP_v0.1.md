@@ -22,16 +22,16 @@ code.
 
 Goal: make the character feel good.
 
--   [ ] Third-person movement
--   [ ] Camera
--   [ ] Rotation
--   [ ] Sprint
--   [ ] Stamina
--   [ ] Jump
--   [ ] Basic gravity
--   [ ] Character stats
+-   [x] Third-person movement
+-   [x] Camera
+-   [x] Rotation
+-   [x] Sprint
+-   [x] Stamina
+-   [x] Jump
+-   [x] Basic gravity
+-   [x] Character stats
 -   [ ] Animation placeholders
--   [ ] Interaction raycast/system
+-   [x] Interaction raycast/system
 
 ------------------------------------------------------------------------
 

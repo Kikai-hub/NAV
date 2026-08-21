@@ -63,11 +63,13 @@ Unity implementation has not yet been finalized.
     template's InputSystem_Actions.inputactions "Player" action map rather
     than creating a new input asset; no generated C# wrapper class (actions
     are looked up by name at runtime via PlayerInputHandler)
--   Assets/NAV folder structure created per ARCHITECTURE_v0.1.md, with two
+-   Assets/NAV folder structure created per ARCHITECTURE_v0.1.md, with three
     additions: Scripts/Presentation/Camera (camera code needed a home; the
     original tree only named "Presentation" as a conceptual layer, not a
-    folder) and ScriptableObjects/Player (no category existed for
-    character/movement stat data)
+    folder), ScriptableObjects/Player (no category existed for
+    character/movement stat data), and Scripts/Gameplay/Interaction (no
+    category existed for the generic raycast-interaction system; ARCHITECTURE
+    only lists "interaction" as a conceptual responsibility under Gameplay)
 -   Player Foundation increment 1 complete: third-person camera-relative
     movement, jump, gravity, sprint (speed multiplier only, no stamina
     cost/regen yet), body rotation toward movement direction; driven by
@@ -146,10 +148,19 @@ altar + ritual items; - bosses tied to progression.
 
 ## Current Next Step
 
-Player Foundation increment 1 (movement + camera) is complete and manually
-verified in SampleScene. Next: continue Phase 1 Player Foundation with
-stamina drain/regen for sprint, then move to Phase 2 Interaction
-(raycast-based interact system) before touching items/inventory.
+Player Foundation is functionally complete: movement, camera, sprint
+stamina, and a raycast-based interaction system (PlayerInteractor +
+IInteractable) all exist and compile, but the interaction system still
+needs manual Unity Editor wiring and a playtest pass before it can be
+called verified (see the developer instructions delivered alongside this
+milestone). "Animation placeholders" is the one Phase 1 checklist item
+left undone --- deferred, since there is no character model/Animator in
+the project yet; revisit once a placeholder mesh exists.
+
+After the interaction system is confirmed working in the Editor, the next
+system to build is Phase 2 (Items and Inventory), starting with
+ItemDefinition, per the CLAUDE.md development order
+(Foundation → Player → Interaction → Items → Inventory → ...).
 
 ------------------------------------------------------------------------
 
@@ -179,6 +190,15 @@ stamina drain/regen for sprint, then move to Phase 2 Interaction
     both are small, low-risk extensions of the existing layer concepts.
 -   Stamina cost for sprint, the interaction raycast system, animation, and
     inventory remain explicitly out of scope for this milestone.
+-   Player Foundation increment 3: raycast-based interaction system. Added
+    IInteractable (Scripts/Gameplay/Interaction), PlayerInteractor (raycasts
+    forward from the camera each frame, exposes CurrentInteractable/CurrentPrompt,
+    and calls Interact() on the "Interact" action's performed event ---
+    reuses the template's existing Interact action, bound to E/hold, unchanged),
+    and DebugInteractable (logs + toggles a material color on interact, for
+    manual verification only --- not a real gameplay object). Exposed on
+    PlayerDebugHud. No real interactable content (items, resource nodes,
+    containers) exists yet --- those belong to Phase 2/3.
 -   Manual Unity Editor wiring (Player GameObject, CharacterController,
     Ground plane, CameraTarget, Main Camera assignment) still needs to be
     performed by the human developer in SampleScene --- see instructions

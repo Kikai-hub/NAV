@@ -12,11 +12,13 @@ namespace NAV.Gameplay.Player
         public bool SprintHeld { get; private set; }
 
         public event Action JumpRequested;
+        public event Action InteractPerformed;
 
         private InputAction _moveAction;
         private InputAction _lookAction;
         private InputAction _sprintAction;
         private InputAction _jumpAction;
+        private InputAction _interactAction;
 
         private void Awake()
         {
@@ -32,10 +34,11 @@ namespace NAV.Gameplay.Player
             _lookAction = playerInput.actions["Player/Look"];
             _sprintAction = playerInput.actions["Player/Sprint"];
             _jumpAction = playerInput.actions["Player/Jump"];
+            _interactAction = playerInput.actions["Player/Interact"];
 
-            if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null)
+            if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null)
             {
-                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump) in the 'Player' action map.", this);
+                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact) in the 'Player' action map.", this);
                 enabled = false;
             }
         }
@@ -46,6 +49,11 @@ namespace NAV.Gameplay.Player
             {
                 _jumpAction.performed += HandleJumpPerformed;
             }
+
+            if (_interactAction != null)
+            {
+                _interactAction.performed += HandleInteractPerformed;
+            }
         }
 
         private void OnDisable()
@@ -53,6 +61,11 @@ namespace NAV.Gameplay.Player
             if (_jumpAction != null)
             {
                 _jumpAction.performed -= HandleJumpPerformed;
+            }
+
+            if (_interactAction != null)
+            {
+                _interactAction.performed -= HandleInteractPerformed;
             }
         }
 
@@ -66,6 +79,11 @@ namespace NAV.Gameplay.Player
         private void HandleJumpPerformed(InputAction.CallbackContext context)
         {
             JumpRequested?.Invoke();
+        }
+
+        private void HandleInteractPerformed(InputAction.CallbackContext context)
+        {
+            InteractPerformed?.Invoke();
         }
     }
 }
