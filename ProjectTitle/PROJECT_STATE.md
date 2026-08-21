@@ -148,19 +148,24 @@ altar + ritual items; - bosses tied to progression.
 
 ## Current Next Step
 
-Player Foundation is functionally complete: movement, camera, sprint
-stamina, and a raycast-based interaction system (PlayerInteractor +
-IInteractable) all exist and compile, but the interaction system still
-needs manual Unity Editor wiring and a playtest pass before it can be
-called verified (see the developer instructions delivered alongside this
-milestone). "Animation placeholders" is the one Phase 1 checklist item
-left undone --- deferred, since there is no character model/Animator in
-the project yet; revisit once a placeholder mesh exists.
+Player Foundation is complete and verified: movement, camera, sprint
+stamina, and the raycast-based interaction system (PlayerInteractor +
+IInteractable) were confirmed working by the developer (initial playtest
+found the interaction range was measured from the camera instead of the
+player character; fixed and not yet re-confirmed after the fix, but the
+fix is small and low-risk). "Animation placeholders" is the one Phase 1
+checklist item left undone --- deferred, since there is no character
+model/Animator in the project yet; revisit once a placeholder mesh
+exists.
 
-After the interaction system is confirmed working in the Editor, the next
-system to build is Phase 2 (Items and Inventory), starting with
-ItemDefinition, per the CLAUDE.md development order
-(Foundation → Player → Interaction → Items → Inventory → ...).
+Items Foundation increment 1 (ItemDefinition, ItemCategory, ItemStack) has
+been added but NOT YET VERIFIED --- check the Unity Console for
+"[ItemStackSanityChecks] All checks passed." and for compiler errors
+first. Nothing in the scene references these new files yet, so there is
+no manual Editor wiring required for this increment.
+
+Next after verification: Inventory (a container of ItemStack slots) ---
+the next unchecked item in Phase 2 of DEVELOPMENT_ROADMAP_v0.1.md.
 
 ------------------------------------------------------------------------
 
@@ -199,6 +204,35 @@ ItemDefinition, per the CLAUDE.md development order
     manual verification only --- not a real gameplay object). Exposed on
     PlayerDebugHud. No real interactable content (items, resource nodes,
     containers) exists yet --- those belong to Phase 2/3.
+-   Items Foundation increment 1: ItemDefinition ScriptableObject (id,
+    display name, description, icon, category, max stack size, weight) and
+    ItemCategory enum (Resource/Tool/Weapon/Armor/Food/Building/Misc) in
+    Scripts/Gameplay/Items --- this is the folder ARCHITECTURE_v0.1.md
+    already names, no new folder needed this time. Added ItemStack, a plain
+    (non-ScriptableObject) runtime class holding a definition + quantity
+    with Add/Remove/CanAccept respecting MaxStackSize --- this is the
+    "item instances/runtime data" and "stack rules" pieces of Phase 2, not
+    yet wired into any container (Inventory itself is still future work).
+    No real item content exists yet (final resource list is explicitly
+    "Not Yet Decided"); nothing consumes ItemDefinition/ItemStack yet.
+-   Testing note: this project has no assembly definitions yet (everything
+    compiles into the default Assembly-CSharp), so the Unity Test
+    Runner/NUnit can't target just the gameplay code without first
+    introducing asmdefs --- an architecture change that hasn't been
+    proposed/approved (see "No Silent Architecture Changes" in CLAUDE.md).
+    Added Scripts/Editor/ItemStackSanityChecks.cs instead: an
+    `[InitializeOnLoad]` editor utility that exercises ItemStack's stacking
+    math on every script recompile and logs failures to the Console. This
+    is the "editor utility" verification method CLAUDE.md's Testing section
+    allows; revisit real unit tests if/when an asmdef restructure is
+    approved.
+-   Could not self-verify compilation of the Items Foundation increment
+    this session: the running Unity Editor only reimports/recompiles on
+    focus-in (or explicit Refresh), and bringing it to the foreground
+    programmatically was correctly blocked as an unusual action. Check the
+    Console after opening the Editor for either
+    "[ItemStackSanityChecks] All checks passed." or a `[ItemStackSanityChecks] FAILED: ...`
+    error, and for any compiler errors, before building on top of this.
 -   Fix (playtest feedback): PlayerInteractor's range was measured along the
     raycast (camera position -> hit), so in third person --- where the
     camera sits well behind/above the player --- most of the "3 meters"

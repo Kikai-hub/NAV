@@ -40,10 +40,10 @@ Goal: make the character feel good.
 Goal: establish the data architecture used by almost every future
 system.
 
--   [ ] ItemDefinition
--   [ ] Item IDs
--   [ ] Item instances/runtime data
--   [ ] Stack rules
+-   [x] ItemDefinition
+-   [x] Item IDs
+-   [x] Item instances/runtime data
+-   [x] Stack rules
 -   [ ] Inventory
 -   [ ] Inventory UI
 -   [ ] Item pickup
