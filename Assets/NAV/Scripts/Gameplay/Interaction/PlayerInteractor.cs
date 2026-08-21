@@ -8,6 +8,7 @@ namespace NAV.Gameplay.Interaction
         [SerializeField] private PlayerInputHandler _inputHandler;
         [SerializeField] private Transform _cameraTransform;
         [SerializeField] private float _interactRange = 3f;
+        [SerializeField] private float _maxAimDistance = 15f;
         [SerializeField] private LayerMask _interactableLayers = ~0;
 
         public IInteractable CurrentInteractable { get; private set; }
@@ -45,13 +46,24 @@ namespace NAV.Gameplay.Interaction
 
         private IInteractable FindInteractable()
         {
-            if (Physics.Raycast(_cameraTransform.position, _cameraTransform.forward, out RaycastHit hit, _interactRange, _interactableLayers, QueryTriggerInteraction.Collide))
+            // Aim from the camera (avoids the player's own collider blocking the ray), but
+            // measure range from the player's position, not the camera's. In third person the
+            // camera sits well behind/above the player, so a range check on ray length would
+            // consume most of the budget just reaching the character instead of the target.
+            if (!Physics.Raycast(_cameraTransform.position, _cameraTransform.forward, out RaycastHit hit, _maxAimDistance, _interactableLayers, QueryTriggerInteraction.Collide))
             {
-                var interactable = hit.collider.GetComponentInParent<IInteractable>();
-                if (interactable != null && interactable.CanInteract(gameObject))
-                {
-                    return interactable;
-                }
+                return null;
+            }
+
+            if (Vector3.Distance(transform.position, hit.point) > _interactRange)
+            {
+                return null;
+            }
+
+            var interactable = hit.collider.GetComponentInParent<IInteractable>();
+            if (interactable != null && interactable.CanInteract(gameObject))
+            {
+                return interactable;
             }
 
             return null;

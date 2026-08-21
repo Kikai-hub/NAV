@@ -199,6 +199,16 @@ ItemDefinition, per the CLAUDE.md development order
     manual verification only --- not a real gameplay object). Exposed on
     PlayerDebugHud. No real interactable content (items, resource nodes,
     containers) exists yet --- those belong to Phase 2/3.
+-   Fix (playtest feedback): PlayerInteractor's range was measured along the
+    raycast (camera position -> hit), so in third person --- where the
+    camera sits well behind/above the player --- most of the "3 meters"
+    budget was consumed just reaching the character, and objects near the
+    player often fell outside range unless they were also close to the
+    camera. Aiming still originates from the camera (avoids the player's
+    own collider blocking the ray), but range is now checked as the
+    distance from the player's position to the hit point instead of ray
+    length. Added a separate, more generous `_maxAimDistance` (default 15m)
+    to bound the raycast itself.
 -   Manual Unity Editor wiring (Player GameObject, CharacterController,
     Ground plane, CameraTarget, Main Camera assignment) still needs to be
     performed by the human developer in SampleScene --- see instructions
