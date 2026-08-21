@@ -260,6 +260,18 @@ starting that increment.
     NOT YET CONFIRMED --- needs manual Editor wiring (PlayerInventory on
     Player, a pickup test object in the scene) before it can be
     playtested; see the developer instructions.
+-   Incident: developer hit `error CS0246: PlayerInventory could not be
+    found` in PlayerDebugHud.cs despite correct code and a correct
+    `using` directive. Confirmed via Logs/Editor.log that
+    `PlayerInventory.cs` never appeared in the compiler's input file list
+    at all (Inventory.cs and ItemPickup.cs, created around the same time,
+    did) --- a one-off Unity AssetDatabase scan miss when several new
+    files landed at once from outside the Editor, not a code or
+    namespace-collision problem (separately verified with a standalone
+    dotnet test that a class and its containing namespace sharing a name,
+    e.g. NAV.Gameplay.Inventory.Inventory, compiles and resolves fine).
+    Fix is Editor-side only: Ctrl+R (Assets → Refresh) to force a
+    rescan, or Reimport the file directly. No code changed.
 -   Fix (playtest feedback): PlayerInteractor's range was measured along the
     raycast (camera position -> hit), so in third person --- where the
     camera sits well behind/above the player --- most of the "3 meters"
