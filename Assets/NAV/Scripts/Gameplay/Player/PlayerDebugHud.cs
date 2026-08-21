@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using NAV.Presentation.Camera;
 using NAV.Gameplay.Interaction;
+using NAV.Gameplay.Inventory;
 
 namespace NAV.Gameplay.Player
 {
@@ -12,6 +13,7 @@ namespace NAV.Gameplay.Player
         [SerializeField] private ThirdPersonCameraController _cameraController;
         [SerializeField] private PlayerStamina _stamina;
         [SerializeField] private PlayerInteractor _interactor;
+        [SerializeField] private PlayerInventory _inventory;
 
         private bool _visible = true;
         private GUIStyle _style;
@@ -45,9 +47,13 @@ namespace NAV.Gameplay.Player
                 ? $"Interact: {(_interactor.CurrentInteractable != null ? _interactor.CurrentPrompt : "-")}\n"
                 : string.Empty;
 
-            GUI.Box(new Rect(10, 10, 300, 170), GUIContent.none);
+            string inventoryLine = _inventory != null && _inventory.Inventory != null
+                ? $"Inventory: {UsedSlotCount()}/{_inventory.Inventory.Capacity} slots used\n"
+                : string.Empty;
+
+            GUI.Box(new Rect(10, 10, 300, 190), GUIContent.none);
             GUI.Label(
-                new Rect(20, 15, 280, 160),
+                new Rect(20, 15, 280, 180),
                 $"Grounded: {_motor.IsGrounded}\n" +
                 $"Speed: {_motor.CurrentSpeed:F2} m/s\n" +
                 $"Sprinting: {_motor.IsSprinting}\n" +
@@ -55,8 +61,23 @@ namespace NAV.Gameplay.Player
                 $"Look Input: {_inputHandler.LookInput}\n" +
                 cameraLine +
                 staminaLine +
-                interactLine,
+                interactLine +
+                inventoryLine,
                 _style);
+        }
+
+        private int UsedSlotCount()
+        {
+            int used = 0;
+            foreach (var slot in _inventory.Inventory.Slots)
+            {
+                if (!slot.IsEmpty)
+                {
+                    used++;
+                }
+            }
+
+            return used;
         }
     }
 }

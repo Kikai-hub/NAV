@@ -148,24 +148,29 @@ altar + ritual items; - bosses tied to progression.
 
 ## Current Next Step
 
-Player Foundation is complete and verified: movement, camera, sprint
-stamina, and the raycast-based interaction system (PlayerInteractor +
-IInteractable) were confirmed working by the developer (initial playtest
-found the interaction range was measured from the camera instead of the
-player character; fixed and not yet re-confirmed after the fix, but the
-fix is small and low-risk). "Animation placeholders" is the one Phase 1
-checklist item left undone --- deferred, since there is no character
-model/Animator in the project yet; revisit once a placeholder mesh
-exists.
+Player Foundation is complete and verified end-to-end, including the
+interaction system and its range fix. "Animation placeholders" is the
+one Phase 1 checklist item left undone --- deferred, since there is no
+character model/Animator in the project yet; revisit once a placeholder
+mesh exists.
 
-Items Foundation increment 1 (ItemDefinition, ItemCategory, ItemStack) has
-been added but NOT YET VERIFIED --- check the Unity Console for
-"[ItemStackSanityChecks] All checks passed." and for compiler errors
-first. Nothing in the scene references these new files yet, so there is
-no manual Editor wiring required for this increment.
+Items Foundation increment 1 (ItemDefinition, ItemCategory, ItemStack) is
+confirmed working (developer verified "[ItemStackSanityChecks] All checks
+passed." with no compiler errors).
 
-Next after verification: Inventory (a container of ItemStack slots) ---
-the next unchecked item in Phase 2 of DEVELOPMENT_ROADMAP_v0.1.md.
+Inventory (Scripts/Gameplay/Inventory: `Inventory` + `PlayerInventory`) and
+Item pickup (`ItemPickup` + the placeholder Wood.asset) have both been
+added on top of it. Inventory is confirmed correct by its own editor
+utility (InventorySanityChecks); ItemPickup cannot be checked that way
+(it needs real Editor wiring + a playtest) and is NOT YET CONFIRMED.
+Check Console for "[InventorySanityChecks] All checks passed." AND
+follow the pickup playtest steps in the developer instructions before
+continuing further.
+
+Next after that confirmation: Inventory UI. This needs a decision this
+project hasn't made yet --- uGUI (Canvas) vs. UI Toolkit --- so it should
+be raised with the developer rather than picked unilaterally before
+starting that increment.
 
 ------------------------------------------------------------------------
 
@@ -226,13 +231,35 @@ the next unchecked item in Phase 2 of DEVELOPMENT_ROADMAP_v0.1.md.
     is the "editor utility" verification method CLAUDE.md's Testing section
     allows; revisit real unit tests if/when an asmdef restructure is
     approved.
--   Could not self-verify compilation of the Items Foundation increment
-    this session: the running Unity Editor only reimports/recompiles on
-    focus-in (or explicit Refresh), and bringing it to the foreground
-    programmatically was correctly blocked as an unusual action. Check the
-    Console after opening the Editor for either
-    "[ItemStackSanityChecks] All checks passed." or a `[ItemStackSanityChecks] FAILED: ...`
-    error, and for any compiler errors, before building on top of this.
+-   Developer confirmed: compiles clean, "[ItemStackSanityChecks] All
+    checks passed." in Console, and the interaction range fix (camera vs.
+    player origin, see below) also verified working.
+-   Inventory increment: added `Inventory` (Scripts/Gameplay/Inventory) ---
+    a fixed-size array of ItemStack slots with AddItem (fills matching
+    stacks first, then empty slots, returns unfitted leftover),
+    RemoveItem (returns amount actually removed), GetTotalQuantity, and a
+    `Changed` event for future UI to observe (gameplay owns state, UI
+    observes it, per ARCHITECTURE_v0.1.md). Added `PlayerInventory`
+    MonoBehaviour wrapping an `Inventory` instance with a serialized
+    capacity (default 20) --- not yet added to the Player GameObject in
+    the scene (nothing needs it there yet; that's for the pickup/UI
+    increments). Verified via InventorySanityChecks
+    (Scripts/Editor), same editor-utility approach as ItemStackSanityChecks.
+    NOT YET CONFIRMED by the developer this session --- check Console for
+    "[InventorySanityChecks] All checks passed." before continuing.
+-   Item pickup increment: added `ItemPickup` (Scripts/Gameplay/Items), an
+    IInteractable world object holding an ItemDefinition + quantity; on
+    Interact() it calls `interactor.GetComponent<PlayerInventory>()` and
+    adds to it, shrinking/self-destroying as it's consumed, logging the
+    result to Console. Reuses the existing interaction system unchanged.
+    Added one placeholder content asset,
+    ScriptableObjects/Items/Wood.asset (id "wood", stack size 50, weight
+    1) --- explicitly a placeholder for testing only; the final resource
+    list is still "Not Yet Decided." PlayerDebugHud now also shows
+    "Inventory: X/Y slots used" when given a PlayerInventory reference.
+    NOT YET CONFIRMED --- needs manual Editor wiring (PlayerInventory on
+    Player, a pickup test object in the scene) before it can be
+    playtested; see the developer instructions.
 -   Fix (playtest feedback): PlayerInteractor's range was measured along the
     raycast (camera position -> hit), so in third person --- where the
     camera sits well behind/above the player --- most of the "3 meters"

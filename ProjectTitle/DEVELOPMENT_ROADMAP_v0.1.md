@@ -44,9 +44,9 @@ system.
 -   [x] Item IDs
 -   [x] Item instances/runtime data
 -   [x] Stack rules
--   [ ] Inventory
+-   [x] Inventory
 -   [ ] Inventory UI
--   [ ] Item pickup
+-   [x] Item pickup
 -   [ ] Item dropping
 -   [ ] Storage container
 -   [ ] Equipment slots
