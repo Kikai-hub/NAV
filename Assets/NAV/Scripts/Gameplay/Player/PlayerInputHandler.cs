@@ -11,6 +11,19 @@ namespace NAV.Gameplay.Player
         public Vector2 LookInput { get; private set; }
         public bool SprintHeld { get; private set; }
 
+        /// <summary>
+        /// While true, Move/Look/Sprint read as zero/false and Jump/Interact stop firing -
+        /// everything except ToggleInventory itself, so a modal UI (e.g. the inventory
+        /// panel) can hold focus without the camera/character reacting to input meant for
+        /// the UI. Set by whatever owns that modal state (see InventoryUIController).
+        /// </summary>
+        public bool InputSuspended { get; private set; }
+
+        public void SetInputSuspended(bool suspended)
+        {
+            InputSuspended = suspended;
+        }
+
         public event Action JumpRequested;
         public event Action InteractPerformed;
         public event Action ToggleInventoryPerformed;
@@ -84,18 +97,28 @@ namespace NAV.Gameplay.Player
 
         private void Update()
         {
-            MoveInput = _moveAction.ReadValue<Vector2>();
-            LookInput = _lookAction.ReadValue<Vector2>();
-            SprintHeld = _sprintAction.IsPressed();
+            MoveInput = InputSuspended ? Vector2.zero : _moveAction.ReadValue<Vector2>();
+            LookInput = InputSuspended ? Vector2.zero : _lookAction.ReadValue<Vector2>();
+            SprintHeld = !InputSuspended && _sprintAction.IsPressed();
         }
 
         private void HandleJumpPerformed(InputAction.CallbackContext context)
         {
+            if (InputSuspended)
+            {
+                return;
+            }
+
             JumpRequested?.Invoke();
         }
 
         private void HandleInteractPerformed(InputAction.CallbackContext context)
         {
+            if (InputSuspended)
+            {
+                return;
+            }
+
             InteractPerformed?.Invoke();
         }
 

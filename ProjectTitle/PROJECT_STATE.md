@@ -184,15 +184,25 @@ unlocks/shows the cursor (and re-locks/hides it on close) directly via
 `Cursor.lockState`/`Cursor.visible` --- safe because
 `ThirdPersonCameraController` only touches those in its own
 OnEnable/OnDisable, not every frame, so there's no per-frame fight over
-cursor state. Known limitation (deliberately out of scope for this
-increment): movement/camera input is NOT blocked while the inventory
-panel is open --- revisit as polish once it's actually annoying in
-playtesting.
+cursor state.
 
 CONFIRMED --- developer created the Panel Settings asset and the
 InventoryUI GameObject (UIDocument + InventoryUIController) and
 verified the toggle/pickup/close flow described in
 UNITY_SETUP_NEXT_STEPS.md Step 8.
+
+Playtest feedback: with input not suspended, the camera kept reacting
+to mouse movement while the panel was open (the developer's mouse
+naturally moves toward the panel, which `ThirdPersonCameraController`
+was still reading as look input every frame). Fixed by adding
+`PlayerInputHandler.InputSuspended` (+`SetInputSuspended`) --- while
+true, Move/Look/Sprint read as zero/false and Jump/Interact stop
+firing, but ToggleInventory itself is untouched so the panel can still
+be closed. `InventoryUIController.SetVisible` now calls
+`SetInputSuspended(visible)` alongside the cursor lock toggle. This is
+the funnel all player input already passed through, so
+`ThirdPersonCameraController`/`PlayerMotor`/`PlayerInteractor` needed
+no changes and still don't know the inventory UI exists.
 
 Items Foundation / Inventory / Inventory UI together close out the
 "Items" and "Inventory" stages of the Core Rule's development order.
@@ -398,3 +408,12 @@ placed in the scene; see the developer instructions.
     no real VFX/audio --- all explicitly deferred, not overlooked. NOT
     YET CONFIRMED --- needs a `ResourceNodeDefinition` asset and a test
     node placed in SampleScene; see the developer instructions.
+-   Fix (playtest feedback): the camera kept turning while the
+    inventory panel was open, since `ThirdPersonCameraController` read
+    mouse-look input every frame regardless of any UI. Added
+    `PlayerInputHandler.InputSuspended`/`SetInputSuspended` --- while
+    true, Move/Look/Sprint read as zero/false and Jump/Interact stop
+    firing (ToggleInventory itself is unaffected, so the panel can
+    still be closed). `InventoryUIController.SetVisible` now calls this
+    alongside the cursor lock toggle. No Editor wiring changes needed
+    (no new serialized fields); code-only fix.
