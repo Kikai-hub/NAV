@@ -226,9 +226,13 @@ depleted. Deliberately out of scope for this increment (explicit
 Gathering roadmap items, deferred): tool/axe/pickaxe requirements (no
 Equipment system exists yet - that's a later roadmap phase), resource
 persistence/respawn (needs the Save system), and real gathering
-VFX/audio (see "Not Yet Decided" - final audio/music). NOT YET
-CONFIRMED --- needs a ResourceNodeDefinition asset and a test node
-placed in the scene; see the developer instructions.
+VFX/audio (see "Not Yet Decided" - final audio/music).
+
+CONFIRMED --- developer created `TreeWoodNode.asset` (Drop Item: Wood,
+Amount Per Hit: 1, Hits To Deplete: 3) and `TestResourceNode_Tree` in
+SampleScene (`ResourceNode` wired to `TreeWoodNode`), saved the scene,
+and verified the gather/deplete/pickup flow from
+UNITY_SETUP_NEXT_STEPS.md Step 9.
 
 ------------------------------------------------------------------------
 
@@ -424,3 +428,15 @@ placed in the scene; see the developer instructions.
     still be closed). `InventoryUIController.SetVisible` now calls this
     alongside the cursor lock toggle. No Editor wiring changes needed
     (no new serialized fields); code-only fix.
+-   Refinement (playtest feedback): freezing the camera while the
+    inventory panel is open shouldn't also freeze the character.
+    Renamed `PlayerInputHandler.InputSuspended`/`SetInputSuspended` to
+    `MenuOpen`/`SetMenuOpen` and narrowed its effect: Move always reads
+    normally now; `MenuOpen` only zeroes Look and suppresses Sprint/
+    Jump/Interact. Developer confirmed: camera stays still, character
+    still walks, with the panel open.
+-   Developer confirmed Gathering increment 1: created
+    `TreeWoodNode.asset` (Drop Item: Wood, Amount Per Hit: 1, Hits To
+    Deplete: 3) and `TestResourceNode_Tree` in SampleScene, verified
+    gathering deposits Wood into the inventory and the node depletes
+    after 3 hits.
