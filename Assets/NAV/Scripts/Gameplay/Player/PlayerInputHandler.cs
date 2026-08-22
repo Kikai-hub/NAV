@@ -13,12 +13,14 @@ namespace NAV.Gameplay.Player
 
         public event Action JumpRequested;
         public event Action InteractPerformed;
+        public event Action ToggleInventoryPerformed;
 
         private InputAction _moveAction;
         private InputAction _lookAction;
         private InputAction _sprintAction;
         private InputAction _jumpAction;
         private InputAction _interactAction;
+        private InputAction _toggleInventoryAction;
 
         private void Awake()
         {
@@ -35,10 +37,11 @@ namespace NAV.Gameplay.Player
             _sprintAction = playerInput.actions["Player/Sprint"];
             _jumpAction = playerInput.actions["Player/Jump"];
             _interactAction = playerInput.actions["Player/Interact"];
+            _toggleInventoryAction = playerInput.actions["Player/ToggleInventory"];
 
-            if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null)
+            if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null || _toggleInventoryAction == null)
             {
-                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact) in the 'Player' action map.", this);
+                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory) in the 'Player' action map.", this);
                 enabled = false;
             }
         }
@@ -54,6 +57,11 @@ namespace NAV.Gameplay.Player
             {
                 _interactAction.performed += HandleInteractPerformed;
             }
+
+            if (_toggleInventoryAction != null)
+            {
+                _toggleInventoryAction.performed += HandleToggleInventoryPerformed;
+            }
         }
 
         private void OnDisable()
@@ -66,6 +74,11 @@ namespace NAV.Gameplay.Player
             if (_interactAction != null)
             {
                 _interactAction.performed -= HandleInteractPerformed;
+            }
+
+            if (_toggleInventoryAction != null)
+            {
+                _toggleInventoryAction.performed -= HandleToggleInventoryPerformed;
             }
         }
 
@@ -84,6 +97,11 @@ namespace NAV.Gameplay.Player
         private void HandleInteractPerformed(InputAction.CallbackContext context)
         {
             InteractPerformed?.Invoke();
+        }
+
+        private void HandleToggleInventoryPerformed(InputAction.CallbackContext context)
+        {
+            ToggleInventoryPerformed?.Invoke();
         }
     }
 }

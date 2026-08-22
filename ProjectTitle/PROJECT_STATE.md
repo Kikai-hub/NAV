@@ -171,6 +171,30 @@ Next: Inventory UI. This needs a decision this project hasn't made yet
 developer rather than picked unilaterally before starting that
 increment.
 
+Developer chose **UI Toolkit**. `InventoryUIController` (Scripts/UI, the
+folder ARCHITECTURE_v0.1.md already names) has been added: it observes
+`PlayerInventory`/`Inventory.Changed` (UI observes gameplay state, per
+ARCHITECTURE_v0.1.md) and renders a fixed grid of slot elements (icon +
+quantity) built from `InventoryPanel.uxml`/`.uss` (same folder). Panel
+visibility is driven by a new `ToggleInventory` input action (Player
+map, bound to `I` / gamepad Select) added to
+`InputSystem_Actions.inputactions`, exposed as
+`PlayerInputHandler.ToggleInventoryPerformed`. Opening the panel also
+unlocks/shows the cursor (and re-locks/hides it on close) directly via
+`Cursor.lockState`/`Cursor.visible` --- safe because
+`ThirdPersonCameraController` only touches those in its own
+OnEnable/OnDisable, not every frame, so there's no per-frame fight over
+cursor state. Known limitation (deliberately out of scope for this
+increment): movement/camera input is NOT blocked while the inventory
+panel is open --- revisit as polish once it's actually annoying in
+playtesting.
+
+NOT YET CONFIRMED --- needs manual Editor wiring (create a Panel
+Settings asset, a UIDocument GameObject wired to it +
+InventoryPanel.uxml, and an InventoryUIController with PlayerInventory/
+InputHandler assigned) before it can be playtested; see the developer
+instructions.
+
 ------------------------------------------------------------------------
 
 ## Change Log
@@ -324,3 +348,15 @@ increment.
     done: no stamina cost for anything besides sprinting (jump/attack
     stamina costs are future work), no UI stamina bar (still OnGUI debug
     only --- real UI is Inventory-phase work).
+-   Inventory UI increment (UI Toolkit, developer's choice over uGUI):
+    added `InventoryUIController` (Scripts/UI) plus `InventoryPanel.uxml`/
+    `.uss` (same folder) --- a fixed grid of slot elements bound to
+    `PlayerInventory`/`Inventory.Changed`. Added a `ToggleInventory`
+    input action (Player map, `I` key / gamepad Select) to
+    `InputSystem_Actions.inputactions` and
+    `PlayerInputHandler.ToggleInventoryPerformed`. Toggling the panel
+    also unlocks/relocks the cursor. Movement is intentionally NOT
+    blocked while the panel is open (documented limitation, not a bug).
+    NOT YET CONFIRMED --- needs Panel Settings asset + UIDocument
+    GameObject creation and wiring in the Editor before it can be
+    playtested; see the developer instructions.

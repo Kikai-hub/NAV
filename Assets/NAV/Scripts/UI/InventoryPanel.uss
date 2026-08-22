@@ -1,0 +1,75 @@
+.inventory-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+.inventory-panel {
+    background-color: rgb(43, 33, 24);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    padding: 16px;
+    min-width: 420px;
+}
+
+.inventory-title {
+    color: rgb(230, 210, 160);
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-bottom: 12px;
+    -unity-text-align: middle-center;
+}
+
+.inventory-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 400px;
+}
+
+.inventory-slot {
+    width: 56px;
+    height: 56px;
+    margin: 4px;
+    background-color: rgb(61, 48, 35);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(90, 70, 50);
+    border-right-color: rgb(90, 70, 50);
+    border-top-color: rgb(90, 70, 50);
+    border-bottom-color: rgb(90, 70, 50);
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.inventory-slot__icon {
+    width: 40px;
+    height: 40px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.inventory-slot__quantity {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    color: rgb(240, 230, 210);
+    font-size: 11px;
+    -unity-font-style: bold;
+}
