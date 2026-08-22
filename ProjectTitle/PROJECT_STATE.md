@@ -161,16 +161,15 @@ passed." with no compiler errors).
 Inventory (Scripts/Gameplay/Inventory: `Inventory` + `PlayerInventory`) and
 Item pickup (`ItemPickup` + the placeholder Wood.asset) have both been
 added on top of it. Inventory is confirmed correct by its own editor
-utility (InventorySanityChecks); ItemPickup cannot be checked that way
-(it needs real Editor wiring + a playtest) and is NOT YET CONFIRMED.
-Check Console for "[InventorySanityChecks] All checks passed." AND
-follow the pickup playtest steps in the developer instructions before
-continuing further.
+utility (InventorySanityChecks). ItemPickup is now CONFIRMED as well ---
+developer wired `PlayerInventory` onto Player and a `TestPickup_Wood`
+sphere (`ItemPickup` + Wood.asset) in SampleScene per the Step 7
+instructions and confirmed the pickup playtest works end-to-end.
 
-Next after that confirmation: Inventory UI. This needs a decision this
-project hasn't made yet --- uGUI (Canvas) vs. UI Toolkit --- so it should
-be raised with the developer rather than picked unilaterally before
-starting that increment.
+Next: Inventory UI. This needs a decision this project hasn't made yet
+--- uGUI (Canvas) vs. UI Toolkit --- so it should be raised with the
+developer rather than picked unilaterally before starting that
+increment.
 
 ------------------------------------------------------------------------
 
@@ -257,9 +256,9 @@ starting that increment.
     1) --- explicitly a placeholder for testing only; the final resource
     list is still "Not Yet Decided." PlayerDebugHud now also shows
     "Inventory: X/Y slots used" when given a PlayerInventory reference.
-    NOT YET CONFIRMED --- needs manual Editor wiring (PlayerInventory on
-    Player, a pickup test object in the scene) before it can be
-    playtested; see the developer instructions.
+    CONFIRMED --- developer added PlayerInventory to Player and a
+    TestPickup_Wood sphere (ItemPickup + Wood.asset) in SampleScene and
+    playtested the pickup flow successfully.
 -   Incident: developer hit `error CS0246: PlayerInventory could not be
     found` in PlayerDebugHud.cs despite correct code and a correct
     `using` directive. Confirmed via Logs/Editor.log that
