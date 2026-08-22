@@ -189,11 +189,29 @@ increment): movement/camera input is NOT blocked while the inventory
 panel is open --- revisit as polish once it's actually annoying in
 playtesting.
 
-NOT YET CONFIRMED --- needs manual Editor wiring (create a Panel
-Settings asset, a UIDocument GameObject wired to it +
-InventoryPanel.uxml, and an InventoryUIController with PlayerInventory/
-InputHandler assigned) before it can be playtested; see the developer
-instructions.
+CONFIRMED --- developer created the Panel Settings asset and the
+InventoryUI GameObject (UIDocument + InventoryUIController) and
+verified the toggle/pickup/close flow described in
+UNITY_SETUP_NEXT_STEPS.md Step 8.
+
+Items Foundation / Inventory / Inventory UI together close out the
+"Items" and "Inventory" stages of the Core Rule's development order.
+Next stage: **Gathering**.
+
+Gathering increment 1 has been added: `ResourceNodeDefinition`
+(ScriptableObject: drop item, amount per hit, hits to deplete) and
+`ResourceNode` (Scripts/Gameplay/Items, IInteractable, same pattern as
+ItemPickup) --- each Interact() call is one "hit" that adds
+`AmountPerHit` of the drop item straight to the interactor's
+PlayerInventory and decrements a hit counter; the node shrinks a little
+each hit as cheap placeholder feedback and destroys itself when
+depleted. Deliberately out of scope for this increment (explicit
+Gathering roadmap items, deferred): tool/axe/pickaxe requirements (no
+Equipment system exists yet - that's a later roadmap phase), resource
+persistence/respawn (needs the Save system), and real gathering
+VFX/audio (see "Not Yet Decided" - final audio/music). NOT YET
+CONFIRMED --- needs a ResourceNodeDefinition asset and a test node
+placed in the scene; see the developer instructions.
 
 ------------------------------------------------------------------------
 
@@ -360,3 +378,23 @@ instructions.
     NOT YET CONFIRMED --- needs Panel Settings asset + UIDocument
     GameObject creation and wiring in the Editor before it can be
     playtested; see the developer instructions.
+-   Fix: `InventoryUIController` referenced the bare `Cursor` type, which
+    is ambiguous between `UnityEngine.Cursor` and
+    `UnityEngine.UIElements.Cursor` once the file imports
+    `UnityEngine.UIElements` --- qualified as `UnityEngine.Cursor`.
+-   Developer confirmed the Inventory UI increment (Panel Settings +
+    InventoryUI GameObject created and wired, toggle/pickup/close
+    playtest verified).
+-   Gathering increment 1: added `ResourceNodeDefinition`
+    (ScriptableObject: drop `ItemDefinition`, amount per hit, hits to
+    deplete) and `ResourceNode` (Scripts/Gameplay/Items, `IInteractable`,
+    same folder/pattern as `ItemPickup` since a resource node is
+    conceptually still item-source data --- no new folder needed). Each
+    Interact() is one gather "hit": adds `AmountPerHit` of the drop item
+    to the interactor's `PlayerInventory`, decrements a remaining-hits
+    counter, shrinks the node slightly as placeholder feedback, and
+    destroys the node on depletion. No tool/axe/pickaxe gating (no
+    Equipment system yet), no respawn/persistence (needs Save system),
+    no real VFX/audio --- all explicitly deferred, not overlooked. NOT
+    YET CONFIRMED --- needs a `ResourceNodeDefinition` asset and a test
+    node placed in SampleScene; see the developer instructions.
