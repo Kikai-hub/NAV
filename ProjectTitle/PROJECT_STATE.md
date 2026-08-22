@@ -191,16 +191,23 @@ InventoryUI GameObject (UIDocument + InventoryUIController) and
 verified the toggle/pickup/close flow described in
 UNITY_SETUP_NEXT_STEPS.md Step 8.
 
-Playtest feedback: with input not suspended, the camera kept reacting
-to mouse movement while the panel was open (the developer's mouse
-naturally moves toward the panel, which `ThirdPersonCameraController`
-was still reading as look input every frame). Fixed by adding
-`PlayerInputHandler.InputSuspended` (+`SetInputSuspended`) --- while
-true, Move/Look/Sprint read as zero/false and Jump/Interact stop
-firing, but ToggleInventory itself is untouched so the panel can still
-be closed. `InventoryUIController.SetVisible` now calls
-`SetInputSuspended(visible)` alongside the cursor lock toggle. This is
-the funnel all player input already passed through, so
+Playtest feedback (round 1): with input not suspended, the camera kept
+reacting to mouse movement while the panel was open (the developer's
+mouse naturally moves toward the panel, which
+`ThirdPersonCameraController` was still reading as look input every
+frame). Fixed by adding `PlayerInputHandler.MenuOpen`
+(+`SetMenuOpen`) --- initially this suspended Move/Look/Sprint/Jump/
+Interact all together.
+
+Playtest feedback (round 2): developer wants to keep walking around
+while the inventory panel is open (only the camera should freeze).
+Narrowed `MenuOpen`'s effect: Move keeps reading normally always;
+Look reads zero while `MenuOpen` (camera stays still); Sprint/Jump/
+Interact stay suppressed while `MenuOpen` (sprint stays off deliberately
+--- untested/unrequested to allow running with the panel open, revisit
+if asked). `InventoryUIController.SetVisible` calls
+`SetMenuOpen(visible)` alongside the cursor lock toggle. This is the
+funnel all player input already passes through, so
 `ThirdPersonCameraController`/`PlayerMotor`/`PlayerInteractor` needed
 no changes and still don't know the inventory UI exists.
 

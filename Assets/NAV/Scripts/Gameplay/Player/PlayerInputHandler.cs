@@ -12,16 +12,17 @@ namespace NAV.Gameplay.Player
         public bool SprintHeld { get; private set; }
 
         /// <summary>
-        /// While true, Move/Look/Sprint read as zero/false and Jump/Interact stop firing -
-        /// everything except ToggleInventory itself, so a modal UI (e.g. the inventory
-        /// panel) can hold focus without the camera/character reacting to input meant for
-        /// the UI. Set by whatever owns that modal state (see InventoryUIController).
+        /// While true, a modal UI (e.g. the inventory panel) has focus: Look reads zero
+        /// (camera stays still while the mouse drives the UI instead) and Jump/Interact
+        /// stop firing. Move/Sprint keep working - the player can still walk/run around
+        /// with the panel open. ToggleInventory itself is unaffected either way. Set by
+        /// whatever owns that modal state (see InventoryUIController).
         /// </summary>
-        public bool InputSuspended { get; private set; }
+        public bool MenuOpen { get; private set; }
 
-        public void SetInputSuspended(bool suspended)
+        public void SetMenuOpen(bool open)
         {
-            InputSuspended = suspended;
+            MenuOpen = open;
         }
 
         public event Action JumpRequested;
@@ -97,14 +98,14 @@ namespace NAV.Gameplay.Player
 
         private void Update()
         {
-            MoveInput = InputSuspended ? Vector2.zero : _moveAction.ReadValue<Vector2>();
-            LookInput = InputSuspended ? Vector2.zero : _lookAction.ReadValue<Vector2>();
-            SprintHeld = !InputSuspended && _sprintAction.IsPressed();
+            MoveInput = _moveAction.ReadValue<Vector2>();
+            LookInput = MenuOpen ? Vector2.zero : _lookAction.ReadValue<Vector2>();
+            SprintHeld = !MenuOpen && _sprintAction.IsPressed();
         }
 
         private void HandleJumpPerformed(InputAction.CallbackContext context)
         {
-            if (InputSuspended)
+            if (MenuOpen)
             {
                 return;
             }
@@ -114,7 +115,7 @@ namespace NAV.Gameplay.Player
 
         private void HandleInteractPerformed(InputAction.CallbackContext context)
         {
-            if (InputSuspended)
+            if (MenuOpen)
             {
                 return;
             }

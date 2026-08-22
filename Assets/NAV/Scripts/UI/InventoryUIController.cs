@@ -102,7 +102,7 @@ namespace NAV.UI
 
             UnityEngine.Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
             UnityEngine.Cursor.visible = visible;
-            _inputHandler.SetInputSuspended(visible);
+            _inputHandler.SetMenuOpen(visible);
 
             if (visible)
             {
