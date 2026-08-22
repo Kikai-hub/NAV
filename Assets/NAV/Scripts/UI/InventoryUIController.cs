@@ -100,8 +100,8 @@ namespace NAV.UI
             _visible = visible;
             _root.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
 
-            Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = visible;
+            UnityEngine.Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
+            UnityEngine.Cursor.visible = visible;
 
             if (visible)
             {
