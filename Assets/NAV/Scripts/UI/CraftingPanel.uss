@@ -1,0 +1,78 @@
+.crafting-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+.crafting-panel {
+    background-color: rgb(43, 33, 24);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    padding: 16px;
+    min-width: 360px;
+}
+
+.crafting-title {
+    color: rgb(230, 210, 160);
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-bottom: 12px;
+    -unity-text-align: middle-center;
+}
+
+.recipe-list {
+    flex-direction: column;
+}
+
+.recipe-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgb(61, 48, 35);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(90, 70, 50);
+    border-right-color: rgb(90, 70, 50);
+    border-top-color: rgb(90, 70, 50);
+    border-bottom-color: rgb(90, 70, 50);
+    padding: 8px;
+    margin-bottom: 6px;
+}
+
+.recipe-row__info {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.recipe-row__name {
+    color: rgb(240, 230, 210);
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.recipe-row__cost {
+    color: rgb(190, 175, 150);
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.recipe-row__craft-button {
+    margin-left: 12px;
+}

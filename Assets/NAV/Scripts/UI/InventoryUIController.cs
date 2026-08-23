@@ -17,6 +17,7 @@ namespace NAV.UI
     {
         [SerializeField] private PlayerInventory _playerInventory;
         [SerializeField] private PlayerInputHandler _inputHandler;
+        [SerializeField] private CraftingUIController _craftingPanel;
 
         private UIDocument _document;
         private VisualElement _root;
@@ -95,6 +96,15 @@ namespace NAV.UI
             SetVisible(!_visible);
         }
 
+        /// <summary>Closes this panel if it's open. Safe to call when already closed.</summary>
+        public void Hide()
+        {
+            if (_visible)
+            {
+                SetVisible(false);
+            }
+        }
+
         private void SetVisible(bool visible)
         {
             _visible = visible;
@@ -106,6 +116,9 @@ namespace NAV.UI
 
             if (visible)
             {
+                // Only one modal panel makes sense on screen at once - both panels are
+                // full-screen overlays centered the same way.
+                _craftingPanel?.Hide();
                 RefreshSlots();
             }
         }

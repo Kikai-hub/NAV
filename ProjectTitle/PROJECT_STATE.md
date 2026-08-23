@@ -234,6 +234,81 @@ SampleScene (`ResourceNode` wired to `TreeWoodNode`), saved the scene,
 and verified the gather/deplete/pickup flow from
 UNITY_SETUP_NEXT_STEPS.md Step 9.
 
+Developer asked for more resource node content on the same system
+(content, not a new architecture). Added a second resource: an
+ItemDefinition and a ResourceNodeDefinition, hand-authored directly
+(same approach used for Wood.asset originally) reusing the
+already-known script GUIDs, so no new code/logic.
+
+CONFIRMED --- developer built this step themselves rather than
+following the Step 10 instructions literally, and renamed the assets
+along the way (an improvement: the node you hit is now named after
+the material you're mining, and the item it drops is named after the
+mineable chunk you carry away). Current names: item
+`ScriptableObjects/Items/Rock.asset` (id `Rock`, stack size 20, weight
+5) dropped by node definition `Scripts/Gameplay/Items/StoneRockNode.asset`
+(display name "Stone", Amount Per Hit 1, Hits To Deplete 10), placed
+in SampleScene as `TestResourceNode_Stone`. Gathering increment 1 is
+now fully confirmed end-to-end with two working resources (Wood, Stone/Rock).
+
+Gathering (per the Core Rule's development order) is demonstrably
+functional; moved on to the next stage: **Crafting**.
+
+Crafting increment 1: added `RecipeDefinition` (ScriptableObject:
+ingredient list of item+amount pairs, output item + amount, plus
+`CanCraft`/`TryCraft` logic that checks/consumes ingredients from an
+`Inventory` and adds the output) and `RecipeIngredient` (a plain
+serializable item+amount pair nested inside a recipe's ingredient
+list) in a new `Scripts/Gameplay/Crafting/` folder (already existed as
+an empty placeholder from the original ARCHITECTURE_v0.1.md folder
+skeleton). Added `PlayerCrafting` (Scripts/Gameplay/Crafting), a thin
+MonoBehaviour mirroring PlayerInventory: holds a fixed serialized list
+of known `RecipeDefinition`s (no unlock/discovery system yet --- see
+"Recipe unlock structure" in DEVELOPMENT_ROADMAP_v0.1.md Phase 4,
+explicitly deferred, same reasoning as ResourceNode's deferred tool
+requirement) and a `TryCraft(recipe)` method. No workbench requirement
+yet either (Workbench is its own later roadmap stage) --- this
+increment is "craft anywhere" by design, matching the Core Rule's
+"only move to the next system after the current one is functional"
+philosophy (Crafting itself needs to work before gating it behind a
+Workbench makes sense to build).
+
+Added a UI Toolkit crafting panel, following the same pattern as the
+Inventory UI: `Scripts/UI/CraftingUIController.cs` +
+`CraftingPanel.uxml`/`.uss`, toggled by a new `ToggleCrafting` input
+action (`K` key / gamepad West button) added to
+`InputSystem_Actions.inputactions`. Lists each known recipe with its
+ingredient cost (shown as "have/need" per ingredient) and a Craft
+button, disabled when the player can't currently afford it; refreshes
+automatically off `Inventory.Changed` (same observation pattern as
+InventoryUIController) so affordability updates live as items are
+gathered/consumed.
+
+Since Inventory and Crafting are both full-screen modal panels drawn
+the same way, opening either now closes the other (each controller
+holds an optional reference to the other and calls its new `Hide()`
+method). This required one small preserving refactor:
+`PlayerInputHandler.MenuOpen` changed from a single bool to an
+internal request count (`SetMenuOpen(bool)` keeps its exact same
+signature/behavior for existing callers) so that two panels closing
+each other in sequence can't clobber the "is any modal open" state ---
+documented in the property's own doc comment.
+
+Placeholder test content (final recipes are explicitly "Not Yet
+Decided"): `ScriptableObjects/Items/StoneAxe.asset` (ItemDefinition,
+Tool category) and `ScriptableObjects/Recipes/StoneAxeRecipe.asset`
+(RecipeDefinition: 3x Wood + 2x Rock -> 1x Stone Axe), both
+hand-authored directly the same way Wood/Rock were. Added
+`Scripts/Editor/CraftingSanityChecks.cs` (same editor-utility pattern
+as ItemStackSanityChecks/InventorySanityChecks) to verify
+RecipeDefinition's CanCraft/TryCraft math on every recompile.
+
+NOT YET CONFIRMED --- needs `PlayerCrafting` added to Player (with
+StoneAxeRecipe assigned as a known recipe), a Panel Settings +
+UIDocument GameObject for the crafting panel, and the two panel
+controllers cross-wired to each other; see UNITY_SETUP_NEXT_STEPS.md
+Step 11.
+
 ------------------------------------------------------------------------
 
 ## Change Log
@@ -440,3 +515,59 @@ UNITY_SETUP_NEXT_STEPS.md Step 9.
     Deplete: 3) and `TestResourceNode_Tree` in SampleScene, verified
     gathering deposits Wood into the inventory and the node depletes
     after 3 hits.
+-   Second resource node content (developer request, not a new
+    system): added an ItemDefinition + ResourceNodeDefinition pair,
+    hand-authored directly the same way Wood.asset originally was.
+-   Developer built and confirmed the second resource themselves,
+    renaming the assets along the way: item
+    `ScriptableObjects/Items/Rock.asset` (id `Rock`, stack size 20,
+    weight 5) dropped by node definition
+    `Scripts/Gameplay/Items/StoneRockNode.asset` (display name
+    "Stone", Amount Per Hit 1, Hits To Deplete 10), placed in
+    SampleScene as `TestResourceNode_Stone`. Gathering increment 1 is
+    now fully confirmed end-to-end with two working resources.
+    Gathering is demonstrably functional per the Core Rule; moved on
+    to the next development-order stage, Crafting.
+-   Crafting increment 1: added `RecipeDefinition` + `RecipeIngredient`
+    (Scripts/Gameplay/Crafting --- ingredient list, output item/amount,
+    `CanCraft`/`TryCraft` against an `Inventory`) and `PlayerCrafting`
+    (same folder, mirrors PlayerInventory: fixed serialized list of
+    known recipes, no unlock system yet, no workbench gating yet ---
+    both explicitly deferred to their own later roadmap items). Added
+    `CraftingUIController` + `CraftingPanel.uxml`/`.uss` (Scripts/UI),
+    a second UI Toolkit panel following the InventoryUI pattern,
+    toggled by a new `ToggleCrafting` action (`K` / gamepad West) added
+    to `InputSystem_Actions.inputactions`; lists known recipes with
+    live "have/need" ingredient costs and a Craft button, disabled
+    when unaffordable. Since both panels are full-screen modal
+    overlays, opening one now closes the other (`Hide()` added to both
+    controllers, wired via a new optional cross-reference on each).
+    Refactored `PlayerInputHandler.MenuOpen` from a bool to an internal
+    request count so two panels closing each other can't clobber the
+    shared "is a modal open" state --- `SetMenuOpen(bool)`'s signature
+    and behavior are unchanged for existing callers, this is
+    internal-only. Added placeholder content (final recipes are "Not
+    Yet Decided"): `ScriptableObjects/Items/StoneAxe.asset` (Tool) and
+    `ScriptableObjects/Recipes/StoneAxeRecipe.asset` (3x Wood + 2x Rock
+    -> 1x Stone Axe), hand-authored the same way Wood/Rock were. Added
+    `Scripts/Editor/CraftingSanityChecks.cs` (same editor-utility
+    pattern as ItemStackSanityChecks/InventorySanityChecks) covering
+    CanCraft/TryCraft. NOT YET CONFIRMED --- needs `PlayerCrafting`
+    added to Player, a Panel Settings + UIDocument for the crafting
+    panel, and the two panel controllers cross-wired; see
+    UNITY_SETUP_NEXT_STEPS.md Step 11.
+-   Fix: `RecipeDefinition.CanCraft`/`TryCraft` failed to compile --
+    `error CS0118: 'Inventory' is a namespace but is used like a type`.
+    Same root cause as the incident logged for the original
+    Inventory/PlayerInventory work (a class and its containing
+    namespace sharing the name `Inventory`), but triggered differently
+    this time: `RecipeDefinition.cs` lives in `NAV.Gameplay.Crafting`,
+    a *sibling* of `NAV.Gameplay.Inventory` under the same parent
+    (`NAV.Gameplay`), and C# resolves a bare `Inventory` type there to
+    that sibling namespace before it considers the class imported via
+    `using`. `ResourceNode`/`ItemPickup` never hit this because they
+    only ever access `.Inventory` as a member
+    (`playerInventory.Inventory`), never declare a parameter of bare
+    type `Inventory`. Fixed by fully qualifying the two parameter
+    types as `NAV.Gameplay.Inventory.Inventory` instead of importing
+    the namespace; no behavior change.
