@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="PausePanel.uss" />
+    <ui:VisualElement name="pause-root" class="pause-root">
+        <ui:VisualElement class="pause-panel">
+            <ui:Label text="Paused" class="pause-title" />
+            <ui:Button name="resume-button" text="Resume" class="pause-button" />
+            <ui:Button name="main-menu-button" text="Leave to Main Menu" class="pause-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

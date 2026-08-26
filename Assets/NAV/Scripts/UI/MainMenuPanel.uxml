@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="MainMenuPanel.uss" />
+    <ui:VisualElement name="main-menu-root" class="main-menu-root">
+        <ui:VisualElement class="main-menu-panel">
+            <ui:Label text="NAV" class="main-menu-title" />
+            <ui:Label text="A Fairy-Tale Rus Survival" class="main-menu-subtitle" />
+            <ui:Button name="play-button" text="Play" class="main-menu-button" />
+            <ui:Button name="quit-button" text="Quit" class="main-menu-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

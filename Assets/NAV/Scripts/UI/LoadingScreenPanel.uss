@@ -1,0 +1,53 @@
+.loading-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(20, 15, 10);
+}
+
+.loading-label {
+    color: rgb(230, 210, 160);
+    font-size: 22px;
+    -unity-font-style: bold;
+    margin-bottom: 16px;
+}
+
+.loading-progress-track {
+    width: 360px;
+    height: 18px;
+    overflow: hidden;
+    background-color: rgb(43, 33, 24);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.loading-progress-fill {
+    width: 0%;
+    height: 100%;
+    background-color: rgb(139, 105, 20);
+}
+
+/* Continuously sweeps left-to-right across the track (see
+   LoadingScreenUIController.Update) so the bar visibly reads as "working" even
+   while the real load is near-instant or progress is stuck at Unity's 0.9 cap. */
+.loading-progress-shimmer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 20%;
+    background-color: rgba(230, 210, 160, 0.35);
+}

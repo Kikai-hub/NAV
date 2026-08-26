@@ -717,6 +717,100 @@ fade is a USS `transition-property: opacity` on `.stamina-bar`
 reconfiguration needed, code/USS only; see the addendum to
 UNITY_SETUP_NEXT_STEPS.md Step 17.
 
+Developer asked for a loading screen and main menu. Same category as the
+HUD work above - presentation layered on top of what exists, not a
+roadmap stage - done now because asked for, not deferred to a future
+"Polish" phase.
+
+Added `Assets/NAV/Scripts/Core/SceneLoader.cs`: the project's first
+Core-layer script. Drives `SceneManager.LoadSceneAsync` for a scene by
+name, reports `0..1` progress via a plain event (no UI dependency,
+matches ARCHITECTURE_v0.1.md's "UI observes state" rule generalized to
+Core), and enforces a small minimum display duration (default 0.5s)
+purely so the loading screen doesn't flash for a single frame when
+loading today's near-empty `SampleScene`. Single-scene load (not
+additive) - no `DontDestroyOnLoad` needed since the loader's own scene
+is replaced as part of the same transition once activation is allowed.
+
+Added `Scripts/UI/MainMenuUIController.cs` + `MainMenuPanel.uxml`/`.uss`
+(title, Play/Quit buttons) and `Scripts/UI/LoadingScreenUIController.cs`
++ `LoadingScreenPanel.uxml`/`.uss` (progress bar), following the same
+UIDocument-per-controller pattern as every other UI panel, reusing
+`NAV_PanelSettings.asset` and the existing dark-wood/gold palette
+(`rgb(43,33,24)` panel, `rgb(139,105,20)` gold border/accent,
+`rgb(230,210,160)` cream text). Play hides the menu, shows the loading
+screen, and calls `SceneLoader.LoadScene("SampleScene")`. Quit calls
+`Application.Quit()` (stops Play Mode in the Editor instead, via
+`#if UNITY_EDITOR`).
+
+Deliberately no Continue/Settings buttons - there's no save system or
+settings menu yet (both explicitly future work; see "Not Yet Decided"),
+and a button that does nothing would be dishonest UI, not a minimal
+increment.
+
+This introduces the project's first second scene: a new `MainMenu`
+scene (alongside the existing `SampleScene`, both in `Assets/Scenes/` -
+matching where `SampleScene` actually lives, not the aspirational
+`Assets/NAV/Scenes/` path in ARCHITECTURE_v0.1.md, which has stayed
+unused). `MainMenu` becomes Build Settings scene index 0, `SampleScene`
+index 1. `SampleScene` itself is untouched - still fully playable by
+opening it directly and pressing Play, bypassing the menu, for regular
+gameplay-system development/testing.
+
+CONFIRMED --- developer created the `MainMenu` scene, wired
+`SceneLoader`/`MainMenuUI`/`LoadingScreenUI`, added both scenes to Build
+Settings (`MainMenu` index 0, `SampleScene` index 1), and verified the
+Step 18 playtest end-to-end (menu -> Play -> loading screen ->
+gameplay).
+
+Developer confirmed Step 18 works, then asked for ESC pause. Added a
+new `Pause` input action (Escape / gamepad Start, Player map) and
+`PlayerInputHandler.PausePerformed` (fires unconditionally, same as
+ToggleInventory/ToggleCrafting - not suppressed by `MenuOpen`). Added
+`Scripts/UI/PauseUIController.cs` + `PausePanel.uxml`/`.uss`: a
+center-screen overlay (Resume / Leave to Main Menu) toggled by
+`PausePerformed`, living only in `SampleScene` (pause has no meaning in
+the menu scene itself). While open it sets `Time.timeScale = 0` -
+actually halts gameplay simulation (movement, stamina drain, physics),
+not just input - and calls the same `PlayerInputHandler.SetMenuOpen`
+request-counted cursor/camera-freeze mechanism every other modal panel
+uses. Resume sets `timeScale` back to 1 and closes; Leave to Main Menu
+does the same then `SceneManager.LoadScene("MainMenu")` directly - no
+async loading screen for this transition, since `SampleScene` has no
+`SceneLoader`/loading-screen instance of its own and duplicating
+`MainMenu`'s just for the reverse hop isn't warranted yet.
+
+Deliberately out of scope for this increment: Escape does not close
+Inventory/Crafting first if they're open - the pause overlay just draws
+on top of them (its `UIDocument` needs a higher Sort Order, see
+UNITY_SETUP_NEXT_STEPS.md Step 19). No Settings from the pause menu
+either, same reasoning as the main menu (no settings system exists).
+
+CONFIRMED --- developer created the `PauseUI` GameObject in
+`SampleScene` (UIDocument + PauseUIController, Sort Order 10) wired to
+Player's `PlayerInputHandler`, and verified the Step 19 playtest
+(Escape toggles pause, timeScale/cursor behave correctly, Resume and
+Leave to Main Menu both work).
+
+Developer feedback (screenshot): the loading screen's progress bar read
+as completely static - Unity's real `AsyncOperation.progress` is coarse
+and jumps straight to 1 for today's near-empty `SampleScene`. Changed
+`LoadingScreenUIController`: the fill now eases toward the real target
+each frame instead of snapping (`Mathf.MoveTowards`, unscaled time), a
+semi-transparent shimmer sweeps back and forth across the track
+continuously (independent of real progress - purely a "something is
+happening" signal), and the "Loading" label cycles an animated ellipsis
+(`Loading` -> `Loading...`). No new serialized fields/Editor wiring -
+same `LoadingScreenUI` GameObject as Step 18, code/UXML/USS only; see
+the addendum to UNITY_SETUP_NEXT_STEPS.md Step 18.
+
+CONFIRMED --- developer verified the loading screen now visibly
+animates (fill eases in, shimmer sweeps, dots cycle). Main menu, loading
+screen, and ESC pause are all confirmed end-to-end. This closes out the
+menu/pause presentation work; per the Core Rule the next unstarted
+system is still **Combat** (Phase 7) - waiting for the developer to say
+go, same pause pattern as before Building started.
+
 ------------------------------------------------------------------------
 
 ## Change Log
@@ -1220,3 +1314,40 @@ same as the pause before Building itself started.
     lines up with the inventory grid's, at the developer's request.
     `.hotbar-slot` margin changed from right-only to all sides to match
     `.inventory-slot` exactly.
+-   Main menu + loading screen (developer request): added
+    `Scripts/Core/SceneLoader.cs` (first Core-layer script - async
+    scene load by name with progress reporting, minimum display
+    duration so a fast load doesn't flash), `MainMenuUIController` +
+    `MainMenuPanel.uxml`/`.uss` (Play/Quit, no Continue/Settings - no
+    save/settings systems exist yet), and `LoadingScreenUIController` +
+    `LoadingScreenPanel.uxml`/`.uss` (progress bar), all Scripts/UI,
+    same dark-wood/gold palette and UIDocument-per-controller pattern
+    as every other panel. Introduces the project's first second scene
+    (`MainMenu`, alongside `SampleScene`, both in `Assets/Scenes/`) -
+    Build Settings order `MainMenu` (0) then `SampleScene` (1).
+    `SampleScene` itself unchanged; still directly playable for
+    gameplay-system testing. NOT YET CONFIRMED - see
+    UNITY_SETUP_NEXT_STEPS.md Step 18.
+-   ESC pause (developer request): new `Pause` input action (Escape/
+    gamepad Start) + `PlayerInputHandler.PausePerformed`. Added
+    `PauseUIController` + `PausePanel.uxml`/`.uss` (Resume / Leave to
+    Main Menu), lives in `SampleScene` only. Sets `Time.timeScale = 0`
+    while open (real gameplay halt, not just input suppression) and
+    reuses `SetMenuOpen`'s request-counted cursor/camera-freeze.
+    Leave to Main Menu resets `timeScale` and loads `MainMenu` directly
+    (no loading-screen hop for this direction). Escape does not force-
+    close Inventory/Crafting first - pause just draws on top (needs
+    higher UIDocument Sort Order). NOT YET CONFIRMED - see
+    UNITY_SETUP_NEXT_STEPS.md Step 19.
+-   Refinement: loading screen progress bar read as static (Unity's
+    real `AsyncOperation.progress` jumps straight to 1 for today's
+    near-empty `SampleScene`). Fill now eases toward the target instead
+    of snapping, a shimmer sweeps the track continuously, and the
+    "Loading" label cycles an animated ellipsis - all independent of
+    real progress, purely so the screen reads as active. Code/UXML/USS
+    only, no new Editor wiring.
+-   Developer confirmed Steps 18 and 19, and the loading-screen
+    animation refinement, all end-to-end. Main menu, loading screen,
+    and ESC pause are done. Per the developer's request, pausing here -
+    next unstarted Core Rule stage (**Combat**, Phase 7) waits for an
+    explicit go-ahead.

@@ -50,6 +50,7 @@ namespace NAV.Gameplay.Player
         public event Action InteractPerformed;
         public event Action ToggleInventoryPerformed;
         public event Action ToggleCraftingPerformed;
+        public event Action PausePerformed;
 
         /// <summary>Primary-click action. Currently only consumed by PlayerBuilding (as
         /// "place ghost" while build mode is active) - Combat's future melee attack will read
@@ -68,6 +69,7 @@ namespace NAV.Gameplay.Player
         private InputAction _interactAction;
         private InputAction _toggleInventoryAction;
         private InputAction _toggleCraftingAction;
+        private InputAction _pauseAction;
         private InputAction _attackAction;
         private InputAction _toggleBuildAction;
         private InputAction _rotatePieceAction;
@@ -91,6 +93,7 @@ namespace NAV.Gameplay.Player
             _interactAction = playerInput.actions["Player/Interact"];
             _toggleInventoryAction = playerInput.actions["Player/ToggleInventory"];
             _toggleCraftingAction = playerInput.actions["Player/ToggleCrafting"];
+            _pauseAction = playerInput.actions["Player/Pause"];
             _attackAction = playerInput.actions["Player/Attack"];
             _toggleBuildAction = playerInput.actions["Player/ToggleBuild"];
             _rotatePieceAction = playerInput.actions["Player/RotatePiece"];
@@ -98,9 +101,9 @@ namespace NAV.Gameplay.Player
             _previousAction = playerInput.actions["Player/Previous"];
 
             if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null || _toggleInventoryAction == null || _toggleCraftingAction == null
-                || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null)
+                || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null || _pauseAction == null)
             {
-                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory/ToggleCrafting/Attack/ToggleBuild/RotatePiece/Next/Previous) in the 'Player' action map.", this);
+                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory/ToggleCrafting/Attack/ToggleBuild/RotatePiece/Next/Previous/Pause) in the 'Player' action map.", this);
                 enabled = false;
             }
         }
@@ -125,6 +128,11 @@ namespace NAV.Gameplay.Player
             if (_toggleCraftingAction != null)
             {
                 _toggleCraftingAction.performed += HandleToggleCraftingPerformed;
+            }
+
+            if (_pauseAction != null)
+            {
+                _pauseAction.performed += HandlePausePerformed;
             }
 
             if (_attackAction != null)
@@ -173,6 +181,11 @@ namespace NAV.Gameplay.Player
             if (_toggleCraftingAction != null)
             {
                 _toggleCraftingAction.performed -= HandleToggleCraftingPerformed;
+            }
+
+            if (_pauseAction != null)
+            {
+                _pauseAction.performed -= HandlePausePerformed;
             }
 
             if (_attackAction != null)
@@ -236,6 +249,11 @@ namespace NAV.Gameplay.Player
         private void HandleToggleCraftingPerformed(InputAction.CallbackContext context)
         {
             ToggleCraftingPerformed?.Invoke();
+        }
+
+        private void HandlePausePerformed(InputAction.CallbackContext context)
+        {
+            PausePerformed?.Invoke();
         }
 
         private void HandleAttackPerformed(InputAction.CallbackContext context)

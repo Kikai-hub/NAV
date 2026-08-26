@@ -1,0 +1,67 @@
+.main-menu-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(20, 15, 10);
+}
+
+.main-menu-panel {
+    background-color: rgb(43, 33, 24);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    padding: 32px 48px;
+    align-items: center;
+    min-width: 320px;
+}
+
+.main-menu-title {
+    color: rgb(230, 210, 160);
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+
+.main-menu-subtitle {
+    color: rgb(190, 175, 150);
+    font-size: 14px;
+    -unity-text-align: middle-center;
+    margin-bottom: 24px;
+}
+
+.main-menu-button {
+    width: 200px;
+    height: 44px;
+    margin: 6px 0;
+    background-color: rgb(61, 48, 35);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    color: rgb(230, 210, 160);
+    font-size: 18px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.main-menu-button:hover {
+    background-color: rgb(80, 63, 45);
+}
