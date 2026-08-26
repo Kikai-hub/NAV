@@ -83,5 +83,15 @@ namespace NAV.Gameplay.Items
             _definition = null;
             _quantity = 0;
         }
+
+        /// <summary>Exchanges contents with another stack (used for inventory slot drag/drop).</summary>
+        public void Swap(ItemStack other)
+        {
+            (ItemDefinition definition, int quantity) = (_definition, _quantity);
+            _definition = other._definition;
+            _quantity = other._quantity;
+            other._definition = definition;
+            other._quantity = quantity;
+        }
     }
 }

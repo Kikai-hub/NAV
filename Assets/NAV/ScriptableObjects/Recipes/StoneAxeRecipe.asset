@@ -20,3 +20,4 @@ MonoBehaviour:
     _amount: 2
   _outputItem: {fileID: 11400000, guid: b34d5ae630fe1c69de8a67950bd0b1ac, type: 2}
   _outputAmount: 1
+  _requiredWorkbenchTier: 1

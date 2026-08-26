@@ -24,6 +24,9 @@ namespace NAV.Gameplay.Crafting
         [SerializeField] private ItemDefinition _outputItem;
         [SerializeField] private int _outputAmount = 1;
 
+        [Header("Workbench")]
+        [SerializeField] private int _requiredWorkbenchTier;
+
         public string DisplayName => string.IsNullOrWhiteSpace(_displayName) && _outputItem != null
             ? _outputItem.DisplayName
             : _displayName;
@@ -32,15 +35,19 @@ namespace NAV.Gameplay.Crafting
         public ItemDefinition OutputItem => _outputItem;
         public int OutputAmount => _outputAmount;
 
+        /// <summary>0 (the default) means craftable anywhere, no workbench needed - matches
+        /// every recipe's behavior before this field existed.</summary>
+        public int RequiredWorkbenchTier => _requiredWorkbenchTier;
+
         // Fully qualified, not "using NAV.Gameplay.Inventory" + bare "Inventory": this file
         // lives in the sibling namespace NAV.Gameplay.Crafting, and C# resolves an unqualified
         // "Inventory" there to the sibling *namespace* NAV.Gameplay.Inventory before it
         // considers the imported class of the same name (CS0118). ResourceNode/ItemPickup
         // never hit this because they only ever access ".Inventory" as a member, never declare
         // a parameter of bare type Inventory.
-        public bool CanCraft(NAV.Gameplay.Inventory.Inventory inventory)
+        public bool CanCraft(NAV.Gameplay.Inventory.Inventory inventory, int availableWorkbenchTier)
         {
-            if (inventory == null || _outputItem == null)
+            if (inventory == null || _outputItem == null || availableWorkbenchTier < _requiredWorkbenchTier)
             {
                 return false;
             }
@@ -60,9 +67,9 @@ namespace NAV.Gameplay.Crafting
         /// Consumes ingredients and adds the output if (and only if) CanCraft is true.
         /// Returns whether crafting happened.
         /// </summary>
-        public bool TryCraft(NAV.Gameplay.Inventory.Inventory inventory)
+        public bool TryCraft(NAV.Gameplay.Inventory.Inventory inventory, int availableWorkbenchTier)
         {
-            if (!CanCraft(inventory))
+            if (!CanCraft(inventory, availableWorkbenchTier))
             {
                 return false;
             }
@@ -84,6 +91,7 @@ namespace NAV.Gameplay.Crafting
         private void OnValidate()
         {
             _outputAmount = Mathf.Max(1, _outputAmount);
+            _requiredWorkbenchTier = Mathf.Max(0, _requiredWorkbenchTier);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace NAV.Gameplay.Items
     /// (see PlayerInteractor/IInteractable) into whichever inventory the interactor carries.
     /// </summary>
     [RequireComponent(typeof(Collider))]
+    [RequireComponent(typeof(Rigidbody))]
     public class ItemPickup : MonoBehaviour, IInteractable
     {
         [SerializeField] private ItemDefinition _definition;
@@ -16,9 +17,34 @@ namespace NAV.Gameplay.Items
 
         public string InteractionPrompt => _definition != null ? $"Pick up {_definition.DisplayName}" : "Pick up";
 
+        private void Awake()
+        {
+            ApplyRigidbodyMass();
+        }
+
         private void OnValidate()
         {
             _quantity = Mathf.Max(1, _quantity);
+        }
+
+        /// <summary>
+        /// Assigns this pickup's item/quantity at runtime (used when spawning a dropped item
+        /// from a generic WorldPrefab - see PlayerInventory.DropItem). Hand-placed pickups in
+        /// the scene set these via the Inspector instead and never call this.
+        /// </summary>
+        public void Configure(ItemDefinition definition, int quantity)
+        {
+            _definition = definition;
+            _quantity = Mathf.Max(1, quantity);
+            ApplyRigidbodyMass();
+        }
+
+        private void ApplyRigidbodyMass()
+        {
+            if (_definition != null && TryGetComponent(out Rigidbody rb))
+            {
+                rb.mass = Mathf.Max(0.1f, _definition.Weight);
+            }
         }
 
         public bool CanInteract(GameObject interactor)

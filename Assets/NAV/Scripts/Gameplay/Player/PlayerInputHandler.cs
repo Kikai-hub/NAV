@@ -21,17 +21,29 @@ namespace NAV.Gameplay.Player
         /// unaffected either way.
         ///
         /// Backed by a request count, not a single flag, so multiple panels can each
-        /// request/release it independently - e.g. if two panels were ever open at once,
-        /// closing one must not clear MenuOpen while the other is still open. (In practice
-        /// InventoryUIController/CraftingUIController also close each other on open, so at
-        /// most one request is outstanding at a time today, but the count is what makes that
-        /// not load-bearing for correctness.)
+        /// request/release it independently - Inventory and Crafting are no longer mutually
+        /// exclusive (both can be open at once, side by side), so at any time 0, 1, or 2
+        /// requests may be outstanding. This is also why cursor lock/visibility live here
+        /// instead of in each panel controller: whichever panel closes last must be the one
+        /// that re-locks the cursor, not whichever happens to close first.
         /// </summary>
         public bool MenuOpen => _menuOpenRequests > 0;
 
         public void SetMenuOpen(bool open)
         {
+            int previousRequests = _menuOpenRequests;
             _menuOpenRequests = open ? _menuOpenRequests + 1 : Mathf.Max(0, _menuOpenRequests - 1);
+
+            if (previousRequests == 0 && _menuOpenRequests > 0)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else if (previousRequests > 0 && _menuOpenRequests == 0)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
 
         public event Action JumpRequested;

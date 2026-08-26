@@ -3,6 +3,7 @@
     <ui:VisualElement name="inventory-root" class="inventory-root">
         <ui:VisualElement name="inventory-panel" class="inventory-panel">
             <ui:Label text="Inventory" class="inventory-title" />
+            <ui:Label name="weight-label" text="Weight: 0/0 kg" class="inventory-weight" />
             <ui:VisualElement name="slot-container" class="inventory-grid" />
         </ui:VisualElement>
     </ui:VisualElement>

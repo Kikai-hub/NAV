@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using NAV.Presentation.Camera;
 using NAV.Gameplay.Interaction;
 using NAV.Gameplay.Inventory;
+using NAV.Gameplay.Crafting;
 
 namespace NAV.Gameplay.Player
 {
@@ -14,6 +15,7 @@ namespace NAV.Gameplay.Player
         [SerializeField] private PlayerStamina _stamina;
         [SerializeField] private PlayerInteractor _interactor;
         [SerializeField] private PlayerInventory _inventory;
+        [SerializeField] private PlayerCrafting _crafting;
 
         private bool _visible = true;
         private GUIStyle _style;
@@ -48,12 +50,19 @@ namespace NAV.Gameplay.Player
                 : string.Empty;
 
             string inventoryLine = _inventory != null && _inventory.Inventory != null
-                ? $"Inventory: {UsedSlotCount()}/{_inventory.Inventory.Capacity} slots used\n"
+                ? $"Inventory: {UsedSlotCount()}/{_inventory.Inventory.Capacity} slots used\n" +
+                  $"Weight: {_inventory.Inventory.TotalWeight:F1}/{_inventory.Inventory.MaxWeight:F0} kg{(_inventory.Inventory.IsOverloaded ? " (OVERLOADED)" : string.Empty)}\n"
                 : string.Empty;
 
-            GUI.Box(new Rect(10, 10, 300, 190), GUIContent.none);
+            string workbenchLine = _crafting != null
+                ? _crafting.NearbyWorkbenchTier > 0
+                    ? $"Workbench: Tier {_crafting.NearbyWorkbenchTier} nearby\n"
+                    : "Workbench: none nearby\n"
+                : string.Empty;
+
+            GUI.Box(new Rect(10, 10, 300, 230), GUIContent.none);
             GUI.Label(
-                new Rect(20, 15, 280, 180),
+                new Rect(20, 15, 280, 220),
                 $"Grounded: {_motor.IsGrounded}\n" +
                 $"Speed: {_motor.CurrentSpeed:F2} m/s\n" +
                 $"Sprinting: {_motor.IsSprinting}\n" +
@@ -62,7 +71,8 @@ namespace NAV.Gameplay.Player
                 cameraLine +
                 staminaLine +
                 interactLine +
-                inventoryLine,
+                inventoryLine +
+                workbenchLine,
                 _style);
         }
 

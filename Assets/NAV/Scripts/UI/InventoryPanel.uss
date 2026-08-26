@@ -1,12 +1,10 @@
 .inventory-root {
     position: absolute;
-    left: 0;
+    left: 24px;
     top: 0;
-    right: 0;
     bottom: 0;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.35);
 }
 
 .inventory-panel {
@@ -31,8 +29,27 @@
     color: rgb(230, 210, 160);
     font-size: 20px;
     -unity-font-style: bold;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
     -unity-text-align: middle-center;
+}
+
+.inventory-weight {
+    color: rgb(190, 175, 150);
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.inventory-weight--overloaded {
+    color: rgb(220, 90, 70);
+    -unity-font-style: bold;
+}
+
+.inventory-drag-ghost {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    opacity: 0.85;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .inventory-grid {

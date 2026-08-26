@@ -17,12 +17,19 @@ namespace NAV.Gameplay.Player
         [Header("Rotation")]
         [SerializeField] private float _rotationSmoothTime = 0.1f;
 
+        [Header("Overload")]
+        [SerializeField] private float _overloadSpeedMultiplier = 0.5f;
+
         public float WalkSpeed => _walkSpeed;
         public float SprintSpeedMultiplier => _sprintSpeedMultiplier;
         public float JumpHeight => _jumpHeight;
         public float Gravity => _gravity;
         public float GroundedGravityValue => _groundedGravityValue;
         public float RotationSmoothTime => _rotationSmoothTime;
+
+        /// <summary>Speed multiplier applied on top of walk/sprint speed while the carried
+        /// inventory weight is at/over its MaxWeight (see Inventory.IsOverloaded).</summary>
+        public float OverloadSpeedMultiplier => _overloadSpeedMultiplier;
 
         private void OnValidate()
         {
@@ -31,6 +38,7 @@ namespace NAV.Gameplay.Player
             _jumpHeight = Mathf.Max(0.1f, _jumpHeight);
             _gravity = Mathf.Min(-0.1f, _gravity);
             _rotationSmoothTime = Mathf.Max(0.01f, _rotationSmoothTime);
+            _overloadSpeedMultiplier = Mathf.Clamp(_overloadSpeedMultiplier, 0.1f, 1f);
         }
     }
 }

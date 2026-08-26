@@ -16,11 +16,19 @@ namespace NAV.Gameplay.Player
         [SerializeField] private float _regenDelay = 1f;
         [SerializeField] private float _minStaminaToResumeSprint = 15f;
 
+        [Header("Overload")]
+        [SerializeField] private float _overloadDrainPerSecond = 5f;
+
         public float MaxStamina => _maxStamina;
         public float SprintDrainPerSecond => _sprintDrainPerSecond;
         public float RegenPerSecond => _regenPerSecond;
         public float RegenDelay => _regenDelay;
         public float MinStaminaToResumeSprint => _minStaminaToResumeSprint;
+
+        /// <summary>Passive stamina drain per second while overloaded and not sprinting (see
+        /// Inventory.IsOverloaded). Sprinting while overloaded still uses SprintDrainPerSecond
+        /// instead - the two drains don't stack.</summary>
+        public float OverloadDrainPerSecond => _overloadDrainPerSecond;
 
         private void OnValidate()
         {
@@ -29,6 +37,7 @@ namespace NAV.Gameplay.Player
             _regenPerSecond = Mathf.Max(0f, _regenPerSecond);
             _regenDelay = Mathf.Max(0f, _regenDelay);
             _minStaminaToResumeSprint = Mathf.Clamp(_minStaminaToResumeSprint, 0f, _maxStamina);
+            _overloadDrainPerSecond = Mathf.Max(0f, _overloadDrainPerSecond);
         }
     }
 }

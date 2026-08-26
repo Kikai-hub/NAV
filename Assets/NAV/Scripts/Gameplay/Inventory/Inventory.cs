@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using NAV.Gameplay.Items;
 
 namespace NAV.Gameplay.Inventory
@@ -17,9 +18,31 @@ namespace NAV.Gameplay.Inventory
         public int Capacity => _slots.Length;
         public IReadOnlyList<ItemStack> Slots => _slots;
 
+        /// <summary>Maximum total carried weight in kg. 0 (or less) means unlimited.</summary>
+        public float MaxWeight { get; }
+
+        public float TotalWeight
+        {
+            get
+            {
+                float total = 0f;
+                foreach (ItemStack slot in _slots)
+                {
+                    if (!slot.IsEmpty)
+                    {
+                        total += slot.Definition.Weight * slot.Quantity;
+                    }
+                }
+
+                return total;
+            }
+        }
+
+        public bool IsOverloaded => MaxWeight > 0f && TotalWeight >= MaxWeight;
+
         public event Action Changed;
 
-        public Inventory(int capacity)
+        public Inventory(int capacity, float maxWeight = 0f)
         {
             capacity = Math.Max(1, capacity);
             _slots = new ItemStack[capacity];
@@ -27,11 +50,16 @@ namespace NAV.Gameplay.Inventory
             {
                 _slots[i] = new ItemStack();
             }
+
+            MaxWeight = Math.Max(0f, maxWeight);
         }
 
         /// <summary>
         /// Adds amount of definition, filling existing matching stacks before empty slots.
-        /// Returns the leftover that did not fit (0 if it all fit).
+        /// Amount is first clamped to whatever still fits under MaxWeight (weightless items,
+        /// or an unlimited inventory, are never blocked this way). Returns the leftover that
+        /// did not fit (0 if it all fit) - weight-blocked and slot-blocked leftover are both
+        /// folded into this single return value, same contract as before weight existed.
         /// </summary>
         public int AddItem(ItemDefinition definition, int amount)
         {
@@ -40,7 +68,16 @@ namespace NAV.Gameplay.Inventory
                 return amount;
             }
 
-            int remaining = amount;
+            int amountToTry = amount;
+            if (MaxWeight > 0f && definition.Weight > 0f)
+            {
+                float weightBudget = Math.Max(0f, MaxWeight - TotalWeight);
+                int maxByWeight = Mathf.FloorToInt(weightBudget / definition.Weight);
+                amountToTry = Math.Min(amount, Math.Max(0, maxByWeight));
+            }
+
+            int blockedByWeight = amount - amountToTry;
+            int remaining = amountToTry;
 
             foreach (ItemStack slot in _slots)
             {
@@ -68,12 +105,92 @@ namespace NAV.Gameplay.Inventory
                 }
             }
 
-            if (remaining != amount)
+            int totalLeftover = remaining + blockedByWeight;
+
+            if (totalLeftover != amount)
             {
                 Changed?.Invoke();
             }
 
-            return remaining;
+            return totalLeftover;
+        }
+
+        /// <summary>
+        /// Moves/merges/swaps the contents of one slot into another - used by inventory UI
+        /// drag-and-drop. If the target is empty or holds the same item, source stacks onto
+        /// it (as much as fits); otherwise the two slots swap contents outright. Returns
+        /// whether anything actually changed.
+        /// </summary>
+        public bool MoveSlot(int fromIndex, int toIndex)
+        {
+            if (fromIndex == toIndex || fromIndex < 0 || fromIndex >= _slots.Length || toIndex < 0 || toIndex >= _slots.Length)
+            {
+                return false;
+            }
+
+            ItemStack from = _slots[fromIndex];
+            ItemStack to = _slots[toIndex];
+
+            if (from.IsEmpty)
+            {
+                return false;
+            }
+
+            bool changed;
+            if (to.IsEmpty || to.Definition == from.Definition)
+            {
+                int leftover = to.Add(from.Definition, from.Quantity);
+                int moved = from.Quantity - leftover;
+                changed = moved > 0;
+                if (moved > 0)
+                {
+                    from.Remove(moved);
+                }
+            }
+            else
+            {
+                from.Swap(to);
+                changed = true;
+            }
+
+            if (changed)
+            {
+                Changed?.Invoke();
+            }
+
+            return changed;
+        }
+
+        /// <summary>
+        /// Removes up to amount from one specific slot (unlike RemoveItem, which searches
+        /// every slot by definition) - used to drop a specific stack into the world. Returns
+        /// the slot's definition (null if the slot was already empty/invalid) and, via
+        /// removed, how much was actually taken.
+        /// </summary>
+        public ItemDefinition RemoveFromSlot(int index, int amount, out int removed)
+        {
+            removed = 0;
+
+            if (index < 0 || index >= _slots.Length || amount <= 0)
+            {
+                return null;
+            }
+
+            ItemStack slot = _slots[index];
+            if (slot.IsEmpty)
+            {
+                return null;
+            }
+
+            ItemDefinition definition = slot.Definition;
+            removed = slot.Remove(amount);
+
+            if (removed > 0)
+            {
+                Changed?.Invoke();
+            }
+
+            return definition;
         }
 
         /// <summary>

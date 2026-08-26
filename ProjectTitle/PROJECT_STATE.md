@@ -303,11 +303,229 @@ hand-authored directly the same way Wood/Rock were. Added
 as ItemStackSanityChecks/InventorySanityChecks) to verify
 RecipeDefinition's CanCraft/TryCraft math on every recompile.
 
-NOT YET CONFIRMED --- needs `PlayerCrafting` added to Player (with
-StoneAxeRecipe assigned as a known recipe), a Panel Settings +
-UIDocument GameObject for the crafting panel, and the two panel
-controllers cross-wired to each other; see UNITY_SETUP_NEXT_STEPS.md
-Step 11.
+CONFIRMED --- developer added `PlayerCrafting` to Player (with
+StoneAxeRecipe assigned as a known recipe), created the Panel Settings
++ UIDocument for the crafting panel, cross-wired the two panel
+controllers, and verified the Step 11 playtest (craft Stone Axe, panels
+closing each other, live affordability). Crafting increment 1 is now
+confirmed end-to-end.
+
+Developer feedback (5-part request, delivered as one increment since
+all five touch the same inventory/UI/player-movement surface):
+1. Inventory and Crafting panels should no longer be full-screen modals
+that close each other --- both should be able to stay open at once,
+anchored to opposite sides of the screen, without covering the player.
+2. Drag-and-drop (LMB) to move/swap items between inventory slots.
+3. Per-item weight (kg) with a total carry-weight cap on the inventory,
+shown in the panel; going over the cap should slow movement and drain
+stamina. 4. Dragging an item out of the inventory panel onto the game
+world should drop it. 5. Dropped/world items should have physics (fall
+under gravity, collide) rather than floating in place.
+
+Implemented:
+- `Inventory` (Scripts/Gameplay/Inventory): added `MaxWeight`/
+  `TotalWeight`/`IsOverloaded`, a weight-aware `AddItem` (amount is
+  clamped to whatever still fits under MaxWeight before the existing
+  stack-filling logic runs; weightless items or an unlimited inventory
+  --- MaxWeight <= 0, the default for the two- and five-slot
+  inventories the sanity-check editor utilities construct --- are
+  never blocked this way, so the pre-existing tests kept working
+  unchanged), plus two new slot-index-based operations for drag/drop:
+  `MoveSlot` (move into an empty slot, merge onto a same-item stack, or
+  swap with a different-item stack) and `RemoveFromSlot` (remove from
+  one specific slot, unlike `RemoveItem`'s by-definition search across
+  every slot). `ItemStack` gained a `Swap` helper backing the swap
+  case.
+- `PlayerInventory`: new `_maxWeight` (default 400) passed into its
+  `Inventory`; new `DropItem(slotIndex, amount)` that removes from a
+  slot and spawns the item into the world via a new
+  `ItemDefinition.WorldPrefab` field (a prefab carrying an
+  `ItemPickup`) --- fails loudly with a clear Debug.LogError (per
+  CLAUDE.md's Error Handling rule) if a definition has no WorldPrefab
+  assigned, rather than silently doing nothing. This is a gameplay
+  action, so it lives on `PlayerInventory`, not in the UI layer that
+  triggers it.
+- `ItemPickup`: now `[RequireComponent(typeof(Rigidbody))]` --- every
+  pickup, hand-placed or spawned, has real physics; mass comes from
+  `ItemDefinition.Weight`. Added `Configure(definition, quantity)` so a
+  freshly-instantiated generic WorldPrefab can be assigned its item at
+  runtime (hand-placed pickups in the scene still just use the
+  Inspector fields directly and never call this).
+- `PlayerMovementStats`/`PlayerStaminaStats`: added
+  `OverloadSpeedMultiplier` (default 0.5) and `OverloadDrainPerSecond`
+  (default 5/sec). `PlayerStamina.TickSprint` gained an `isOverloaded`
+  parameter. `PlayerMotor` now takes a required `PlayerInventory`
+  reference, reads `Inventory.IsOverloaded` once per frame, and applies
+  `OverloadSpeedMultiplier` on top of walk speed; exposed as
+  `PlayerMotor.IsOverloaded` and added to `PlayerDebugHud`'s Weight line
+  for verification.
+- Refinement (playtest feedback): overloaded stamina drain originally
+  applied even standing still, and sprint speed still stacked with the
+  overload penalty instead of being disabled outright. `TickSprint` now
+  forces `sprinting` false whenever `isOverloaded` (Shift no longer
+  speeds up an overloaded character at all - overload movement is
+  walk-only, matching `OverloadSpeedMultiplier` at its face value
+  instead of a sprint speed on top of it) and only applies
+  `OverloadDrainPerSecond` while `isMoving` is also true; standing still
+  overloaded now regenerates stamina normally instead of draining it.
+- UI repositioning: `InventoryPanel.uss`/`CraftingPanel.uss` changed
+  from full-screen dimmed overlays (centered, mutually exclusive) to
+  small anchored panels (inventory left, crafting right) sized to their
+  content, so both can be visible together without covering the
+  player. Vertically centered on the screen (not pinned near the top) -
+  developer's first screenshot showed the inventory panel overlapping
+  `PlayerDebugHud`'s fixed top-left readout box; each root now spans
+  the full viewport height with `justify-content: center` instead of a
+  fixed `top` offset, well clear of the HUD regardless of resolution.
+  Since both can now be open simultaneously,
+  `InventoryUIController`/`CraftingUIController` no longer hide each
+  other on open (the `_craftingPanel`/`_inventoryPanel` cross-reference
+  fields and their `Hide()` calls were removed) --- `Hide()` itself
+  stays as a public method for possible future callers (e.g. a future
+  "close all UI" action).
+- Fix required by the above: both panels used to set
+  `Cursor.lockState`/`Cursor.visible` directly in their own
+  `SetVisible`, which was safe only because at most one panel could
+  ever be open. With both open at once, whichever panel happened to
+  close *first* would incorrectly re-lock the cursor while the other
+  panel was still open and needed it free. Moved cursor lock/visibility
+  into `PlayerInputHandler.SetMenuOpen` itself, driven by transitions
+  of its existing open-panel request count (0 -> >0 unlocks, >0 -> 0
+  locks) --- the two UI controllers now just call `SetMenuOpen`, no
+  longer touch `Cursor` at all.
+- `InventoryUIController`: added LMB drag-and-drop using UI Toolkit
+  pointer events (`PointerDownEvent`/`PointerMoveEvent`/
+  `PointerUpEvent` with `CapturePointer`, matching the standard UI
+  Toolkit runtime drag pattern) --- a floating icon ("ghost") follows
+  the cursor during a drag; on release, `panel.Pick(...)` finds the
+  real element under the cursor (independent of pointer capture) to
+  decide the outcome: onto another slot -> `Inventory.MoveSlot`,
+  outside the panel bounds entirely -> `PlayerInventory.DropItem` for
+  the whole stack (partial-stack drop is a possible future refinement,
+  not implemented), anywhere else inside the panel -> cancels. Added a
+  weight readout (`Weight: X/Y kg`, `(OVERLOADED)` when applicable) to
+  `InventoryPanel.uxml`/`.uss`.
+- Added `Prefabs/` content (developer-authored in the Editor, not
+  hand-written like the ScriptableObject assets): a single generic
+  `ItemPickup_Generic` prefab (any Collider + the now-required
+  Rigidbody + `ItemPickup`) reused as the `WorldPrefab` for every
+  existing item (Wood/Rock/StoneAxe) --- items don't have distinct 3D
+  meshes yet (only a 2D `Icon` sprite for UI), so one shared placeholder
+  visual is the right amount of investment for this increment; distinct
+  per-item WorldPrefabs are a drop-in future upgrade (swap the
+  reference, no code change) once real meshes exist.
+- Extended `InventorySanityChecks.cs` with new checks for `MoveSlot`
+  (move into empty, swap different items, self no-op, exact-fit merge),
+  `RemoveFromSlot` (returns definition/removed count, no-op on an empty
+  slot), and weight-limited `AddItem` (partial block, exact-cap
+  overload detection) --- same editor-utility pattern as before, still
+  logs `[InventorySanityChecks] All checks passed.`.
+
+CONFIRMED --- developer wired `PlayerMotor.Inventory`, created the
+`ItemPickup_Generic` prefab and assigned it as `WorldPrefab` on
+Wood/Rock/StoneAxe, repositioned both panels to stay clear of
+`PlayerDebugHud` (screenshot feedback, see below), and verified the
+full Step 12 playtest end-to-end (simultaneous panels, cursor behavior
+across independent open/close, drag-to-move, drag-to-drop, overload
+speed/stamina behavior including the movement-gated drain and
+sprint-block refinement). This closes out the 5-part Inventory/Crafting
+UX request.
+
+Inventory/Crafting UX (panels + drag-and-drop + weight + item dropping
++ item physics) is now demonstrably functional end-to-end. Per the Core
+Rule's development order
+(Foundation -> Player -> Interaction -> Items -> Inventory -> Gathering
+-> Crafting -> Workbench -> ...), the next stage is **Workbench**
+(`DEVELOPMENT_ROADMAP_v0.1.md` Phase 4: Workbench object/placement,
+Workbench levels, and gating existing recipes behind proximity to one -
+recipe unlock structure is explicitly deferred further, same as
+before).
+
+Workbench increment 1: added `WorkbenchDefinition`
+(Scripts/Gameplay/Crafting, ScriptableObject: display name, `Tier`,
+`Range`) and `Workbench` (same folder - a workbench is crafting-gating
+data/behavior, not a distinct architectural layer, same reasoning
+ResourceNode/ItemPickup shared the Items folder). Unlike
+ItemPickup/ResourceNode, `Workbench` is proximity-based, not a raycast
+`IInteractable`: it drives a trigger `SphereCollider` sized from
+`WorkbenchDefinition.Range` and registers/unregisters itself with
+`PlayerCrafting` on `OnTriggerEnter`/`OnTriggerExit` - cheap (physics-
+driven, not a per-frame distance scan) and correct even though the
+Player has a `CharacterController` rather than a `Rigidbody`, since
+`CharacterController` itself derives from `Collider` and raises trigger
+events like any other collider.
+
+`RecipeDefinition` gained `RequiredWorkbenchTier` (default 0 -
+craftable anywhere, so every pre-existing recipe's behavior is
+unchanged unless explicitly set otherwise) and `CanCraft`/`TryCraft`
+both now take an `availableWorkbenchTier` parameter, checked before
+ingredients. `PlayerCrafting` tracks the highest tier among all
+currently-overlapping Workbenches as `NearbyWorkbenchTier` (0 if none),
+exposes a `NearbyWorkbenchChanged` event, and passes its tier into
+`TryCraft`. `CraftingUIController` passes the same tier into
+`CanCraft` for the Craft button's enabled state, and - for any recipe
+with `RequiredWorkbenchTier > 0` - shows a `Requires Workbench
+(Tier N)` line per row (green when satisfied, red when not), refreshed
+both on `Inventory.Changed` (already wired) and the new
+`NearbyWorkbenchChanged`.
+
+Placeholder content (mirrors the Wood/Rock/StoneAxeRecipe pattern -
+final workbench tiers/recipes are still "Not Yet Decided"):
+`ScriptableObjects/Workbenches/BasicWorkbench.asset` (Tier 1, Range 4).
+`StoneAxeRecipe.asset` now sets `_requiredWorkbenchTier: 1`, so
+crafting a Stone Axe demonstrates the gating directly instead of
+needing brand-new unverified content to prove the feature works.
+
+Extended `CraftingSanityChecks.cs` with tier-gating coverage (blocked
+below the required tier, allowed at/above it, independent of whether
+ingredients are otherwise satisfied) and updated every existing
+`CanCraft`/`TryCraft` call site (editor checks, `PlayerCrafting`,
+`CraftingUIController`) for the new parameter. Added an optional
+`PlayerCrafting` reference to `PlayerDebugHud` showing `Workbench:
+Tier N nearby` / `Workbench: none nearby` for verification.
+
+CONFIRMED --- developer created `TestWorkbench_Basic` in SampleScene
+and verified the full Step 13 playtest (Craft button/requirement line
+toggling correctly with proximity to the workbench).
+
+Developer feedback (screenshot reference, a Valheim-style crafting
+screen): the crafting panel's flat list-of-rows layout should become a
+two-column layout instead - a scrollable list of known recipes on the
+left, and the selected recipe's icon/name/description/stats/ingredients
+/Craft button on the right.
+
+Reworked `Scripts/UI/CraftingPanel.uxml`/`.uss`/`CraftingUIController.cs`
+accordingly (pure UI reskin, no gameplay/data changes - `RecipeDefinition`
+/`Inventory`/`PlayerCrafting` are untouched). Left column: a
+`ui:ScrollView` of clickable recipe entries (icon + name), the first
+known recipe auto-selected on open, selected entry highlighted, entries
+whose recipe currently can't be crafted dimmed. Right column: large
+icon, title, the output `ItemDefinition.Description`, a small stats
+block, the `Requires Workbench (Tier N)` line (moved from its old
+per-row spot, same green/red logic), an ingredients row (icon + "have
+/need" per ingredient, red when short), and one large Craft button
+acting on whichever recipe is currently selected. Panel widened
+(560px) and given a fixed-height two-column body to fit the layout.
+
+The stats block intentionally only shows **Weight** - the only stat
+`ItemDefinition` actually has right now. Valheim-style
+Durability/Slash/Block/Parry/Knockback/etc from the reference
+screenshot are not fabricated as placeholder numbers; they belong to
+the future Equipment/Combat systems, and "Final weapons and armor
+balance" is explicitly listed as Not Yet Decided. The stats block is
+written to extend easily (`AddStatRow(label, value)`) once real
+combat/tool stats exist on `ItemDefinition`.
+
+CONFIRMED --- developer verified the two-column crafting UI in Play
+mode (also asked for, and got, a visual divider border between the
+recipe list and detail columns - `.crafting-sidebar` gained a
+`border-right`/`padding-right`, pure USS, no code change).
+
+Workbench increment 1 (data, proximity gating, UI) is now fully
+confirmed end-to-end. Per the Core Rule's development order, the next
+stage would be **Building** (`DEVELOPMENT_ROADMAP_v0.1.md` Phase 5) -
+but the developer explicitly asked to pause here rather than start it
+now. Wait for the developer to say go before beginning Building work.
 
 ------------------------------------------------------------------------
 
@@ -571,3 +789,54 @@ Step 11.
     type `Inventory`. Fixed by fully qualifying the two parameter
     types as `NAV.Gameplay.Inventory.Inventory` instead of importing
     the namespace; no behavior change.
+-   Developer confirmed Crafting increment 1 end-to-end (Step 11
+    playtest: craft Stone Axe, panels closing each other, live
+    affordability).
+-   Inventory/Crafting rework (developer's 5-part request): Inventory
+    and Crafting panels are no longer full-screen mutually-exclusive
+    modals - both are now small panels anchored left (Inventory) and
+    right (Crafting), able to stay open together without covering the
+    player. Added LMB drag-and-drop within the inventory grid
+    (`Inventory.MoveSlot`) and drag-out-to-drop-in-world
+    (`Inventory.RemoveFromSlot` + `PlayerInventory.DropItem`, spawning
+    a new `ItemDefinition.WorldPrefab`). Added a real weight system
+    (`Inventory.MaxWeight`/`TotalWeight`/`IsOverloaded`, weight-aware
+    `AddItem`, shown in the panel) that slows movement
+    (`PlayerMovementStats.OverloadSpeedMultiplier`) and passively
+    drains stamina (`PlayerStaminaStats.OverloadDrainPerSecond`,
+    `PlayerStamina.TickSprint` gained an `isOverloaded` parameter) once
+    carried weight hits the cap. `ItemPickup` is now
+    `[RequireComponent(typeof(Rigidbody))]` so every pickup (hand-placed
+    or dropped) has real physics instead of floating in place. Fix
+    required by panels coexisting: cursor lock/visibility moved out of
+    each panel controller and into `PlayerInputHandler.SetMenuOpen`
+    itself (driven by its open-panel request count transitioning to/from
+    zero), since either panel closing independently used to re-lock the
+    cursor even while the other was still open. Extended
+    `InventorySanityChecks.cs` with coverage for `MoveSlot`,
+    `RemoveFromSlot`, and weight-limited `AddItem`. NOT YET CONFIRMED
+    --- needs `PlayerMotor.Inventory` wired to Player, a generic
+    `ItemPickup_Generic` prefab created and assigned as `WorldPrefab` on
+    Wood/Rock/StoneAxe, and the full playtest; see
+    UNITY_SETUP_NEXT_STEPS.md Step 12.
+-   Developer confirmed Step 12 end-to-end (including the screenshot-
+    driven panel reposition and the movement-gated/sprint-blocked
+    overload refinement). Inventory/Crafting UX is closed; moved on to
+    the next development-order stage, Workbench.
+-   Workbench increment 1: added `WorkbenchDefinition` + `Workbench`
+    (Scripts/Gameplay/Crafting) - a trigger-based (not raycast)
+    proximity system, since crafting near a bench shouldn't require
+    looking at it. `RecipeDefinition` gained `RequiredWorkbenchTier`
+    (default 0, backward compatible); `CanCraft`/`TryCraft` both take
+    a new `availableWorkbenchTier` argument. `PlayerCrafting` tracks
+    nearby Workbenches (registered via their own trigger events, no
+    per-frame scan) as `NearbyWorkbenchTier` +
+    `NearbyWorkbenchChanged`. `CraftingUIController` shows a
+    `Requires Workbench (Tier N)` line per gated recipe, colored by
+    whether it's currently satisfied. `StoneAxeRecipe.asset` now
+    requires Tier 1 (via the new `ScriptableObjects/Workbenches/
+    BasicWorkbench.asset`, Tier 1/Range 4) so the existing recipe
+    demonstrates the gating directly. Extended
+    `CraftingSanityChecks.cs` with tier-gating coverage. NOT YET
+    CONFIRMED --- needs a `TestWorkbench_Basic` object in SampleScene;
+    see UNITY_SETUP_NEXT_STEPS.md Step 13.

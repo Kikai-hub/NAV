@@ -3,7 +3,23 @@
     <ui:VisualElement name="crafting-root" class="crafting-root">
         <ui:VisualElement name="crafting-panel" class="crafting-panel">
             <ui:Label text="Crafting" class="crafting-title" />
-            <ui:VisualElement name="recipe-container" class="recipe-list" />
+            <ui:VisualElement class="crafting-body">
+                <ui:VisualElement class="crafting-sidebar">
+                    <ui:Label text="Craft" class="crafting-tab" />
+                    <ui:ScrollView name="recipe-list" class="recipe-list" />
+                </ui:VisualElement>
+                <ui:VisualElement name="recipe-detail" class="recipe-detail">
+                    <ui:VisualElement class="recipe-detail__header">
+                        <ui:VisualElement name="detail-icon" class="recipe-detail__icon" />
+                        <ui:Label name="detail-name" class="recipe-detail__name" />
+                    </ui:VisualElement>
+                    <ui:Label name="detail-description" class="recipe-detail__description" />
+                    <ui:VisualElement name="detail-stats" class="recipe-detail__stats" />
+                    <ui:Label name="detail-requirement" class="recipe-detail__requirement" />
+                    <ui:VisualElement name="detail-ingredients" class="recipe-detail__ingredients" />
+                    <ui:Button name="detail-craft-button" text="Craft" class="recipe-detail__craft-button" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

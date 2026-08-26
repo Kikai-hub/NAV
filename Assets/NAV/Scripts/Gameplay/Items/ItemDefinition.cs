@@ -18,6 +18,9 @@ namespace NAV.Gameplay.Items
         [Header("Physical")]
         [SerializeField] private float _weight;
 
+        [Header("World")]
+        [SerializeField] private GameObject _worldPrefab;
+
         public string Id => _id;
         public string DisplayName => _displayName;
         public string Description => _description;
@@ -25,6 +28,13 @@ namespace NAV.Gameplay.Items
         public ItemCategory Category => _category;
         public int MaxStackSize => _maxStackSize;
         public float Weight => _weight;
+
+        /// <summary>
+        /// Prefab instantiated when this item is dropped into the world (must carry an
+        /// ItemPickup component - see PlayerInventory.DropItem). Null means dropping this
+        /// item is unsupported until an asset is assigned.
+        /// </summary>
+        public GameObject WorldPrefab => _worldPrefab;
 
         private void OnValidate()
         {

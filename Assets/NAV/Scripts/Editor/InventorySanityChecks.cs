@@ -56,8 +56,69 @@ namespace NAV.Editor
             passed &= Check(removed == 5, "removing more than available should remove only what's there");
             passed &= Check(inventory.GetTotalQuantity(itemA) == 0, "itemA total should be 0 after removing everything");
 
+            // --- MoveSlot: move into an empty slot, swap two different items, self is a no-op ---
+            var moveInventory = new Inventory(2);
+            moveInventory.AddItem(itemA, 2); // slot 0: 2x itemA
+
+            bool moved = moveInventory.MoveSlot(0, 1);
+            passed &= Check(moved, "MoveSlot into an empty slot should report a change");
+            passed &= Check(moveInventory.Slots[0].IsEmpty, "source slot should be empty after moving into an empty target");
+            passed &= Check(moveInventory.Slots[1].Definition == itemA && moveInventory.Slots[1].Quantity == 2, "target slot should receive the moved stack");
+
+            moveInventory.AddItem(itemB, 3); // slot 0 is empty again -> slot 0: 3x itemB
+            moved = moveInventory.MoveSlot(0, 1); // itemB (slot0) onto itemA (slot1) - different items -> swap
+            passed &= Check(moved, "MoveSlot between two different items should swap and report a change");
+            passed &= Check(moveInventory.Slots[0].Definition == itemA && moveInventory.Slots[0].Quantity == 2, "swap should leave itemA in the slot itemB moved from");
+            passed &= Check(moveInventory.Slots[1].Definition == itemB && moveInventory.Slots[1].Quantity == 3, "swap should leave itemB in the slot itemA moved from");
+
+            passed &= Check(!moveInventory.MoveSlot(1, 1), "MoveSlot onto itself should be a no-op");
+
+            // --- RemoveFromSlot: targets one specific slot, unlike RemoveItem's by-definition search ---
+            var removeInventory = new Inventory(3);
+            removeInventory.AddItem(itemA, 5); // slot 0: 5x itemA (max stack, full)
+            removeInventory.AddItem(itemA, 2); // overflow -> slot 1: 2x itemA
+
+            ItemDefinition removedDefinition = removeInventory.RemoveFromSlot(0, 2, out int removedFromSlot);
+            passed &= Check(removedDefinition == itemA, "RemoveFromSlot should return the slot's item definition");
+            passed &= Check(removedFromSlot == 2, "RemoveFromSlot should report how much it actually removed");
+            passed &= Check(removeInventory.Slots[0].Quantity == 3, "removing 2 of 5 from slot 0 should leave 3 there");
+            passed &= Check(removeInventory.Slots[1].Quantity == 2, "slot 1 should be untouched by removing from slot 0");
+
+            // Merging slot 1 (2x) onto slot 0 (now 3x, 2 space left) should fit exactly.
+            moved = removeInventory.MoveSlot(1, 0);
+            passed &= Check(moved, "merging a same-item stack with just enough room should report a change");
+            passed &= Check(removeInventory.Slots[0].Quantity == 5, "merge should top the target back up to its max stack size");
+            passed &= Check(removeInventory.Slots[1].IsEmpty, "source should be fully drained by an exact-fit merge");
+
+            removedDefinition = removeInventory.RemoveFromSlot(2, 5, out removedFromSlot);
+            passed &= Check(removedDefinition == null && removedFromSlot == 0, "RemoveFromSlot on an already-empty slot should be a no-op");
+
+            // --- Weight-limited AddItem: amount is clamped to whatever fits under MaxWeight ---
+            var heavyItem = CreateTestDefinition("test_item_heavy", maxStackSize: 100, weight: 10f);
+            var lightItem = CreateTestDefinition("test_item_light", maxStackSize: 100, weight: 5f);
+            var weightedInventory = new Inventory(5, maxWeight: 25f);
+
+            passed &= Check(weightedInventory.MaxWeight == 25f, "inventory should report the requested max weight");
+
+            int weightLeftover = weightedInventory.AddItem(heavyItem, 3);
+            passed &= Check(weightLeftover == 1, "25kg budget / 10kg each fits 2; the 3rd of 3 requested should be blocked by weight");
+            passed &= Check(weightedInventory.GetTotalQuantity(heavyItem) == 2, "only 2 heavy (10kg) items should have been added");
+            passed &= Check(weightedInventory.TotalWeight == 20f, "total weight should be 20kg (2 * 10kg)");
+            passed &= Check(!weightedInventory.IsOverloaded, "20kg of a 25kg max should not count as overloaded yet");
+
+            weightLeftover = weightedInventory.AddItem(heavyItem, 1);
+            passed &= Check(weightLeftover == 1, "remaining 5kg budget is not enough for one more 10kg item; it should be fully blocked");
+            passed &= Check(weightedInventory.TotalWeight == 20f, "weight should be unchanged since nothing more fit");
+
+            weightLeftover = weightedInventory.AddItem(lightItem, 1);
+            passed &= Check(weightLeftover == 0, "a 5kg item should exactly fill the remaining 5kg budget");
+            passed &= Check(weightedInventory.TotalWeight == 25f, "total weight should now be exactly at the 25kg cap");
+            passed &= Check(weightedInventory.IsOverloaded, "an inventory at exactly its max weight should report overloaded");
+
             Object.DestroyImmediate(itemA);
             Object.DestroyImmediate(itemB);
+            Object.DestroyImmediate(heavyItem);
+            Object.DestroyImmediate(lightItem);
 
             if (passed)
             {
@@ -65,7 +126,7 @@ namespace NAV.Editor
             }
         }
 
-        private static ItemDefinition CreateTestDefinition(string id, int maxStackSize)
+        private static ItemDefinition CreateTestDefinition(string id, int maxStackSize, float weight = 0f)
         {
             var definition = ScriptableObject.CreateInstance<ItemDefinition>();
             definition.hideFlags = HideFlags.HideAndDontSave;
@@ -73,6 +134,7 @@ namespace NAV.Editor
             var serialized = new SerializedObject(definition);
             serialized.FindProperty("_id").stringValue = id;
             serialized.FindProperty("_maxStackSize").intValue = maxStackSize;
+            serialized.FindProperty("_weight").floatValue = weight;
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             return definition;

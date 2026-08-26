@@ -26,15 +26,28 @@ namespace NAV.Gameplay.Player
         }
 
         /// <summary>
-        /// Advances stamina drain/regen by one frame and returns whether sprint is actually active.
+        /// Advances stamina drain/regen by one frame and returns whether sprint is actually
+        /// active. isOverloaded (carried weight at/over MaxWeight) blocks sprint outright
+        /// (an overloaded character can only walk) and drains stamina passively while moving
+        /// - standing still overloaded costs nothing and still regenerates normally.
         /// </summary>
-        public bool TickSprint(bool wantsToSprint, bool isMoving, float deltaTime)
+        public bool TickSprint(bool wantsToSprint, bool isMoving, bool isOverloaded, float deltaTime)
         {
-            bool sprinting = wantsToSprint && isMoving && CanSprint && CurrentStamina > 0f;
+            bool sprinting = !isOverloaded && wantsToSprint && isMoving && CanSprint && CurrentStamina > 0f;
 
             if (sprinting)
             {
                 CurrentStamina = Mathf.Max(0f, CurrentStamina - _stats.SprintDrainPerSecond * deltaTime);
+                _regenDelayTimer = _stats.RegenDelay;
+
+                if (CurrentStamina <= 0f)
+                {
+                    CanSprint = false;
+                }
+            }
+            else if (isOverloaded && isMoving)
+            {
+                CurrentStamina = Mathf.Max(0f, CurrentStamina - _stats.OverloadDrainPerSecond * deltaTime);
                 _regenDelayTimer = _stats.RegenDelay;
 
                 if (CurrentStamina <= 0f)

@@ -19,3 +19,4 @@ MonoBehaviour:
   _category: 0
   _maxStackSize: 20
   _weight: 5
+  _worldPrefab: {fileID: 7000480892539141789, guid: 461566f687c5f714aaaad9f44c835859, type: 3}

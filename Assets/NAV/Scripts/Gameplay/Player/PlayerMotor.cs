@@ -1,4 +1,5 @@
 using UnityEngine;
+using NAV.Gameplay.Inventory;
 
 namespace NAV.Gameplay.Player
 {
@@ -9,10 +10,12 @@ namespace NAV.Gameplay.Player
         [SerializeField] private PlayerMovementStats _stats;
         [SerializeField] private PlayerStamina _stamina;
         [SerializeField] private Transform _cameraTransform;
+        [SerializeField] private PlayerInventory _inventory;
 
         public bool IsGrounded { get; private set; }
         public float CurrentSpeed { get; private set; }
         public bool IsSprinting { get; private set; }
+        public bool IsOverloaded { get; private set; }
 
         private CharacterController _controller;
         private float _verticalVelocity;
@@ -23,9 +26,9 @@ namespace NAV.Gameplay.Player
         {
             _controller = GetComponent<CharacterController>();
 
-            if (_inputHandler == null || _stats == null || _stamina == null || _cameraTransform == null)
+            if (_inputHandler == null || _stats == null || _stamina == null || _cameraTransform == null || _inventory == null)
             {
-                Debug.LogError($"{nameof(PlayerMotor)} on '{name}' is missing a required reference (InputHandler/Stats/Stamina/CameraTransform).", this);
+                Debug.LogError($"{nameof(PlayerMotor)} on '{name}' is missing a required reference (InputHandler/Stats/Stamina/CameraTransform/Inventory).", this);
                 enabled = false;
             }
         }
@@ -71,8 +74,16 @@ namespace NAV.Gameplay.Player
             }
 
             bool hasMoveInput = moveDirection.sqrMagnitude > 0.0001f;
-            IsSprinting = _stamina.TickSprint(_inputHandler.SprintHeld, hasMoveInput, Time.deltaTime);
-            float targetSpeed = _stats.WalkSpeed * (IsSprinting ? _stats.SprintSpeedMultiplier : 1f);
+            IsOverloaded = _inventory.Inventory != null && _inventory.Inventory.IsOverloaded;
+            IsSprinting = _stamina.TickSprint(_inputHandler.SprintHeld, hasMoveInput, IsOverloaded, Time.deltaTime);
+
+            float speedMultiplier = IsSprinting ? _stats.SprintSpeedMultiplier : 1f;
+            if (IsOverloaded)
+            {
+                speedMultiplier *= _stats.OverloadSpeedMultiplier;
+            }
+
+            float targetSpeed = _stats.WalkSpeed * speedMultiplier;
 
             // Body yaw always tracks the camera's yaw (never the raw move-input direction).
             // The camera is independent of the player (mouse-controlled, follows position only),
