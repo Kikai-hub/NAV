@@ -10,6 +10,12 @@ namespace NAV.Gameplay.Player
         public float MaxStamina => _stats.MaxStamina;
         public bool CanSprint { get; private set; }
 
+        /// <summary>True on any frame stamina is actually being spent (sprinting or the
+        /// overload passive drain) - false while idle, walking normally, or regenerating.
+        /// Exists for PlayerHudController: the stamina bar should only be visible while this is
+        /// true.</summary>
+        public bool IsDraining { get; private set; }
+
         private float _regenDelayTimer;
 
         private void Awake()
@@ -34,11 +40,13 @@ namespace NAV.Gameplay.Player
         public bool TickSprint(bool wantsToSprint, bool isMoving, bool isOverloaded, float deltaTime)
         {
             bool sprinting = !isOverloaded && wantsToSprint && isMoving && CanSprint && CurrentStamina > 0f;
+            IsDraining = false;
 
             if (sprinting)
             {
                 CurrentStamina = Mathf.Max(0f, CurrentStamina - _stats.SprintDrainPerSecond * deltaTime);
                 _regenDelayTimer = _stats.RegenDelay;
+                IsDraining = true;
 
                 if (CurrentStamina <= 0f)
                 {
@@ -49,6 +57,7 @@ namespace NAV.Gameplay.Player
             {
                 CurrentStamina = Mathf.Max(0f, CurrentStamina - _stats.OverloadDrainPerSecond * deltaTime);
                 _regenDelayTimer = _stats.RegenDelay;
+                IsDraining = true;
 
                 if (CurrentStamina <= 0f)
                 {

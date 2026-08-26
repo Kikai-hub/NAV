@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="PlayerHud.uss" />
+    <ui:VisualElement name="hud-root" class="hud-root" picking-mode="Ignore">
+        <ui:VisualElement name="hotbar-container" class="hotbar-container" />
+
+        <ui:VisualElement name="health-bar" class="health-bar">
+            <ui:VisualElement name="health-bar-fill" class="health-bar__fill" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="stamina-bar" class="stamina-bar">
+            <ui:VisualElement name="stamina-bar-fill" class="stamina-bar__fill" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -51,6 +51,16 @@ namespace NAV.Gameplay.Player
         public event Action ToggleInventoryPerformed;
         public event Action ToggleCraftingPerformed;
 
+        /// <summary>Primary-click action. Currently only consumed by PlayerBuilding (as
+        /// "place ghost" while build mode is active) - Combat's future melee attack will read
+        /// the same action once it exists, matching how a game's LMB does whatever the
+        /// currently active tool/mode says it does.</summary>
+        public event Action AttackPerformed;
+        public event Action ToggleBuildPerformed;
+        public event Action RotatePiecePerformed;
+        public event Action CycleNextPerformed;
+        public event Action CyclePreviousPerformed;
+
         private InputAction _moveAction;
         private InputAction _lookAction;
         private InputAction _sprintAction;
@@ -58,6 +68,11 @@ namespace NAV.Gameplay.Player
         private InputAction _interactAction;
         private InputAction _toggleInventoryAction;
         private InputAction _toggleCraftingAction;
+        private InputAction _attackAction;
+        private InputAction _toggleBuildAction;
+        private InputAction _rotatePieceAction;
+        private InputAction _nextAction;
+        private InputAction _previousAction;
 
         private void Awake()
         {
@@ -76,10 +91,16 @@ namespace NAV.Gameplay.Player
             _interactAction = playerInput.actions["Player/Interact"];
             _toggleInventoryAction = playerInput.actions["Player/ToggleInventory"];
             _toggleCraftingAction = playerInput.actions["Player/ToggleCrafting"];
+            _attackAction = playerInput.actions["Player/Attack"];
+            _toggleBuildAction = playerInput.actions["Player/ToggleBuild"];
+            _rotatePieceAction = playerInput.actions["Player/RotatePiece"];
+            _nextAction = playerInput.actions["Player/Next"];
+            _previousAction = playerInput.actions["Player/Previous"];
 
-            if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null || _toggleInventoryAction == null || _toggleCraftingAction == null)
+            if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null || _toggleInventoryAction == null || _toggleCraftingAction == null
+                || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null)
             {
-                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory/ToggleCrafting) in the 'Player' action map.", this);
+                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory/ToggleCrafting/Attack/ToggleBuild/RotatePiece/Next/Previous) in the 'Player' action map.", this);
                 enabled = false;
             }
         }
@@ -105,6 +126,31 @@ namespace NAV.Gameplay.Player
             {
                 _toggleCraftingAction.performed += HandleToggleCraftingPerformed;
             }
+
+            if (_attackAction != null)
+            {
+                _attackAction.performed += HandleAttackPerformed;
+            }
+
+            if (_toggleBuildAction != null)
+            {
+                _toggleBuildAction.performed += HandleToggleBuildPerformed;
+            }
+
+            if (_rotatePieceAction != null)
+            {
+                _rotatePieceAction.performed += HandleRotatePiecePerformed;
+            }
+
+            if (_nextAction != null)
+            {
+                _nextAction.performed += HandleCycleNextPerformed;
+            }
+
+            if (_previousAction != null)
+            {
+                _previousAction.performed += HandleCyclePreviousPerformed;
+            }
         }
 
         private void OnDisable()
@@ -127,6 +173,31 @@ namespace NAV.Gameplay.Player
             if (_toggleCraftingAction != null)
             {
                 _toggleCraftingAction.performed -= HandleToggleCraftingPerformed;
+            }
+
+            if (_attackAction != null)
+            {
+                _attackAction.performed -= HandleAttackPerformed;
+            }
+
+            if (_toggleBuildAction != null)
+            {
+                _toggleBuildAction.performed -= HandleToggleBuildPerformed;
+            }
+
+            if (_rotatePieceAction != null)
+            {
+                _rotatePieceAction.performed -= HandleRotatePiecePerformed;
+            }
+
+            if (_nextAction != null)
+            {
+                _nextAction.performed -= HandleCycleNextPerformed;
+            }
+
+            if (_previousAction != null)
+            {
+                _previousAction.performed -= HandleCyclePreviousPerformed;
             }
         }
 
@@ -165,6 +236,51 @@ namespace NAV.Gameplay.Player
         private void HandleToggleCraftingPerformed(InputAction.CallbackContext context)
         {
             ToggleCraftingPerformed?.Invoke();
+        }
+
+        private void HandleAttackPerformed(InputAction.CallbackContext context)
+        {
+            if (MenuOpen)
+            {
+                return;
+            }
+
+            AttackPerformed?.Invoke();
+        }
+
+        private void HandleToggleBuildPerformed(InputAction.CallbackContext context)
+        {
+            ToggleBuildPerformed?.Invoke();
+        }
+
+        private void HandleRotatePiecePerformed(InputAction.CallbackContext context)
+        {
+            if (MenuOpen)
+            {
+                return;
+            }
+
+            RotatePiecePerformed?.Invoke();
+        }
+
+        private void HandleCycleNextPerformed(InputAction.CallbackContext context)
+        {
+            if (MenuOpen)
+            {
+                return;
+            }
+
+            CycleNextPerformed?.Invoke();
+        }
+
+        private void HandleCyclePreviousPerformed(InputAction.CallbackContext context)
+        {
+            if (MenuOpen)
+            {
+                return;
+            }
+
+            CyclePreviousPerformed?.Invoke();
         }
     }
 }

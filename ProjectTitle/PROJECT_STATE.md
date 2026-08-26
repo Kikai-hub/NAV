@@ -146,6 +146,51 @@ altar + ritual items; - bosses tied to progression.
 
 ------------------------------------------------------------------------
 
+## Technical Debt
+
+-   **Building (Phase 5) is a basic/first-pass implementation, not a
+    finished system.** It works end-to-end (placement, rotation,
+    piece cycling, resource cost, demolish, ground-anchored
+    positioning, snap-point-based position+rotation snapping between
+    pieces) and is confirmed by the developer, but it should be
+    revisited before being considered done - do not build further
+    content or systems on top of it assuming it's final. Known gaps:
+    -   Snapping has no socket-type/compatibility system - any
+        `BuildingSnapPoint` can pull any other into alignment. Point
+        placement/rotation is entirely manual (hand-set per prefab in
+        the Editor, per-axis), with nothing validating that a
+        developer set them up correctly - a wrong local Rotation
+        silently produces a wrong orientation, not an error.
+    -   No structural validation: pieces can overlap each other or
+        float unsupported in mid-air. "Placement validation" in this
+        increment means only "the aim ray hit something within
+        range" - see `DEVELOPMENT_ROADMAP_v0.1.md` Phase 5's separate
+        unchecked "Basic structural validation" item.
+    -   No save/load of building state - blocked on the Save system
+        (Phase 11), which hasn't started yet.
+    -   No resource refund on demolish.
+    -   No dedicated Building UI - piece selection is
+        Next/Previous-key cycling plus a `PlayerDebugHud` line only,
+        unlike Inventory/Crafting's real panels.
+    -   Ground-anchoring (resting a piece's bottom on the raycast hit
+        point) assumes pieces only ever yaw; it was not designed for
+        pitch/roll placement.
+
+    Re-read this list before doing any further Building work (e.g.
+    when Save/Load lands, or when new piece types/categories are
+    added), rather than assuming the Phase 5 checkboxes being ticked
+    in the roadmap means the system is production-ready.
+
+-   **`PlayerHealth`/`PlayerHealthStats` (added to back the new HP HUD
+    bar) is not the Phase 6 "Health" system** - it's current/max HP
+    and `TakeDamage`/`Heal` only. No regeneration, no food interaction,
+    no death handling (reaching 0 HP just stays at 0). Do not treat
+    `DEVELOPMENT_ROADMAP_v0.1.md` Phase 6's "Health" checkbox as done
+    because of this - it isn't checked, and shouldn't be until
+    regen/death/food are actually built.
+
+------------------------------------------------------------------------
+
 ## Current Next Step
 
 Player Foundation is complete and verified end-to-end, including the
@@ -527,6 +572,151 @@ stage would be **Building** (`DEVELOPMENT_ROADMAP_v0.1.md` Phase 5) -
 but the developer explicitly asked to pause here rather than start it
 now. Wait for the developer to say go before beginning Building work.
 
+Developer said go. Building increment 1: added `BuildingPieceDefinition`
+(Scripts/Gameplay/Building, ScriptableObject: display name, icon, cost
+- reuses `RecipeIngredient` from Crafting rather than a new item+amount
+type, since it's the same concept - and a `Prefab` used for both the
+ghost preview and the real placed piece) and `BuildingPiece` (same
+folder, `IInteractable` marker on a placed piece: E demolishes it, no
+resource refund yet - explicitly deferred, same style as ResourceNode's
+deferred tool requirement). Added `PlayerBuilding` (same folder,
+mirrors PlayerCrafting: fixed serialized list of known pieces, no
+unlock system yet) which owns build mode: on `ToggleBuild` it spawns a
+ghost (an inactive-collider, kinematic-Rigidbody clone of the selected
+piece's own `Prefab` - not a separate ghost asset) that follows the
+camera's aim raycast each frame, tinted with a shared valid/invalid
+material based on whether the raycast hit within range (`IsPlacementValid`)
+and whether the piece is affordable (`CanAffordSelected`).
+`RotatePiece` adds a fixed yaw step to the ghost; `Next`/`Previous`
+(pre-existing unused actions from the input template) cycle the
+selected known piece and respawn the ghost for it. Placing
+(`Attack`/LMB, also a pre-existing unused action) pays the cost via
+`Inventory.RemoveItem` and instantiates a fresh real piece at the
+ghost's transform, `Configure()`d with its definition; build mode stays
+active afterward so multiple pieces can be placed in a row (matches
+survival-game convention, e.g. Valheim) - ToggleBuild again exits.
+
+Reused three previously-unused actions from the input system template
+instead of adding redundant new ones: `Attack` (LMB) now doubles as
+"place ghost" while build mode is active - the same button Combat will
+later use for melee attacks, matching how a game's primary click does
+whatever the currently equipped tool/mode says it does; `Next`/`Previous`
+(`2`/`1` keys) cycle the selected building piece. Two new actions were
+added to `InputSystem_Actions.inputactions`: `ToggleBuild` (`B` key /
+gamepad right shoulder) and `RotatePiece` (`R` key / gamepad left
+shoulder). `PlayerInputHandler` exposes all five as events
+(`AttackPerformed`, `ToggleBuildPerformed`, `RotatePiecePerformed`,
+`CycleNextPerformed`, `CyclePreviousPerformed`); `Attack`/`RotatePiece`/
+`CycleNext`/`CyclePrevious` are suppressed while `MenuOpen` (same
+treatment as Jump/Interact); `ToggleBuild` is not suppressed (same
+treatment as ToggleInventory/ToggleCrafting - a toggle should always be
+able to fire).
+
+Deliberately out of scope for this increment (explicit Roadmap Phase 5
+items, deferred): **Snapping** (pieces don't snap to each other/a grid
+yet - placement is a free raycast hit point), **Save building state**
+(needs the Save system, not started), and **Basic structural
+validation** (no overlap-with-other-objects check, no support/stability
+check - "Placement validation" in this increment means only "the aim
+ray hit something within `_maxPlacementDistance`"). No dedicated
+Building UI panel either - piece selection/cost/validity is shown via
+`PlayerDebugHud`'s new `Build: ...` line only, matching how Gathering
+increment 1 shipped without its own UI.
+
+Placeholder content (final building pieces are "Not Yet Decided", same
+status as recipes/resources): developer created two
+`BuildingPieceDefinition` assets and their Cube-based prefabs
+(`Prefabs/Build/WoodWall.prefab`, `WoodFoundation.prefab`), two ghost
+materials, and added `PlayerBuilding` to Player - Step 14 confirmed.
+
+Building increment 2 (developer feedback from playtesting increment 1):
+pieces were sinking halfway into the ground (position anchored on a
+piece's center, not its bottom) and reach felt short (8m). Fixed the
+ground anchor and raised reach to 15m. Added basic Valheim-style
+snapping - `BuildingSnapPoint` marker children (hand-placed per prefab)
+plus `PlayerBuilding.TryApplySnap` pull a nearby ghost's position *and*
+rotation onto a placed piece's matching point (e.g. a wall lies flush
+along whichever foundation edge it's brought close to, two foundations
+end up parallel). One real bug hit along the way: the ground-anchor fix
+initially silently no-offed itself because its bounds were read from an
+already-disabled `Collider` (collapses to zero) - fixed by reading
+`Renderer.bounds` before disabling anything. Step 15 (snap point
+authoring) and Step 16 (per-point rotation for the two side-facing
+foundation points) are both developer-confirmed; snapping now aligns
+position and rotation correctly.
+
+Building increment 2 works end-to-end, but per the developer's explicit
+request it is **not** being marked "done" the way Workbench was - see
+the "Technical Debt" section near the top of this file for the full
+list of known gaps (snapping has no socket-type system and is entirely
+hand-authored, no structural validation, no save/load, no demolish
+refund, no dedicated UI). Per the Core Rule's development order, the
+next stage would be **Combat** (Phase 7) - not started, waiting for the
+developer to say go, same pause pattern as before Building itself
+started.
+
+Developer asked for a real gameplay HUD (UI Toolkit, same "HTML-like"
+approach as Inventory/Crafting) rather than continuing to rely on
+`PlayerDebugHud`'s `OnGUI` readout for this: an HP bar, a 6-slot
+hotbar, and a stamina bar that only appears while stamina is actually
+being spent. This isn't a roadmap stage on its own - it's presentation
+work layered on existing (Stamina, Inventory) and new-but-minimal
+(Health) gameplay state, done because the developer asked for it now
+rather than waiting for a later "Polish" phase.
+
+Added `PlayerHealthStats` + `PlayerHealth` (Scripts/Gameplay/Player) -
+intentionally minimal (current/max HP, `TakeDamage`/`Heal`, a `Changed`
+event) purely to give the new HP bar something real to bind to; see the
+"Technical Debt" note above - this is *not* Phase 6's "Health" system,
+no regen/food/death yet. `PlayerStamina` gained `IsDraining` (true only
+on a frame that's actually spending stamina - sprinting or the passive
+overload drain - false while idle/walking/regenerating), computed
+alongside its existing sprinting bool in `TickSprint`.
+
+Added `PlayerHudController` + `PlayerHud.uxml`/`.uss` (Scripts/UI),
+following the same UIDocument-per-controller pattern as
+InventoryUIController/CraftingUIController, but always-visible (no
+`ToggleX` action, no `MenuOpen` interaction - unlike Inventory/Crafting
+this isn't a togglable panel). Layout is absolutely positioned within
+one `hud-root`, each anchored 24px off its edge (matching the
+Inventory/Crafting panels' existing 24px-from-edge convention, i.e.
+"near the corner, not flush against it"): hotbar top-left (horizontal,
+6 slots - matches `InventoryPanel`'s per-row column count, so the
+hotbar's width lines up with the inventory grid's, at the developer's
+request - read-only mirror of `PlayerInventory.Inventory`'s first 6
+slots; reuses the existing slot data/rendering rather than a separate
+hotbar container, so dragging an item into one of those 6 slots in the
+main Inventory panel makes it appear here automatically), HP bottom-left
+(vertical fill bar, bottom-anchored), stamina bottom-center (horizontal
+fill bar, same 24px bottom offset as HP - "the same level" - centered
+via `left: 50%` + a fixed negative `margin-left`). Health/hotbar refresh
+on their respective `Changed` events; stamina has no such event (it
+drains/regens continuously) so it's polled once per `Update`, same
+approach `PlayerDebugHud` already uses for the same field - display
+toggles `Flex`/`None` off `PlayerStamina.IsDraining` directly, so the
+bar is invisible whenever nothing is being spent, exactly as requested.
+No hotbar slot selection/quick-use yet - that needs an Equipment/item-
+use system that doesn't exist (Phase 2's "Equipment slots" and Phase
+4's "Basic tools" are both still unchecked); this increment is display-
+only, matching the request ("быстрый инвентарь" as a visible bar, not
+an activation system).
+
+NOT YET CONFIRMED --- needs a `PlayerHealthStats` asset, `PlayerHealth`
+added to Player, and a Panel Settings + UIDocument for the new HUD
+(reusing the existing `NAV_PanelSettings.asset`); see
+`UNITY_SETUP_NEXT_STEPS.md` Step 17.
+
+Developer confirmed Step 17 works. Follow-up feedback: the stamina bar
+should stay visible until stamina is *fully* restored (not just while
+`IsDraining`), and should fade rather than snap away. Changed
+`PlayerHudController.RefreshStamina` to base visibility on "not at max"
+instead of `IsDraining`, and switched from toggling `style.display`
+(binary, can't be animated) to animating `style.opacity` - the actual
+fade is a USS `transition-property: opacity` on `.stamina-bar`
+(`PlayerHud.uss`), not code-driven interpolation. No Editor
+reconfiguration needed, code/USS only; see the addendum to
+UNITY_SETUP_NEXT_STEPS.md Step 17.
+
 ------------------------------------------------------------------------
 
 ## Change Log
@@ -840,3 +1030,193 @@ now. Wait for the developer to say go before beginning Building work.
     `CraftingSanityChecks.cs` with tier-gating coverage. NOT YET
     CONFIRMED --- needs a `TestWorkbench_Basic` object in SampleScene;
     see UNITY_SETUP_NEXT_STEPS.md Step 13.
+-   Developer confirmed Step 13 (Workbench) and the Valheim-style
+    two-column crafting panel rework. Workbench increment 1 fully
+    closed. Developer asked to pause before starting Building.
+
+### v0.1 --- 2026-08-26
+
+-   Developer said go on Building (Phase 5). Building increment 1:
+    added `BuildingPieceDefinition` + `BuildingPiece` + `PlayerBuilding`
+    (Scripts/Gameplay/Building) - ghost-preview placement (clones the
+    selected piece's own prefab, disables its colliders, tints it via a
+    shared valid/invalid material), rotation, cycling between known
+    pieces, cost-gated building (reuses `RecipeIngredient` from
+    Crafting), and demolish (`BuildingPiece` is `IInteractable`, E to
+    remove, no refund yet). Reused three previously-unused input
+    actions from the project template (`Attack`/LMB for place,
+    `Next`/`Previous` for cycling) and added two new ones
+    (`ToggleBuild` - `B`/gamepad right shoulder, `RotatePiece` -
+    `R`/gamepad left shoulder) to `InputSystem_Actions.inputactions`;
+    `PlayerInputHandler` exposes all five as events, with
+    Attack/RotatePiece/CycleNext/CyclePrevious suppressed while
+    `MenuOpen` (same treatment as Jump/Interact) and ToggleBuild not
+    suppressed (same treatment as ToggleInventory/ToggleCrafting).
+    Snapping, Save building state, and Basic structural validation are
+    explicit Roadmap Phase 5 items left out of this increment -
+    "Placement validation" here means only "the aim ray hit something
+    within range." No dedicated Building UI panel; piece
+    selection/cost/validity surfaces through a new `PlayerDebugHud`
+    `Build: ...` line, same as Gathering increment 1 shipping without
+    its own UI. NOT YET CONFIRMED --- needs two placeholder
+    `BuildingPieceDefinition` assets + Cube-based prefabs, two ghost
+    materials, and `PlayerBuilding` wired onto Player; see
+    UNITY_SETUP_NEXT_STEPS.md Step 14.
+
+Developer confirmed Step 14 works, but reported two problems from
+playtesting: (1) placed pieces sink halfway into the ground - the
+ghost/real piece was positioned with the raycast hit point as its
+pivot, but a Cube's pivot is its *center*, so half the piece ends up
+below the surface it's standing on; separately, `_maxPlacementDistance`
+(8m) felt too short. (2) Explicit request for Valheim-style connection
+between pieces (a wall attaching to a foundation's edge, pillars too).
+
+Building increment 2 (fixes + basic snapping):
+- Ground-anchor fix: `PlayerBuilding` now computes each selected
+  piece's half-height once per ghost spawn (`ComputeHalfHeight`, from
+  the union of its colliders' bounds, read right after `Instantiate`
+  while the ghost still sits at the identity transform) and offsets
+  the placement position upward by that amount, so a piece's *bottom*
+  sits on the raycast hit point instead of its center. Assumes pieces
+  only ever yaw (RotatePiece is Y-axis only), which holds for every
+  piece so far.
+- `_maxPlacementDistance` default raised 8m -> 15m, matching
+  `PlayerInteractor._maxAimDistance`'s existing convention for "how far
+  the player can reach by looking." NOTE: this is a serialized field -
+  the developer's Player GameObject already has `8` baked in from Step
+  14 and needs updating by hand in the Inspector; a code default change
+  alone doesn't touch an already-serialized value.
+- Basic snapping: added `BuildingSnapPoint` (Scripts/Gameplay/Building)
+  - a plain marker component (with an editor-only gizmo) placed by hand
+  as child Transforms on a piece's prefab at the points that should be
+  able to connect (e.g. a wall's two bottom corners, a foundation's
+  four top-edge midpoints). No "socket type"/compatibility rules - any
+  snap point can pull any other snap point into alignment, matching the
+  smallest-useful-version-first approach used everywhere else in this
+  project. `BuildingPiece` now caches its own `SnapPoints` (children,
+  read once in Awake) and maintains a static `AllPieces` registry
+  (added in `Configure`/`OnEnable` when `Definition` is set, removed in
+  `OnDisable`) so PlayerBuilding doesn't need a per-frame
+  `FindObjectsByType` scan - only Configure()d/placed pieces register,
+  so ghost previews (which are never Configure()d) never pollute it.
+  `PlayerBuilding.TryApplySnap` runs every frame the ghost is active:
+  for every placed piece within `_snapSearchRadius` (6m, a cheap
+  broad-phase distance cull before touching any actual snap points), it
+  finds the closest (ghost snap point, placed snap point) pair; if that
+  distance is under `_snapRadius` (0.75m) the whole ghost is translated
+  so the two points coincide exactly. Position-only - rotation is NOT
+  auto-aligned to the target socket; the player still rotates manually
+  with RotatePiece and only the position gets pulled into place once
+  close enough. Exposed as `PlayerBuilding.IsSnapped`, shown in
+  `PlayerDebugHud`'s `Build: ...` line (`snapped: True/False`) for
+  verification.
+- Auto-orienting rotation to match a socket's facing, and any real
+  socket-type/compatibility system, are both explicitly deferred
+  refinements on top of this basic version, not overlooked.
+
+NOT YET CONFIRMED --- needs the Player Inspector's Max Placement
+Distance updated, and BuildingSnapPoint children added to the two
+existing test prefabs (WoodWall/WoodFoundation) at specific local
+positions; see UNITY_SETUP_NEXT_STEPS.md Step 15.
+
+Incident: developer playtested Step 15 with the ground-anchor fix
+already in place and the wall was still sinking into the ground -
+identical symptom to the original bug. Root cause: `_pieceHalfHeight`
+was computed from `Collider.bounds` in `SpawnGhost`, but that
+computation ran *after* the loop that disables the ghost's colliders
+(`col.enabled = false`) a few lines above it - a disabled Collider's
+`.bounds` collapses to zero in Unity, so the "lift the piece up by its
+half-height" offset silently became a no-op and the ghost's pivot
+landed back on the raycast hit point exactly as before the fix, with
+no compile error or warning to flag it. Fixed by moving the bounds
+computation to immediately after `Instantiate` (before anything touches
+the colliders) and switching it from `Collider.bounds` to
+`Renderer.bounds` - the visible mesh, not the (soon-to-be-disabled)
+collider, is what actually needs to sit on the surface. No behavior
+change to snapping or any other part of increment 2.
+
+Developer confirmed snapping pulls position correctly, but reported the
+rotation doesn't lock to match the piece it's snapping to - two
+foundations would touch corner-to-corner but sit at an arbitrary angle
+instead of parallel. Expected: `TryApplySnap` was position-only by
+design (see the increment 2 entry below - rotation was explicitly left
+manual). Extended it: on snap, the ghost's rotation is now set to the
+*target snap point's own world rotation* (parent piece rotation
+composed with that point's own local rotation), not just translated -
+position is then translated using the snap points' post-rotation world
+positions (rotating first, since it moves every child snap point).
+Using the target *point's* rotation rather than the target *piece's*
+rotation matters: it lets a single foundation orient an attaching wall
+correctly regardless of which of its four edges (running along local X
+vs local Z) the wall is snapping to, as long as each snap point's own
+local rotation is authored to match its edge's direction. This needs
+the developer to add a Rotation to the two side-facing foundation snap
+points from Step 15 (`SnapPoint_East`/`SnapPoint_West`, both `(0, 90,
+0)`) - the north/south ones and both wall points stay at the default
+`(0, 0, 0)`; see UNITY_SETUP_NEXT_STEPS.md Step 16.
+
+Developer confirmed Step 16: pieces now snap into position AND
+rotation correctly (parallel foundations, walls lying flush along
+whichever edge). Building increment 2 works end-to-end.
+
+Per the developer's explicit request, Building is deliberately **not**
+being marked "done"/closed the way Workbench was - see the new
+"Technical Debt" section above for the full list of known gaps
+(snapping has no socket-type system and is entirely hand-authored, no
+structural validation, no save/load, no refund on demolish, no
+dedicated UI). Treat Building as functional-but-basic; revisit that
+list before/while doing further work on it. Not starting Combat (the
+next Core Rule stage) automatically - wait for the developer to say go,
+same as the pause before Building itself started.
+-   Building increment 2: fixed pieces sinking into the ground
+    (position now anchors the piece's bottom, not its center, to the
+    raycast hit point) and raised placement reach 8m -> 15m. Added
+    basic Valheim-style snapping: `BuildingSnapPoint` marker children +
+    a `BuildingPiece.AllPieces` registry + `PlayerBuilding.TryApplySnap`
+    pull the ghost's position onto the nearest matching snap point
+    within radius. Position-only, no socket types, rotation still
+    manual - explicitly a first version. NOT YET CONFIRMED - see
+    UNITY_SETUP_NEXT_STEPS.md Step 15.
+-   Fix: the ground-anchor fix from Building increment 2 didn't
+    actually work - `_pieceHalfHeight` was read from `Collider.bounds`
+    after the ghost's colliders were already disabled, and a disabled
+    Collider's `.bounds` collapses to zero, so pieces kept sinking
+    exactly as before. Moved the bounds read to immediately after
+    `Instantiate` and switched to `Renderer.bounds`.
+-   Building: `TryApplySnap` now also rotates the ghost to match the
+    target snap point's own world rotation (not just translating
+    position), so snapped pieces end up correctly oriented - e.g. two
+    foundations parallel instead of touching at an arbitrary angle.
+    Needs a Rotation added to the two side-facing foundation snap
+    points (`SnapPoint_East`/`SnapPoint_West`, both `(0, 90, 0)`); see
+    UNITY_SETUP_NEXT_STEPS.md Step 16.
+-   Developer confirmed Step 16 - snapping now aligns both position
+    and rotation correctly. Building increment 2 works end-to-end, but
+    at the developer's explicit request it is *not* being marked
+    "done" the way Workbench was - added a new "Technical Debt"
+    section listing Building's known gaps (snapping has no
+    socket-type system, no structural validation, no save/load, no
+    demolish refund, no dedicated UI) to revisit before/while doing
+    further Building work. Not auto-starting Combat (the next Core
+    Rule stage) - waiting for the developer to say go.
+-   Player HUD (developer request, UI Toolkit): added minimal
+    `PlayerHealthStats`/`PlayerHealth` (current/max HP + TakeDamage/
+    Heal only - explicitly not the Phase 6 Health system, see
+    "Technical Debt") and `PlayerStamina.IsDraining`. Added
+    `PlayerHudController` + `PlayerHud.uxml`/`.uss` (Scripts/UI):
+    always-on (not toggled), 24px-from-edge anchored HP bar (bottom-
+    left, vertical), stamina bar (bottom-center, horizontal, visible
+    only while `IsDraining`), and a 7-slot hotbar (top-left,
+    horizontal, read-only mirror of `PlayerInventory.Inventory`'s
+    first 7 slots). NOT YET CONFIRMED - see UNITY_SETUP_NEXT_STEPS.md
+    Step 17.
+-   Developer confirmed Step 17. Refinement: stamina bar now stays
+    visible until fully restored (was: only while `IsDraining`) and
+    fades via an animated `opacity` USS transition instead of an
+    instant `display` toggle.
+-   Refinement: hotbar changed from 7 slots to 6, matching
+    `InventoryPanel`'s per-row column count (its 400px grid max-width
+    wraps at 6 slots of 56px+8px margin each) so the hotbar's width
+    lines up with the inventory grid's, at the developer's request.
+    `.hotbar-slot` margin changed from right-only to all sides to match
+    `.inventory-slot` exactly.

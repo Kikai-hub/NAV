@@ -4,6 +4,7 @@ using NAV.Presentation.Camera;
 using NAV.Gameplay.Interaction;
 using NAV.Gameplay.Inventory;
 using NAV.Gameplay.Crafting;
+using NAV.Gameplay.Building;
 
 namespace NAV.Gameplay.Player
 {
@@ -13,9 +14,11 @@ namespace NAV.Gameplay.Player
         [SerializeField] private PlayerInputHandler _inputHandler;
         [SerializeField] private ThirdPersonCameraController _cameraController;
         [SerializeField] private PlayerStamina _stamina;
+        [SerializeField] private PlayerHealth _health;
         [SerializeField] private PlayerInteractor _interactor;
         [SerializeField] private PlayerInventory _inventory;
         [SerializeField] private PlayerCrafting _crafting;
+        [SerializeField] private PlayerBuilding _building;
 
         private bool _visible = true;
         private GUIStyle _style;
@@ -42,7 +45,11 @@ namespace NAV.Gameplay.Player
                 : string.Empty;
 
             string staminaLine = _stamina != null
-                ? $"Stamina: {_stamina.CurrentStamina:F0}/{_stamina.MaxStamina:F0} (CanSprint: {_stamina.CanSprint})\n"
+                ? $"Stamina: {_stamina.CurrentStamina:F0}/{_stamina.MaxStamina:F0} (CanSprint: {_stamina.CanSprint}, Draining: {_stamina.IsDraining})\n"
+                : string.Empty;
+
+            string healthLine = _health != null
+                ? $"Health: {_health.CurrentHealth:F0}/{_health.MaxHealth:F0}\n"
                 : string.Empty;
 
             string interactLine = _interactor != null
@@ -60,19 +67,27 @@ namespace NAV.Gameplay.Player
                     : "Workbench: none nearby\n"
                 : string.Empty;
 
-            GUI.Box(new Rect(10, 10, 300, 230), GUIContent.none);
+            string buildingLine = _building != null
+                ? _building.IsBuildModeActive
+                    ? $"Build: {_building.SelectedPiece?.DisplayName ?? "-"} (valid: {_building.IsPlacementValid}, afford: {_building.CanAffordSelected}, snapped: {_building.IsSnapped})\n"
+                    : "Build: off\n"
+                : string.Empty;
+
+            GUI.Box(new Rect(10, 10, 300, 270), GUIContent.none);
             GUI.Label(
-                new Rect(20, 15, 280, 220),
+                new Rect(20, 15, 280, 260),
                 $"Grounded: {_motor.IsGrounded}\n" +
                 $"Speed: {_motor.CurrentSpeed:F2} m/s\n" +
                 $"Sprinting: {_motor.IsSprinting}\n" +
                 $"Move Input: {_inputHandler.MoveInput}\n" +
                 $"Look Input: {_inputHandler.LookInput}\n" +
                 cameraLine +
+                healthLine +
                 staminaLine +
                 interactLine +
                 inventoryLine +
-                workbenchLine,
+                workbenchLine +
+                buildingLine,
                 _style);
         }
 

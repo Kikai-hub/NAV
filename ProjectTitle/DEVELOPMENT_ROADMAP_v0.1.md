@@ -83,13 +83,13 @@ system.
 
 ## Phase 5 --- Building
 
--   [ ] Building piece data
--   [ ] Placement preview
--   [ ] Snapping
--   [ ] Rotation
--   [ ] Placement validation
--   [ ] Build
--   [ ] Remove/demolish
+-   [x] Building piece data
+-   [x] Placement preview
+-   [x] Snapping (basic: nearest-point position snap only, see PROJECT_STATE.md)
+-   [x] Rotation
+-   [x] Placement validation (basic: range-only, see PROJECT_STATE.md)
+-   [x] Build
+-   [x] Remove/demolish
 -   [ ] Save building state
 -   [ ] Basic structural validation
 
