@@ -11,6 +11,11 @@ namespace NAV.Gameplay.Player
         public Vector2 LookInput { get; private set; }
         public bool SprintHeld { get; private set; }
 
+        /// <summary>Held-block state for Combat (PlayerCombat), same "read continuously in
+        /// Update, zeroed while a modal panel has focus" treatment as SprintHeld - not an
+        /// event, since blocking is a hold, not a one-shot action.</summary>
+        public bool BlockHeld { get; private set; }
+
         private int _menuOpenRequests;
 
         /// <summary>
@@ -52,10 +57,11 @@ namespace NAV.Gameplay.Player
         public event Action ToggleCraftingPerformed;
         public event Action PausePerformed;
 
-        /// <summary>Primary-click action. Currently only consumed by PlayerBuilding (as
-        /// "place ghost" while build mode is active) - Combat's future melee attack will read
-        /// the same action once it exists, matching how a game's LMB does whatever the
-        /// currently active tool/mode says it does.</summary>
+        /// <summary>Primary-click action. Consumed by both PlayerBuilding (place ghost, while
+        /// build mode is active) and PlayerCombat (melee attack, otherwise) - matching how a
+        /// game's LMB does whatever the currently active tool/mode says it does. PlayerCombat
+        /// itself checks PlayerBuilding.IsBuildModeActive to stay out of the way while
+        /// building.</summary>
         public event Action AttackPerformed;
         public event Action ToggleBuildPerformed;
         public event Action RotatePiecePerformed;
@@ -75,6 +81,7 @@ namespace NAV.Gameplay.Player
         private InputAction _rotatePieceAction;
         private InputAction _nextAction;
         private InputAction _previousAction;
+        private InputAction _blockAction;
 
         private void Awake()
         {
@@ -99,11 +106,12 @@ namespace NAV.Gameplay.Player
             _rotatePieceAction = playerInput.actions["Player/RotatePiece"];
             _nextAction = playerInput.actions["Player/Next"];
             _previousAction = playerInput.actions["Player/Previous"];
+            _blockAction = playerInput.actions["Player/Block"];
 
             if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null || _toggleInventoryAction == null || _toggleCraftingAction == null
-                || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null || _pauseAction == null)
+                || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null || _pauseAction == null || _blockAction == null)
             {
-                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory/ToggleCrafting/Attack/ToggleBuild/RotatePiece/Next/Previous/Pause) in the 'Player' action map.", this);
+                Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory/ToggleCrafting/Attack/ToggleBuild/RotatePiece/Next/Previous/Pause/Block) in the 'Player' action map.", this);
                 enabled = false;
             }
         }
@@ -219,6 +227,7 @@ namespace NAV.Gameplay.Player
             MoveInput = _moveAction.ReadValue<Vector2>();
             LookInput = MenuOpen ? Vector2.zero : _lookAction.ReadValue<Vector2>();
             SprintHeld = !MenuOpen && _sprintAction.IsPressed();
+            BlockHeld = !MenuOpen && _blockAction.IsPressed();
         }
 
         private void HandleJumpPerformed(InputAction.CallbackContext context)

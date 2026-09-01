@@ -39,6 +39,42 @@ namespace NAV.Gameplay.Items
             ApplyRigidbodyMass();
         }
 
+        /// <summary>
+        /// Instantiates definition.WorldPrefab, configures it as a pickup for quantity, and
+        /// applies an optional physics impulse - the shared spawn path for anything that needs
+        /// to put an item into the world as a physical pickup (PlayerInventory.DropItem when
+        /// the player throws an item out; ResourceNode when a depleted node scatters its
+        /// yield). Fails loudly (no silent no-op) if the definition has no WorldPrefab or that
+        /// prefab has no ItemPickup, same as the pre-existing DropItem behavior. Returns null
+        /// on failure.
+        /// </summary>
+        public static ItemPickup SpawnInWorld(ItemDefinition definition, int quantity, Vector3 position, Quaternion rotation, Vector3 impulse)
+        {
+            if (definition.WorldPrefab == null)
+            {
+                Debug.LogError($"'{definition.DisplayName}' has no WorldPrefab assigned; cannot spawn it into the world.");
+                return null;
+            }
+
+            GameObject instance = Instantiate(definition.WorldPrefab, position, rotation);
+
+            if (!instance.TryGetComponent(out ItemPickup pickup))
+            {
+                Debug.LogError($"WorldPrefab for '{definition.DisplayName}' has no ItemPickup component.", instance);
+                Destroy(instance);
+                return null;
+            }
+
+            pickup.Configure(definition, quantity);
+
+            if (impulse != Vector3.zero && instance.TryGetComponent(out Rigidbody rb))
+            {
+                rb.AddForce(impulse, ForceMode.Impulse);
+            }
+
+            return pickup;
+        }
+
         private void ApplyRigidbodyMass()
         {
             if (_definition != null && TryGetComponent(out Rigidbody rb))

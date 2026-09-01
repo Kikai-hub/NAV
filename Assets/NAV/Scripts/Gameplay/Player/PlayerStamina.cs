@@ -80,5 +80,23 @@ namespace NAV.Gameplay.Player
 
             return sprinting;
         }
+
+        /// <summary>
+        /// Immediately deducts stamina by amount (clamped at 0), for one-off costs like an
+        /// attack swing or absorbing a blocked hit - unlike TickSprint's continuous per-second
+        /// drain, this is a flat one-time spend. Still resets the regen delay timer, same as
+        /// TickSprint's drain branches, so stamina doesn't start regenerating the instant after
+        /// a costly action.
+        /// </summary>
+        public void Spend(float amount)
+        {
+            if (amount <= 0f)
+            {
+                return;
+            }
+
+            CurrentStamina = Mathf.Max(0f, CurrentStamina - amount);
+            _regenDelayTimer = _stats.RegenDelay;
+        }
     }
 }

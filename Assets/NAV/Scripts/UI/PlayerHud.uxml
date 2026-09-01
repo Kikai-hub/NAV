@@ -10,5 +10,10 @@
         <ui:VisualElement name="stamina-bar" class="stamina-bar">
             <ui:VisualElement name="stamina-bar-fill" class="stamina-bar__fill" />
         </ui:VisualElement>
+
+        <ui:VisualElement name="crosshair" class="crosshair" picking-mode="Ignore">
+            <ui:VisualElement name="crosshair-ring" class="crosshair-ring crosshair--neutral" picking-mode="Ignore" />
+            <ui:VisualElement name="crosshair-dot" class="crosshair-dot" picking-mode="Ignore" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

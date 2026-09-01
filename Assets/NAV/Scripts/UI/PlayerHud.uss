@@ -117,3 +117,88 @@
     height: 100%;
     background-color: rgb(180, 170, 60);
 }
+
+/* --- Crosshair: dead center of the screen, a ring + a dot so it stays readable against any
+   background. Color swaps by state (set from code via the crosshair--* classes below) instead
+   of the ring/dot themselves moving or resizing, so the "am I aiming at something" read stays
+   in one fixed spot. --- */
+
+.crosshair {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+
+.crosshair-ring {
+    position: absolute;
+    left: -12px;
+    top: -12px;
+    width: 24px;
+    height: 24px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* Fixed small white center dot, independent of aim state - only the ring around it changes
+   color. Sized well under the ring (~1.5px vs. the ring's 24px) so it reads as a precise aim
+   point rather than a blob. */
+.crosshair-dot {
+    position: absolute;
+    left: -0.75px;
+    top: -0.75px;
+    width: 1.5px;
+    height: 1.5px;
+    background-color: rgb(255, 255, 255);
+    border-top-left-radius: 0.75px;
+    border-top-right-radius: 0.75px;
+    border-bottom-left-radius: 0.75px;
+    border-bottom-right-radius: 0.75px;
+}
+
+/* State colors below apply only to the ring - the dot always stays white (see .crosshair-dot). */
+
+.crosshair-ring.crosshair--neutral {
+    border-left-color: rgb(230, 210, 160);
+    border-right-color: rgb(230, 210, 160);
+    border-top-color: rgb(230, 210, 160);
+    border-bottom-color: rgb(230, 210, 160);
+}
+
+/* Interact (gather/pickup/workbench/demolish) - matches the panels' gold accent. */
+.crosshair-ring.crosshair--interact {
+    border-left-color: rgb(255, 210, 90);
+    border-right-color: rgb(255, 210, 90);
+    border-top-color: rgb(255, 210, 90);
+    border-bottom-color: rgb(255, 210, 90);
+}
+
+/* Attack (a live IDamageable is within weapon range). */
+.crosshair-ring.crosshair--attack {
+    border-left-color: rgb(220, 60, 60);
+    border-right-color: rgb(220, 60, 60);
+    border-top-color: rgb(220, 60, 60);
+    border-bottom-color: rgb(220, 60, 60);
+}
+
+/* Build mode - valid placement. */
+.crosshair-ring.crosshair--valid {
+    border-left-color: rgb(100, 210, 100);
+    border-right-color: rgb(100, 210, 100);
+    border-top-color: rgb(100, 210, 100);
+    border-bottom-color: rgb(100, 210, 100);
+}
+
+/* Build mode - invalid placement (out of range / can't afford). */
+.crosshair-ring.crosshair--invalid {
+    border-left-color: rgb(220, 60, 60);
+    border-right-color: rgb(220, 60, 60);
+    border-top-color: rgb(220, 60, 60);
+    border-bottom-color: rgb(220, 60, 60);
+}

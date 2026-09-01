@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e5029abbd05b11478ef4bad51fb4fef, type: 3}
   m_Name: DefaultPlayerMovementStats
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Player.PlayerMovementStats
-  _walkSpeed: 4
-  _sprintSpeedMultiplier: 2
+  _walkSpeed: 2
+  _sprintSpeedMultiplier: 4
   _jumpHeight: 1.2
   _gravity: -20
   _groundedGravityValue: -2
   _rotationSmoothTime: 0.1
+  _overloadSpeedMultiplier: 0.5

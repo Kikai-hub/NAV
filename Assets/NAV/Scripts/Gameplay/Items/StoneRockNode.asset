@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: StoneRockNode
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ResourceNodeDefinition
   _displayName: Stone
-  _dropItem: {fileID: 11400000, guid: f2d88055de27ac542a3af0c4f14ee684, type: 2}
-  _amountPerHit: 1
+  _drops:
+  - _item: {fileID: 11400000, guid: f2d88055de27ac542a3af0c4f14ee684, type: 2}
+    _amount: 10
+    _chance: 1
   _hitsToDeplete: 10

@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 276a1d35bb7e98147a62a6b4d6afbf0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPiece
-  _definition: {fileID: 0}
+  _definition: {fileID: 11400000, guid: 9c95edb5e819c594f8c08277a12c92b2, type: 2}
 --- !u!1 &4943726373799906322
 GameObject:
   m_ObjectHideFlags: 0

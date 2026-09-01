@@ -45,29 +45,9 @@ namespace NAV.Gameplay.Inventory
 
         private void SpawnWorldItem(ItemDefinition definition, int quantity)
         {
-            if (definition.WorldPrefab == null)
-            {
-                Debug.LogError($"'{definition.DisplayName}' has no WorldPrefab assigned; cannot drop it into the world.", this);
-                return;
-            }
-
             Vector3 spawnPosition = transform.position + transform.forward * _dropForwardDistance + Vector3.up * _dropHeight;
-            GameObject instance = Instantiate(definition.WorldPrefab, spawnPosition, Quaternion.identity);
-
-            var pickup = instance.GetComponent<ItemPickup>();
-            if (pickup == null)
-            {
-                Debug.LogError($"WorldPrefab for '{definition.DisplayName}' has no ItemPickup component.", instance);
-                Destroy(instance);
-                return;
-            }
-
-            pickup.Configure(definition, quantity);
-
-            if (instance.TryGetComponent(out Rigidbody rb))
-            {
-                rb.AddForce(transform.forward * _dropForwardForce + Vector3.up * _dropUpwardForce, ForceMode.Impulse);
-            }
+            Vector3 impulse = transform.forward * _dropForwardForce + Vector3.up * _dropUpwardForce;
+            ItemPickup.SpawnInWorld(definition, quantity, spawnPosition, Quaternion.identity, impulse);
         }
     }
 }

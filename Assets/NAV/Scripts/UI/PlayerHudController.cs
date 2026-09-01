@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using NAV.Gameplay.Building;
+using NAV.Gameplay.Combat;
+using NAV.Gameplay.Interaction;
 using NAV.Gameplay.Inventory;
 using NAV.Gameplay.Items;
 using NAV.Gameplay.Player;
@@ -10,9 +13,10 @@ namespace NAV.UI
     /// <summary>
     /// Always-on gameplay HUD (as opposed to InventoryUIController/CraftingUIController, which
     /// are toggleable panels): HP bar, a hotbar mirroring the first HotbarSlotCount slots of
-    /// the player's main Inventory, and a stamina bar that fades in as soon as stamina starts
+    /// the player's main Inventory, a stamina bar that fades in as soon as stamina starts
     /// draining and stays up (through sprinting/overload and the regen that follows) until it's
-    /// fully back to max. Purely a view over PlayerHealth/PlayerStamina/PlayerInventory -
+    /// fully back to max, and a center-screen aim crosshair. Purely a view over
+    /// PlayerHealth/PlayerStamina/PlayerInventory/PlayerInteractor/PlayerCombat/PlayerBuilding -
     /// owns no gameplay state (ARCHITECTURE_v0.1.md's "UI observes gameplay state" rule). The
     /// hotbar has no selection/quick-use yet - that needs an Equipment/item-use system that
     /// doesn't exist yet; for now it's a read-only mirror of the main Inventory panel (dragging
@@ -30,21 +34,30 @@ namespace NAV.UI
         [SerializeField] private PlayerHealth _health;
         [SerializeField] private PlayerStamina _stamina;
         [SerializeField] private PlayerInventory _playerInventory;
+        [SerializeField] private PlayerInputHandler _inputHandler;
+        [SerializeField] private PlayerInteractor _interactor;
+        [SerializeField] private PlayerCombat _combat;
+
+        [Tooltip("Optional - only used to tint the crosshair green/red while build mode is active. Crosshair falls back to its normal interact/attack/neutral states if left unassigned.")]
+        [SerializeField] private PlayerBuilding _building;
 
         private UIDocument _document;
         private VisualElement _hotbarContainer;
         private VisualElement _healthFill;
         private VisualElement _staminaBar;
         private VisualElement _staminaFill;
+        private VisualElement _crosshair;
+        private VisualElement _crosshairRing;
+        private VisualElement _crosshairDot;
         private readonly List<VisualElement> _hotbarSlots = new();
 
         private void Awake()
         {
             _document = GetComponent<UIDocument>();
 
-            if (_health == null || _stamina == null || _playerInventory == null)
+            if (_health == null || _stamina == null || _playerInventory == null || _inputHandler == null || _interactor == null || _combat == null)
             {
-                Debug.LogError($"{nameof(PlayerHudController)} on '{name}' is missing a required reference (Health/Stamina/PlayerInventory).", this);
+                Debug.LogError($"{nameof(PlayerHudController)} on '{name}' is missing a required reference (Health/Stamina/PlayerInventory/InputHandler/Interactor/Combat).", this);
                 enabled = false;
             }
         }
@@ -68,8 +81,12 @@ namespace NAV.UI
             _healthFill = documentRoot.Q<VisualElement>("health-bar-fill");
             _staminaBar = documentRoot.Q<VisualElement>("stamina-bar");
             _staminaFill = documentRoot.Q<VisualElement>("stamina-bar-fill");
+            _crosshair = documentRoot.Q<VisualElement>("crosshair");
+            _crosshairRing = documentRoot.Q<VisualElement>("crosshair-ring");
+            _crosshairDot = documentRoot.Q<VisualElement>("crosshair-dot");
 
-            if (_hotbarContainer == null || _healthFill == null || _staminaBar == null || _staminaFill == null)
+            if (_hotbarContainer == null || _healthFill == null || _staminaBar == null || _staminaFill == null
+                || _crosshair == null || _crosshairRing == null || _crosshairDot == null)
             {
                 Debug.LogError($"{nameof(PlayerHudController)} on '{name}' could not find one or more required elements in its UIDocument's source asset.", this);
                 enabled = false;
@@ -83,6 +100,7 @@ namespace NAV.UI
             RefreshHealth();
             RefreshHotbar();
             RefreshStamina();
+            RefreshCrosshair();
         }
 
         private void OnDestroy()
@@ -104,6 +122,7 @@ namespace NAV.UI
             // state changes), so it's polled every frame - same pattern PlayerDebugHud already
             // uses for the same field.
             RefreshStamina();
+            RefreshCrosshair();
         }
 
         private void BuildHotbarSlots()
@@ -169,6 +188,59 @@ namespace NAV.UI
 
             float fraction = _stamina.MaxStamina > 0f ? Mathf.Clamp01(_stamina.CurrentStamina / _stamina.MaxStamina) : 0f;
             _staminaFill.style.width = Length.Percent(fraction * 100f);
+        }
+
+        /// <summary>
+        /// Center-screen aim reticle so aiming/interacting/attacking is readable without the F1
+        /// debug HUD. Hidden entirely while a modal panel has cursor focus (nothing to aim at -
+        /// same MenuOpen signal PlayerInputHandler already uses to freeze the camera). Otherwise
+        /// picks one state, most-specific first: build mode's placement validity, then "looking
+        /// at something interactable" (PlayerInteractor - gathering/pickup/workbench-adjacent/
+        /// demolish), then "looking at something attackable" (PlayerCombat.HasTargetInSight),
+        /// then a plain neutral reticle. Only ever reads state other systems already expose -
+        /// no new gameplay logic beyond PlayerCombat's small HasTargetInSight query.
+        /// </summary>
+        private void RefreshCrosshair()
+        {
+            if (_inputHandler.MenuOpen)
+            {
+                _crosshair.style.display = DisplayStyle.None;
+                return;
+            }
+
+            _crosshair.style.display = DisplayStyle.Flex;
+
+            string state;
+            if (_building != null && _building.IsBuildModeActive)
+            {
+                state = _building.CanPlace ? "valid" : "invalid";
+            }
+            else if (_interactor.CurrentInteractable != null)
+            {
+                state = "interact";
+            }
+            else if (_combat.HasTargetInSight)
+            {
+                state = "attack";
+            }
+            else
+            {
+                state = "neutral";
+            }
+
+            SetCrosshairState(state);
+        }
+
+        private static readonly string[] CrosshairStates = { "neutral", "interact", "attack", "valid", "invalid" };
+
+        private void SetCrosshairState(string state)
+        {
+            // Only the ring's color changes with aim state - the dot is a fixed white center
+            // point (see .crosshair-dot in PlayerHud.uss), so it doesn't need these classes.
+            foreach (string candidate in CrosshairStates)
+            {
+                _crosshairRing.EnableInClassList($"crosshair--{candidate}", candidate == state);
+            }
         }
     }
 }

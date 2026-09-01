@@ -5,6 +5,7 @@ using NAV.Gameplay.Interaction;
 using NAV.Gameplay.Inventory;
 using NAV.Gameplay.Crafting;
 using NAV.Gameplay.Building;
+using NAV.Gameplay.Combat;
 
 namespace NAV.Gameplay.Player
 {
@@ -19,6 +20,7 @@ namespace NAV.Gameplay.Player
         [SerializeField] private PlayerInventory _inventory;
         [SerializeField] private PlayerCrafting _crafting;
         [SerializeField] private PlayerBuilding _building;
+        [SerializeField] private PlayerCombat _combat;
 
         private bool _visible = true;
         private GUIStyle _style;
@@ -73,9 +75,13 @@ namespace NAV.Gameplay.Player
                     : "Build: off\n"
                 : string.Empty;
 
-            GUI.Box(new Rect(10, 10, 300, 270), GUIContent.none);
+            string combatLine = _combat != null
+                ? $"Combat: {(_combat.EquippedWeapon != null ? _combat.EquippedWeapon.DisplayName : "no weapon")} (blocking: {_combat.IsBlocking})\n"
+                : string.Empty;
+
+            GUI.Box(new Rect(10, 10, 300, 290), GUIContent.none);
             GUI.Label(
-                new Rect(20, 15, 280, 260),
+                new Rect(20, 15, 280, 280),
                 $"Grounded: {_motor.IsGrounded}\n" +
                 $"Speed: {_motor.CurrentSpeed:F2} m/s\n" +
                 $"Sprinting: {_motor.IsSprinting}\n" +
@@ -87,7 +93,8 @@ namespace NAV.Gameplay.Player
                 interactLine +
                 inventoryLine +
                 workbenchLine +
-                buildingLine,
+                buildingLine +
+                combatLine,
                 _style);
         }
 

@@ -811,6 +811,371 @@ menu/pause presentation work; per the Core Rule the next unstarted
 system is still **Combat** (Phase 7) - waiting for the developer to say
 go, same pause pattern as before Building started.
 
+Developer said go. Combat increment 1: implemented the whole Phase 7
+checklist in one increment (Damage system, Hit detection, Melee
+attacks, Weapon definitions, Blocking, Parrying, Stamina interaction) -
+they're tightly coupled (blocking/parrying can't be verified without
+something dealing damage back, which itself needs hit detection/damage
+to exist first), matching how prior systems (Gathering, Building,
+Workbench) each shipped as one coherent first pass rather than being
+split further.
+
+Added `IDamageable` (Scripts/Gameplay/Combat) - a small interface
+(`CurrentHealth`/`MaxHealth`/`IsAlive`/`TakeDamage`) that creatures
+(Phase 8) will implement too once they exist. `PlayerCombat` implements
+it itself (not `PlayerHealth`) so block/parry mitigation has exactly one
+place to live - `PlayerHealth` stays the dumb HP store it already was
+(see the existing Technical Debt note on it), `PlayerCombat.TakeDamage`
+decides how much of an incoming hit actually reaches it before calling
+`PlayerHealth.TakeDamage`. Added `WeaponDefinition` (ScriptableObject:
+Damage, Range, AttackCooldown, AttackStaminaCost,
+BlockDamageReduction, BlockStaminaCostPerHit, ParryWindowSeconds) - no
+Equipment system exists yet (Phase 2/4 both still unchecked), so
+`PlayerCombat.EquippedWeapon` is a single fixed serialized reference,
+the same "no unlock/equip system yet" deferral used by
+`PlayerCrafting`'s known recipes and `PlayerBuilding`'s known pieces;
+block/parry stats live on the weapon itself rather than a separate
+shield type since there's no dual-wield/offhand system to hang a shield
+off of yet.
+
+`PlayerCombat`'s attack is a camera-forward raycast at the weapon's
+Range (same idiom `PlayerInteractor`/`PlayerBuilding` already use),
+gated by cooldown and stamina, hitting whatever `IDamageable` the ray
+finds via `GetComponentInParent` (same pattern `PlayerInteractor` uses
+for `IInteractable`). Blocking is a held button (`PlayerInputHandler`
+gained `BlockHeld`, mirroring `SprintHeld`'s "read every frame, zeroed
+while a modal panel has focus" treatment, plus a new `Block` input
+action - RMB / gamepad left trigger). A hit landing within the weapon's
+`ParryWindowSeconds` of Block starting to be held is a full-negation
+parry (no stamina cost); otherwise a held block reduces damage by
+`BlockDamageReduction` and costs `BlockStaminaCostPerHit`. Attack
+explicitly no-ops while `PlayerBuilding.IsBuildModeActive` (via an
+optional cross-reference), preserving the existing "LMB does whatever
+the current tool/mode says" rule now that both Building and Combat want
+it. `PlayerStamina` gained a small `Spend(amount)` method (flat one-time
+deduction, unlike `TickSprint`'s continuous per-second drain) for the
+attack/block stamina costs, with no changes to `TickSprint` itself.
+
+Added `CombatDummy` (Scripts/Gameplay/Combat) as the placeholder test
+target - the same role `DebugInteractable` played for
+`PlayerInteractor` before real interactables existed. It has its own
+health and, via a trigger radius (same proximity pattern `Workbench`
+already uses), periodically attacks whatever `IDamageable` is standing
+nearby - specifically so Block/Parry have something to verify against.
+Explicitly **not** a Creature system: no perception, target selection,
+or pathing; real enemy AI stays Phase 8 (Creatures), out of scope here.
+Requires its own separate non-trigger Collider (the placeholder mesh's
+own Capsule Collider) for the player's attack raycast to hit, since the
+auto-added SphereCollider is trigger-only (detection range) and ignored
+by that raycast.
+
+Deliberately out of scope for this increment: Equipment (weapon
+swapping from inventory), real creature AI, player death/respawn
+(`PlayerHealth` still just stops at 0 HP, per its existing Technical
+Debt note), attack/block animations (no character model/Animator in the
+project yet), and hit VFX/audio (final audio/music is "Not Yet
+Decided").
+
+Placeholder content (final weapon balance is "Not Yet Decided", same
+status as recipes/resources/building pieces):
+`ScriptableObjects/Weapons/StoneSword.asset` (Damage 15, Range 2.5,
+AttackCooldown 0.6s, AttackStaminaCost 10, BlockDamageReduction 50%,
+BlockStaminaCostPerHit 10, ParryWindowSeconds 0.25s), hand-authored the
+same way Wood/Rock/StoneAxe/BasicWorkbench were. `PlayerDebugHud` gained
+a `Combat: <weapon> (blocking: True/False)` line. NOT YET CONFIRMED ---
+needs `PlayerCombat` added to Player (with StoneSword assigned) and a
+`CombatDummy_Basic` test object in SampleScene; see
+`UNITY_SETUP_NEXT_STEPS.md` Step 20.
+
+Playtest feedback: attacking hit nothing even standing right next to
+`CombatDummy_Basic`. Root cause was the exact same bug already fixed
+once for `PlayerInteractor` (see the 2026-08-21 change log entry) -
+`PlayerCombat`'s raycast used the weapon's `Range` as the ray length
+itself, starting from the camera. In third person the camera sits well
+behind/above the player, so most of a short range (2.5m) was consumed
+just reaching the character before the ray could reach anything beside
+them. Fixed the same way: the ray still starts at the camera (avoids
+the player's own collider blocking it) and now casts out to a new,
+more generous `_maxAimDistance` (default 15, matching
+`PlayerInteractor`/`PlayerBuilding`'s existing convention), but a hit
+only counts as in range if `Vector3.Distance(transform.position,
+hit.point) <= _equippedWeapon.Range`. Also added Debug.Log lines for
+the miss/no-IDamageable cases (previously silent), so a playtester can
+immediately tell from the Console whether the ray hit nothing, hit
+something without IDamageable, or landed a real hit. No new manual
+Editor step - `_maxAimDistance` is a brand-new serialized field, so an
+already-placed `PlayerCombat` picks up its code default (15)
+automatically on recompile, unlike the old Building distance fix which
+needed a manual Inspector update because that field already existed
+with a stale serialized value.
+
+Developer asked for a content design pass: describe all plannable
+craftable items (weapons, resources, etc.), with a Hammer as the main
+building tool upgrading Wood -> Titanium, Valheim-style tiers each
+gated behind a matching Workbench tier. Added
+`ITEMS_AND_CRAFTING_v0.1.md` (new doc, same versioned-filename
+convention as GDD/ARCHITECTURE/ROADMAP) - a 6-tier draft (Wood/Stone ->
+Copper/Bronze -> Iron -> Silver -> Bulat -> Skymetal/"Titanium") mapping
+each tier to a Workbench tier, listing resources/tools/weapons/armor/
+building pieces per tier, plus a section separating what already exists
+in code from what needs a separate architecture decision before
+implementation (in-place Workbench tier upgrades, tool-gated gathering,
+new crafting stations, new biomes for Tier 3+ ores, a Hide/meat source
+once Creatures exists). Explicitly framed as a draft, not final content
+- matches the existing "Not Yet Decided" status of the final resource/
+recipe/tier lists.
+
+Developer said go on Tier 1 implementation. Added the first missing
+slice of Tier 1 content (Wood/Rock/StoneAxe/StoneSword/WoodWall/
+WoodFoundation already existed) - pure content on top of already-built
+systems, no code changes: `Flint`/`Resin` (ItemDefinition, new Tier 1
+resources) with `FlintDeposit`/`ResinNode` (ResourceNodeDefinition,
+same folder/pattern as `TreeWoodNode`/`StoneRockNode`); `WoodHammer`
+(ItemDefinition, Tool) with `WoodHammerRecipe` (5x Wood,
+RequiredWorkbenchTier 0 - craftable anywhere, since per the design doc
+the Hammer is what places the very first Workbench) and `StonePickaxe`
+(ItemDefinition, Tool) with `StonePickaxeRecipe` (3x Wood + 3x Rock,
+RequiredWorkbenchTier 1, mirrors the existing `StoneAxeRecipe` exactly).
+All hand-authored the same way as Wood/Rock/StoneAxe/BasicWorkbench.
+Neither Hammer nor Pickaxe gate anything mechanically yet (same as
+StoneAxe before them) - tier-gating Building pieces by hammer tier is
+explicitly deferred, per the design doc's own "needs a separate
+architecture decision" list, since only Tier 1 exists so far and there
+is nothing yet for a tier check to differentiate.
+
+Noted while authoring this content: none of the four new items have a
+`WorldPrefab` assigned - the project no longer has a single generic
+`ItemPickup_Generic` placeholder (Wood/Rock now use real meshes from
+the imported art packs, e.g. `Broken log_1.prefab`/
+`SM_Rocks_01_item.prefab`), so a world-drop visual has to be picked per
+item by the developer rather than defaulted. Until assigned, dropping
+these items fails loudly via the existing `PlayerInventory.DropItem`
+error path (same as `StoneAxe` today) - pickup/crafting/inventory are
+unaffected.
+
+Per the developer's request, Unity setup steps for this content live in
+a **separate** file, not appended to `UNITY_SETUP_NEXT_STEPS.md`:
+`UNITY_SETUP_TIER1_ITEMS.md` (test resource nodes for Flint/Resin,
+adding the two new recipes to `PlayerCrafting.Known Recipes`, full
+playtest). NOT YET CONFIRMED.
+
+Developer feedback on the above: Resin having its own dedicated
+resource node felt wrong when it's conceptually "the same place" as
+Wood (a tree) - asked for one resource node to be able to yield
+multiple different items with a per-item chance, rather than one node
+per item. This is a real code change (`ResourceNodeDefinition`/
+`ResourceNode`), not just content: `ResourceNodeDefinition._dropItem`/
+`_amountPerHit` (single item) replaced with `_drops` (`List<
+ResourceNodeDrop>`) - a new small serializable type
+(Scripts/Gameplay/Items/ResourceNodeDrop.cs, same "plain data class
+nested in a list" shape as `RecipeIngredient`, but with its own
+`Chance` field, which `RecipeIngredient` has no use for, hence a
+separate type rather than reusing it). `ResourceNode.Interact()` now
+rolls each drop entry independently (`Random.value <= drop.Chance`)
+per hit, so a single hit can yield several different items at once.
+Preserves the original "a hit that fits nothing in the inventory
+doesn't consume the node's hit counter" behavior, generalized: a hit
+is only "wasted" (no counter decrement, no depletion feedback) if at
+least one drop rolled true but every rolled drop failed to fit -
+a drop simply not rolling due to its own chance is normal, not a
+failure, and still consumes a hit.
+
+Migrated the existing node assets to the new schema (same values, no
+behavior change) - `StoneRockNode`/`FlintDeposit` each keep their single
+drop at 100% chance. `TreeWoodNode` gained a second drop entry: `Resin`
+at 25% chance (alongside the existing 100%-chance `Wood`) - this is
+exactly the developer's requested change, folding Resin into the tree
+node instead of a separate one. The standalone `ResinNode.asset`
+(created earlier this same session, nothing else referenced it yet) was
+deleted rather than left dangling. Updated `UNITY_SETUP_TIER1_ITEMS.md`
+accordingly (dropped the now-unnecessary "create a Resin test node"
+step; the existing `TestResourceNode_Tree` picks up the new Resin drop
+automatically once Unity recompiles, since it already points at the
+same `TreeWoodNode.asset`). NOT YET CONFIRMED.
+
+Further developer correction, same session: per-hit direct-to-inventory
+gathering (even with the new multi-drop chance roll above) wasn't what
+was wanted either - a felled tree should disappear and scatter all its
+yield into the world as physical pickups, not silently fill the
+inventory on every swing. Reworked `ResourceNode.Interact()`: interim
+hits (before the node is fully depleted) now give no reward at all,
+only the existing shrink depletion-feedback; the hit that empties
+`_remainingHits` destroys the node and calls a new `SpawnDrops()`,
+which rolls each `Definition.Drops` entry independently and spawns the
+ones that hit as physical `ItemPickup` objects scattered around the
+node's position (small random horizontal offset + an outward/upward
+physics impulse) - the player then has to walk over and Interact (E)
+with each one individually, same as any other world item.
+
+This needed a shared "put an item into the world as a physical pickup"
+code path, since that logic previously only existed inside
+`PlayerInventory.DropItem` (used when the player throws an item out of
+their inventory) and `ResourceNode` now needs the same thing for a
+different reason. Extracted it as a new static `ItemPickup.
+SpawnInWorld(definition, quantity, position, rotation, impulse)`
+- `PlayerInventory.SpawnWorldItem` now just computes its
+player-relative spawn position/impulse and calls this; its externally
+observable behavior (including the "no WorldPrefab assigned" error) is
+unchanged. `ResourceNodeDrop._amountPerHit` renamed to `_amount`/
+`Amount` (public API rename, safe since this feature isn't confirmed
+yet) - it now means the total quantity scattered on depletion, not a
+per-hit amount, since hits before depletion no longer yield anything.
+`HitsToDeplete` is now a fully independent "toughness" stat, no longer
+implicitly tied 1:1 to total reward. Migrated the three existing node
+assets to preserve the same total yield as before this change
+(`TreeWoodNode`: Wood 3, Resin 1 at 25% - unchanged from the multi-drop
+step above; `StoneRockNode`: Rock 10; `FlintDeposit`: Flint 2).
+
+Important consequence flagged in `UNITY_SETUP_TIER1_ITEMS.md`: gathering
+itself now requires `ItemDefinition.WorldPrefab` to be set (previously
+only *dropping from inventory* needed it - direct-to-inventory gathering
+didn't). `Wood`/`Rock` already have one; `Flint`/`Resin` do not (no
+generic placeholder prefab exists in the project anymore - see the
+2026-08-31 Tier 1 entry above), so depleting `FlintDeposit` or rolling
+Resin will currently fail loudly with a "no WorldPrefab assigned"
+Console error until the developer assigns one. Added a new required
+"Шаг 0" to `UNITY_SETUP_TIER1_ITEMS.md`: create one small reusable
+placeholder pickup prefab (`ItemPickup_Placeholder`, a scaled-down
+Sphere + ItemPickup, the same recipe the old `ItemPickup_Generic` used)
+and assign it as `Flint`/`Resin`'s `WorldPrefab` before testing. NOT YET
+CONFIRMED.
+
+Developer imported a character model + animation pack ("Kevin Iglesias
+- Human Character Dummy" and "Human Animations", both under
+`Assets/Kevin Iglesias/`, both Humanoid-rigged - confirmed via their
+.fbx.meta `animationType: 3`) and asked for animation setup: smooth
+locomotion, the character always facing the camera's direction, and
+all movement animations blended together so changing direction reads
+naturally. Checked the scene first - `Player` has no model/Animator
+wired yet; the developer had only created one color-variant prefab
+(`Assets/NAV/Prefabs/Player/HumanDummy_F Red.prefab`) without placing
+it under Player. Also confirmed `PlayerMotor` already locks the body's
+yaw to the camera's yaw every frame (see the 2026-08-21 change log
+entry) - "character always faces camera direction" is already true and
+needed no code change; what was actually missing was the animation
+side. Noted in `UNITY_SETUP_ANIMATION.md` that the developer's
+parenthetical about an "opposite direction" exception doesn't map to
+anything the camera system currently does (`ThirdPersonCameraController`
+has no wall-collision/front-facing mode) - flagged for the developer to
+clarify or confirm current behavior is what they meant, rather than
+guessing at an exception with no obvious code home.
+
+Added `PlayerAnimator` (Scripts/Presentation/Animation - new subfolder,
+same reasoning as the pre-existing Presentation/Camera one): reads
+`PlayerInputHandler.MoveInput` directly as the Animator's MoveX/MoveY
+(no transform needed, since body yaw already equals camera yaw - raw
+WASD input is already character-local) via the damped
+`Animator.SetFloat(name, value, dampTime, deltaTime)` overload for
+smoothing, plus `IsSprinting`/`Grounded` from `PlayerMotor`. This is
+the entire code side - the rest (Animator Controller, blend trees) is
+Editor-graph authoring that can't be safely hand-authored the way
+ScriptableObject content has been (FBX sub-clip references inside an
+Animator Controller aren't something to guess blind).
+
+Unity setup steps in a new separate file (same "separate topic, own
+file" precedent as `UNITY_SETUP_TIER1_ITEMS.md`):
+`UNITY_SETUP_ANIMATION.md` - place the model under Player, build one 2D
+Freeform Directional "Locomotion" blend tree (Idle center + 8 walk
+directions, all in one continuous blend space - this is what makes
+direction changes read as natural blending instead of discrete
+animation swaps), a second "Sprint Locomotion" blend tree (the anim
+pack has no backward/diagonal-backward sprint clips, so those three
+positions borrow the Run pack's backward clips as a stand-in, flagged
+as a known compromise) crossfaded in via `IsSprinting`, and a minimal
+`Grounded`-gated Jump state (single Fall pose, not full begin/land
+phases - explicitly out of scope, this wasn't what was asked). Also
+flagged: use the non-`[RM]` (non-root-motion) clip variants and turn
+off the Animator's Apply Root Motion, since `PlayerMotor`/
+`CharacterController` already fully own player movement - baked root
+motion on top would fight it. NOT YET CONFIRMED.
+
+Developer asked to continue with attack/block/gathering/building
+animations next. Investigated the imported animation pack first (per
+CLAUDE.md's "inspect before implementing" rule) and found a hard
+blocker: `Assets/Kevin Iglesias/Human Animations/` only contains
+locomotion (Idle/Walk/Run/Sprint/Turn/Jump) and Conversation clips,
+plus two static hand-grip poses (`Masked Poses/`) - there is no attack
+swing, block, mining, or hammering clip anywhere in the project's
+imported assets (checked every other pack too - PolyOne, Innerverse
+Interactive, Static Soul Studio, ADG_Textures are all
+environment/texture content, nothing rigged). Flagged this to the
+developer rather than guessing at an Animator graph with nothing to
+put in its states (same reasoning already on record for why Locomotion
+itself needed real clips, not placeholders). Waiting on the developer
+for how to proceed (source more clips e.g. via Mixamo against the
+existing Humanoid rig, vs. a placeholder-motion version of the
+Animator graph now) - not started.
+
+While that was pending, developer redirected to a smaller, immediately
+useful request: a center-screen aim crosshair, since without the F1
+debug HUD it's hard to tell what the player is aiming at (for
+gathering/interacting or attacking). Added to the existing always-on
+`PlayerHud` (not a new panel) - a ring + dot (`PlayerHud.uxml`/`.uss`)
+that changes color based on aim state, computed in
+`PlayerHudController.RefreshCrosshair` (polled every frame, same
+pattern as its existing stamina refresh) purely from state other
+systems already expose: build mode's placement validity
+(`PlayerBuilding.CanPlace`/`IsBuildModeActive`) takes priority when
+active, then `PlayerInteractor.CurrentInteractable != null`
+(interact/gather/pickup), then a new small read-only
+`PlayerCombat.HasTargetInSight` (a non-mutating copy of the attack
+raycast's aim/range logic - camera-forward ray, range measured from
+the player's position, same split already used for the real attack -
+that finds a live `IDamageable` without triggering damage/cooldown/
+stamina), then a neutral fallback. Hidden entirely while
+`PlayerInputHandler.MenuOpen` (Inventory/Crafting open, cursor free) -
+nothing to aim at. `PlayerHudController` gained three new required
+serialized fields (`InputHandler`/`Interactor`/`Combat`) and one
+optional one (`Building`, only used to tint the crosshair during
+building) - NOT YET CONFIRMED, needs the existing `PlayerHud` object's
+Inspector updated; see the new addendum to
+`UNITY_SETUP_NEXT_STEPS.md` Step 17.
+
+Developer confirmed Tier 1 fully done, then asked to continue items/
+crafting - offered a choice of the remaining Tier 1 items
+(`ITEMS_AND_CRAFTING_v0.1.md` section 4) rather than assuming; they
+picked Door/Roof/Palisade. Pure content, zero code changes -
+`BuildingPieceDefinition`/`BuildingPiece`/`BuildingSnapPoint` are
+already fully generic (same classes `WoodWall`/`WoodFoundation` use),
+so this is Editor-authored content exactly like Step 14. `WoodDoor`
+matches `WoodWall`'s exact size/snap layout (same opening, same
+Foundation-edge attachment) - explicitly **not** an openable door,
+just a wall-slot filler; real open/close is a new interaction
+mechanic, not content, and wasn't started (flagged rather than
+silently added, per CLAUDE.md's "No Silent Architecture Changes").
+`WoodRoof` mirrors `WoodFoundation`'s flat-plate shape/cost but with
+its 4 edge-midpoint snap points on the underside instead of the top,
+so it attaches downward onto whatever it's resting on. To let a Roof
+actually attach to a Wall's top (not just a Foundation's top), added
+two more snap points to the existing `WoodWall` prefab
+(`SnapPoint_TopLeft`/`SnapPoint_TopRight`) alongside its Step 15
+bottom-corner pair - a small natural extension of already-placed
+content, not a new mechanic. `WoodPalisade` is a new standalone
+tall/thin shape (bottom-corner snap points only, for chaining palisades
+edge-to-edge in a row). NOT YET CONFIRMED - see the new
+`UNITY_SETUP_NEXT_STEPS.md` Step 21.
+
+CONFIRMED - developer wired the new `PlayerHudController` fields
+(InputHandler/Interactor/Combat/Building) and the `ItemPickup_Placeholder`
+prefab (assigned as `Flint`/`Resin`'s WorldPrefab per
+`UNITY_SETUP_TIER1_ITEMS.md`'s Step 0), then completed the rest of that
+file's playtest end-to-end. Tier 1 content
+(Flint/Resin/WoodHammer/StonePickaxe + their recipes, the multi-drop
+resource node rework, and the aim crosshair) is now fully confirmed.
+Per `ITEMS_AND_CRAFTING_v0.1.md` section 4's own "left for next
+increment" list, still open within Tier 1: a second/third weapon (Wood
+Club, Wood Bow + Stone Arrow - the latter needs a ranged/projectile
+system that doesn't exist yet, ranged combat has never been
+implemented, only melee), Hide Armor (blocked on Creatures/Phase 8 for
+a Hide source), and Door/Roof/Palisade building pieces. Final
+models/icons for the Tier 1 placeholders are explicitly out of scope
+(asset strategy is "Not Yet Decided"). Developer asked to continue
+items/crafting work next - which specific piece to pick up is being
+confirmed with them rather than assumed, since Wood Bow in particular
+implies new architecture (projectiles) that CLAUDE.md's "No Silent
+Architecture Changes" rule says shouldn't be started without a
+decision.
+
 ------------------------------------------------------------------------
 
 ## Change Log
@@ -1351,3 +1716,128 @@ same as the pause before Building itself started.
     and ESC pause are done. Per the developer's request, pausing here -
     next unstarted Core Rule stage (**Combat**, Phase 7) waits for an
     explicit go-ahead.
+
+### v0.1 --- 2026-08-31
+
+-   Developer said go on Combat (Phase 7). Combat increment 1: added
+    `IDamageable` + `WeaponDefinition` + `PlayerCombat` + `CombatDummy`
+    (Scripts/Gameplay/Combat) - the full Phase 7 checklist (damage,
+    hit detection, melee attacks, weapon definitions, blocking,
+    parrying, stamina interaction) in one increment, since the pieces
+    are too coupled to verify separately. `PlayerCombat` implements
+    `IDamageable` itself (not `PlayerHealth`) so block/parry mitigation
+    has one place to live before a hit reaches `PlayerHealth.TakeDamage`.
+    Attack is a camera-forward raycast (same idiom as
+    `PlayerInteractor`/`PlayerBuilding`), gated by weapon cooldown/range
+    and stamina; Attack no-ops while `PlayerBuilding.IsBuildModeActive`
+    so LMB stays exclusive to one tool/mode at a time. Blocking is a new
+    held `Block` action (RMB/gamepad left trigger,
+    `PlayerInputHandler.BlockHeld`); a hit within the weapon's
+    `ParryWindowSeconds` of Block starting is a full-negation parry,
+    otherwise a held block reduces damage and costs stamina.
+    `PlayerStamina` gained `Spend(amount)` for one-time costs, no change
+    to `TickSprint`. `CombatDummy` is a `DebugInteractable`-style
+    placeholder target with its own HP that periodically counter-attacks
+    anything `IDamageable` in its trigger radius - explicitly not a
+    Creature/AI system (Phase 8 is still separate, later work). Added
+    `ScriptableObjects/Weapons/StoneSword.asset` (placeholder weapon
+    content, hand-authored the same way as Wood/Rock/StoneAxe/
+    BasicWorkbench) and a `PlayerDebugHud` combat line. NOT YET
+    CONFIRMED - needs `PlayerCombat` added to Player and a
+    `CombatDummy_Basic` test object in SampleScene; see
+    `UNITY_SETUP_NEXT_STEPS.md` Step 20.
+-   Fix: `PlayerCombat`'s attack raycast measured range as raw ray
+    length from the camera, the same bug already fixed once for
+    `PlayerInteractor` - in third person most of a short range was
+    consumed just reaching the player from the camera. Fixed the same
+    way (range now checked as distance from the player's position to
+    the hit point, ray itself casts out to a new `_maxAimDistance`).
+    Also added Debug.Log lines for the miss/no-IDamageable cases,
+    previously silent.
+-   Content design: added `ITEMS_AND_CRAFTING_v0.1.md` - a draft
+    6-tier item/resource/crafting-station plan (Wood/Stone -> Copper/
+    Bronze -> Iron -> Silver -> Bulat -> Skymetal/"Titanium"), each
+    tier gated behind a matching Workbench tier, Hammer as the main
+    building-tool progression, plus an explicit list of what needs a
+    separate architecture decision before implementation.
+-   Tier 1 content increment: added `Flint`/`Resin` (resources) with
+    `FlintDeposit` (gathering node), and `WoodHammer`/`StonePickaxe`
+    (tools) with `WoodHammerRecipe` (no workbench required)/
+    `StonePickaxeRecipe` (Workbench Tier 1, mirrors `StoneAxeRecipe`) -
+    pure content, no code changes. Setup steps in a new separate file
+    per the developer's request: `UNITY_SETUP_TIER1_ITEMS.md`. NOT YET
+    CONFIRMED.
+-   Multi-drop resource nodes: `ResourceNodeDefinition` now holds a
+    list of `ResourceNodeDrop` (item + amount + independent chance)
+    instead of one fixed item, so a single node/hit can yield several
+    different items - requested so Resin didn't need its own dedicated
+    node when it's conceptually part of the tree. `ResourceNode.
+    Interact()` rolls each drop independently per hit.
+    `StoneRockNode`/`FlintDeposit` migrated 1:1 (single 100%-chance
+    drop, unchanged behavior); `TreeWoodNode` gained Resin as a 25%-
+    chance second drop alongside Wood. Deleted the now-unnecessary
+    standalone `ResinNode.asset`. NOT YET CONFIRMED.
+-   Depletion-drop rework: gathering no longer adds items straight to
+    inventory per hit. Interim hits only give shrink feedback; the hit
+    that fully depletes a node destroys it and scatters its
+    `Drops` into the world as physical `ItemPickup` objects (small
+    random scatter + physics impulse) the player must walk over and
+    pick up individually - matches "a felled tree drops its yield on
+    the ground" instead of auto-filling the inventory. Extracted the
+    spawn logic into a shared `ItemPickup.SpawnInWorld(...)`, reused by
+    both `ResourceNode` and the pre-existing `PlayerInventory.DropItem`
+    (unchanged behavior there). `ResourceNodeDrop.AmountPerHit` renamed
+    to `Amount` (now a total-on-depletion quantity, not per-hit).
+    Requires `Flint`/`Resin` to have a `WorldPrefab` assigned before
+    gathering works at all now (previously only dropping needed it) -
+    `UNITY_SETUP_TIER1_ITEMS.md` gained a required "Шаг 0" to create one
+    and assign it. NOT YET CONFIRMED.
+-   Character animation: developer imported a Humanoid character model
+    + animation pack (`Assets/Kevin Iglesias/`). Confirmed
+    `PlayerMotor` already locks body yaw to camera yaw (no code change
+    needed for "always faces camera"). Added `PlayerAnimator`
+    (Scripts/Presentation/Animation) feeding a to-be-built Animator
+    Controller's MoveX/MoveY/IsSprinting/Grounded from existing
+    movement state, damped for smooth blending. Animator Controller
+    itself (2D Freeform Directional Locomotion + Sprint blend trees,
+    Jump state) is Editor-graph work, documented step-by-step in a new
+    separate file `UNITY_SETUP_ANIMATION.md` rather than hand-authored.
+    NOT YET CONFIRMED.
+
+### v0.1 --- 2026-09-01
+
+-   Investigated attack/block/gather/build animations (developer's next
+    request after locomotion). Blocked: the imported animation pack has
+    no clips for any of these, only locomotion + conversation + two
+    static hand poses - flagged to the developer, no Animator/code
+    changes made, waiting on how to proceed (source clips vs.
+    placeholder-motion graph now).
+-   Aim crosshair (developer's redirect - more immediately useful than
+    the animation work above): added a center-screen ring+dot reticle
+    to the existing always-on `PlayerHud`, color-coded by aim state
+    (build validity > interactable > attackable target > neutral),
+    hidden while a modal panel has cursor focus. New
+    `PlayerCombat.HasTargetInSight` (non-mutating aim/range query,
+    mirrors the real attack raycast) is the only new gameplay logic;
+    everything else reuses `PlayerInteractor`/`PlayerBuilding` state
+    that already existed. `PlayerHudController` gained required
+    InputHandler/Interactor/Combat fields and an optional Building
+    field. NOT YET CONFIRMED - see the new addendum to
+    `UNITY_SETUP_NEXT_STEPS.md` Step 17.
+-   Developer confirmed Tier 1 content end-to-end (Flint/Resin
+    gathering incl. the WorldPrefab placeholder fix, WoodHammer/
+    StonePickaxe recipes, and the crosshair's new PlayerHudController
+    fields). Tier 1 (per `ITEMS_AND_CRAFTING_v0.1.md`) is closed except
+    for its explicitly-deferred remainder (Wood Club, Wood Bow + Stone
+    Arrow, Hide Armor, Door/Roof/Palisade) - picking up items/crafting
+    work again, direction to be confirmed with the developer.
+-   Building content: added `WoodDoor`/`WoodRoof`/`WoodPalisade`
+    (pure content, no code change - existing BuildingPiece/
+    BuildingSnapPoint classes are already generic). Door is a same-size
+    non-opening stand-in for `WoodWall` (opening is a future interaction
+    mechanic, not content); Roof mirrors Foundation's shape with its
+    snap points on the underside so it can attach on top of things;
+    Palisade is a new tall/thin standalone shape for perimeter chains.
+    `WoodWall` gained two more snap points (top corners) so Roof can
+    attach directly to a wall, not just a foundation. NOT YET CONFIRMED
+    - see `UNITY_SETUP_NEXT_STEPS.md` Step 21.
