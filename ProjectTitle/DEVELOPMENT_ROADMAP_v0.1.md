@@ -111,16 +111,16 @@ system.
 
 ## Phase 7 --- Combat
 
--   [ ] Damage system
--   [ ] Hit detection
--   [ ] Melee attacks
--   [ ] Weapon definitions
--   [ ] Blocking
--   [ ] Parrying
--   [ ] Stamina interaction
--   [ ] Damage feedback
--   [ ] Death
--   [ ] Loot/drop
+-   [x] Damage system
+-   [x] Hit detection
+-   [x] Melee attacks
+-   [x] Weapon definitions
+-   [x] Blocking
+-   [x] Parrying
+-   [x] Stamina interaction
+-   [ ] Damage feedback (console/HUD only - no VFX/audio/hit reaction; see PROJECT_STATE.md)
+-   [x] Death (player: freeze + respawn-in-place; CombatDummy: stops attacking/taking damage. No gravestone yet - that's Phase 6's separate Gravestone/Respawn item)
+-   [x] Loot/drop (CombatDummy only - real creature loot is Phase 8)
 
 ------------------------------------------------------------------------
 

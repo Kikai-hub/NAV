@@ -43,7 +43,7 @@ namespace NAV.Gameplay.Combat
         /// separate from HandleAttack actually firing a hit.</summary>
         public bool HasTargetInSight { get; private set; }
 
-        public bool IsAlive => _health != null && _health.CurrentHealth > 0f;
+        public bool IsAlive => _health != null && _health.IsAlive;
         public float CurrentHealth => _health != null ? _health.CurrentHealth : 0f;
         public float MaxHealth => _health != null ? _health.MaxHealth : 0f;
 
@@ -164,7 +164,7 @@ namespace NAV.Gameplay.Combat
         /// </summary>
         public void TakeDamage(float amount)
         {
-            if (amount <= 0f || _health == null)
+            if (amount <= 0f || _health == null || !_health.IsAlive)
             {
                 return;
             }

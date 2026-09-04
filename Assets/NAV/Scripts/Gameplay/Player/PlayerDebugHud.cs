@@ -51,7 +51,7 @@ namespace NAV.Gameplay.Player
                 : string.Empty;
 
             string healthLine = _health != null
-                ? $"Health: {_health.CurrentHealth:F0}/{_health.MaxHealth:F0}\n"
+                ? $"Health: {_health.CurrentHealth:F0}/{_health.MaxHealth:F0}{(_health.IsAlive ? string.Empty : " (DEAD)")}\n"
                 : string.Empty;
 
             string interactLine = _interactor != null

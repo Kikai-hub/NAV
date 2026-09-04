@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="DeathPanel.uss" />
+    <ui:VisualElement name="death-root" class="death-root">
+        <ui:VisualElement class="death-panel">
+            <ui:Label text="You Died" class="death-title" />
+            <ui:Button name="respawn-button" text="Respawn" class="death-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

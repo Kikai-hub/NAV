@@ -54,6 +54,19 @@ namespace NAV.Gameplay.Player
             _jumpQueued = true;
         }
 
+        /// <summary>Moves the player directly to a position/rotation (e.g. PlayerDeath's
+        /// respawn) - CharacterController fights a plain transform.position set while enabled,
+        /// so this briefly disables it around the move. Also zeroes vertical velocity so the
+        /// player doesn't immediately fall through/launch off the respawn point using
+        /// whatever gravity speed they had when they died.</summary>
+        public void Teleport(Vector3 position, Quaternion rotation)
+        {
+            _controller.enabled = false;
+            transform.SetPositionAndRotation(position, rotation);
+            _controller.enabled = true;
+            _verticalVelocity = 0f;
+        }
+
         private void Update()
         {
             IsGrounded = _controller.isGrounded;

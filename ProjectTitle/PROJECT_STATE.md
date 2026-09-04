@@ -1176,6 +1176,67 @@ implies new architecture (projectiles) that CLAUDE.md's "No Silent
 Architecture Changes" rule says shouldn't be started without a
 decision.
 
+Developer asked to close out Combat's two remaining Phase 7 checklist
+items instead - Death and Loot/drop. Scope explicitly excludes Phase 6's
+Gravestone/Respawn (dropping the player's inventory into a recoverable
+gravestone per GDD_v0.1.md section 9) - that stays a separate future
+item; this increment only makes reaching 0 HP do something coherent
+instead of softlocking there forever.
+
+`PlayerHealth` gained `IsAlive`, a `Died` event (fires once, guarded, the
+instant CurrentHealth reaches 0), and `Revive()` (resets to full,
+unconditional unlike Heal/TakeDamage which now both no-op once dead).
+`PlayerCombat.IsAlive` now delegates to it instead of its own
+`CurrentHealth > 0f` copy; `PlayerCombat.TakeDamage` also early-returns
+once `_health.IsAlive` is false, so a hit landing after death can't spend
+block/parry stamina or double-log.
+
+Added `PlayerDeath` (Scripts/Gameplay/Player, new) - subscribes to
+`PlayerHealth.Died`, disables `PlayerMotor`/`PlayerCombat`/
+`PlayerInteractor`/(optionally) `PlayerBuilding` and frees the cursor via
+the existing `SetMenuOpen` request-count mechanism (same pattern every
+other modal panel uses), then raises its own `Died` event for UI.
+Respawn (called from the new death screen's button) re-enables those
+components, calls `PlayerHealth.Revive()`, and teleports the player back
+to wherever they started this scene (position/rotation captured once in
+`Awake` - no world/save system yet to pick a smarter point). Teleporting
+needed a new `PlayerMotor.Teleport(position, rotation)` - briefly
+disables the `CharacterController` around the transform set (it fights a
+direct position assignment while enabled) and zeroes vertical velocity so
+the player doesn't fall through/launch off the respawn point using
+whatever gravity speed they had at death.
+
+Added `DeathUIController` + `DeathPanel.uxml`/`.uss` (Scripts/UI) - a
+centered "You Died" + Respawn overlay, same UIDocument-per-controller
+pattern and dark-wood/gold palette as `PauseUIController`/`PausePanel`
+(title tinted red to read as distinct from Pause). Respawn button calls
+`PlayerDeath.Respawn()` directly.
+
+`CombatDummy` gained a **Loot Drops** list (reusing `ResourceNodeDrop`
+from `NAV.Gameplay.Items` as-is - "item + amount + chance" means the same
+thing for a defeated combat target as a depleted resource node, no new
+type needed) and a `SpawnLoot()` that rolls each entry independently and
+scatters hits as physical `ItemPickup`s via the existing
+`ItemPickup.SpawnInWorld` path, mirroring `ResourceNode.SpawnDrops`
+exactly. Guarded by `_hasDroppedLoot` so it only fires once. Unlike a
+resource node (or a future real creature), the dummy deliberately does
+**not** despawn on death - it's reusable test infrastructure, not
+content; once `IsAlive` is false it just permanently stops attacking and
+stops accepting further damage, staying in the scene for repeat manual
+testing. Placeholder loot content (2x Rock guaranteed + 1x Wood at 50%,
+both already have `WorldPrefab` set) is Unity-side setup, not code.
+
+`PlayerDebugHud`'s existing `Health:` line now appends `(DEAD)` when
+`!PlayerHealth.IsAlive`, so death is visible for verification even before
+the death-screen UI is wired up.
+
+This closes every Phase 7 checklist item except **Damage feedback**
+(still console log + HUD text only - no hit VFX/audio/reaction; final
+audio/VFX is "Not Yet Decided", not addressed here, not requested this
+time). NOT YET CONFIRMED - needs `PlayerDeath` added to Player, a
+`DeathUI` UIDocument object created and wired, and `CombatDummy_Basic`'s
+new Loot Drops list populated; see `UNITY_SETUP_NEXT_STEPS.md` Step 22.
+
 ------------------------------------------------------------------------
 
 ## Change Log
@@ -1841,3 +1902,277 @@ same as the pause before Building itself started.
     `WoodWall` gained two more snap points (top corners) so Roof can
     attach directly to a wall, not just a foundation. NOT YET CONFIRMED
     - see `UNITY_SETUP_NEXT_STEPS.md` Step 21.
+
+### v0.1 --- 2026-09-04
+
+-   Closed out the remaining Building content from the 2026-09-01 session:
+    `WoodDoorPiece` (Scripts/Gameplay/Building content, no code change --
+    `BuildingPieceDefinition`/`BuildingPiece`/`BuildingSnapPoint` are
+    already fully generic). Found while resuming this work that the
+    2026-09-01 session's own plan (`UNITY_SETUP_NEXT_STEPS.md` Step 21)
+    had been only partially carried out: `WoodRoofPiece`/`WoodPalisadePiece`
+    existed and were already in `PlayerBuilding.Known Pieces`, but
+    `WoodDoorPiece`/`WoodDoor` didn't exist at all, and `WoodWall` was
+    still missing the `SnapPoint_TopLeft`/`SnapPoint_TopRight` points
+    Step 21 called for (needed for Roof to attach to a Wall's top, not
+    just a Foundation) -- both gaps are now fixed.
+-   `WoodDoor` (`Assets/NAV/Prefabs/Build/WoodDoor.prefab`): a direct
+    duplicate of `WoodWall` (same `(2, 2, 0.2)` scale, same BoxCollider,
+    same three bottom snap points -- `SnapPoint_Bottom`/`BottomLeft`/
+    `BottomRight`) so it occupies exactly a wall's opening and snaps to
+    the same Foundation/Wall points. Per the existing design note (see
+    `UNITY_SETUP_NEXT_STEPS.md` Step 21.1): this is **not** an openable
+    door, just a same-size wall-slot filler -- real open/close is a
+    separate interaction-mechanic decision, not started.
+    `WoodDoorPiece.asset` (Display Name "Wood Door", Cost: Wood x4,
+    Prefab: WoodDoor) added to `Assets/NAV/ScriptableObjects/Building/`.
+-   `WoodWall.prefab` gained the two missing top snap points
+    (`SnapPoint_TopLeft` at `(-0.5, 0.5, 0)`, `SnapPoint_TopRight` at
+    `(0.5, 0.5, 0)`), matching the local positions Step 21 specified --
+    `WoodRoof` can now actually snap onto a placed Wall's top edge, not
+    only a Foundation's.
+-   `PlayerBuilding.Known Pieces` on the `Player` GameObject in
+    `SampleScene` extended from 4 to 5 entries, adding `WoodDoorPiece`
+    alongside the existing `WoodFoundationPiece`/`WoodWallPiece`/
+    `WoodPalisadePiece`/`WoodRoofPiece`. Scene saved. Compiles clean, no
+    Console errors.
+-   NOT YET CONFIRMED -- needs an in-Editor playtest (place a Foundation,
+    a Wall on one edge, a Door on another edge of the same Foundation,
+    a Roof snapped onto the Wall's new top points, and a couple of
+    Palisades chained in a row; demolish a piece or two to confirm E
+    still works on the new types). This closes
+    `ITEMS_AND_CRAFTING_v0.1.md` section 4's Door/Roof/Palisade item --
+    per the Core Rule, Building itself is still the functional-but-basic
+    state described in the Technical Debt section above (no structural
+    validation/save/refund/dedicated UI), unchanged by this increment.
+
+-   Bug report (developer): after building a Roof, every other piece
+    stopped snapping to anything. Investigated `WoodRoof.prefab` and
+    found it was never actually in the clean state its own setup docs
+    (Step 21.2) describe -- its root Transform had a baked-in 45-degree
+    X rotation, a stray world position, and scale `(2, 0.1, 2.4)`
+    instead of the documented `(2, 0.2, 2)`, and its four snap points
+    were all literally named `SnapPoint` (not North/South/East/West)
+    with garbled fractional local coordinates -- consistent with the
+    cube having been tilted directly in the Scene view (to preview a
+    sloped-roof look) and its snap points hand-dragged into place while
+    the parent was already tilted, then the whole thing dragged into
+    the project as a prefab without ever resetting its transform.
+    `PlayerBuilding.SpawnGhost`/`ComputeHalfHeight` explicitly assumes a
+    piece prefab's root sits at identity rotation (`RotatePiece` is
+    Y-only, per its own doc comment) -- Roof's baked pitch broke that
+    assumption, producing a badly wrong world-space bounds read and
+    therefore a badly wrong ghost height offset for Roof specifically;
+    separately, its snap points' local coordinates only made geometric
+    sense combined with that same 45-degree tilt, so once the placement
+    code forces any ghost level (yaw-only) they no longer lined up with
+    anything. Not a code bug -- `WoodFoundation`/`WoodPalisade` both
+    already sit at clean identity root transforms; `WoodWall`/`WoodDoor`
+    carry a harmless stray root *position* (translation doesn't affect
+    the bounds read, so it never caused a symptom) but Roof also had
+    the rotation, which does. The three Roofs the developer built while
+    diagnosing this didn't persist (Play-mode-only Instantiate calls,
+    discarded on exiting Play) -- no scene cleanup was needed.
+    Fix: rebuilt `WoodRoof.prefab` from scratch to match Step 21.2
+    exactly -- identity position/rotation, scale `(2, 0.2, 2)`, and four
+    distinctly-named snap points (`SnapPoint_North/South/East/West`) at
+    the documented local positions. NOT YET CONFIRMED -- needs the same
+    Step 21.5 playtest re-run (Foundation, Wall+Door on its edges, Roof
+    snapped onto the Wall's new top points, Palisades chained).
+
+-   Second bug report (developer): after placing a Foundation, neither
+    Wall nor Palisade would snap to it at all -- and this was reported
+    even for the pieces the Roof fix above didn't touch, so it wasn't
+    the same issue. Verified `PlayerBuilding`'s snap-search algorithm
+    itself is correct by replaying it directly (reflection, in Play
+    mode) against the current (already-fixed) prefabs -- a Wall ghost
+    aimed exactly at a Foundation edge point matched at distance 0, so
+    the math and current prefab geometry are fine on their own.
+    The real bug: every one of the five Building piece prefabs
+    (`WoodFoundation`/`WoodWall`/`WoodDoor`/`WoodPalisade`/`WoodRoof`)
+    had their `BuildingPiece._definition` field **pre-assigned in the
+    prefab asset itself** (e.g. `WoodFoundation.prefab` shipped with
+    `_definition: WoodFoundationPiece` already set), instead of being
+    left empty and only set at runtime via `Configure()` for real
+    placed pieces, per `BuildingPiece`'s own design ("Ghost previews
+    never call Configure, so they never appear here"). Because
+    `OnEnable` registers into the static `AllPieces` list whenever
+    `_definition != null`, a baked-in definition meant every **ghost
+    preview** (not just real placed pieces) self-registered the moment
+    it was instantiated -- confirmed live: entering Build mode with
+    nothing placed anywhere showed `AllPieces.Count == 1` and
+    `IsSnapped == True` immediately, matching the developer's exact
+    'snapped always True, even with nothing else built' report. Since
+    `TryApplySnap`'s closest-pair search included the ghost's own
+    (self-registered) points, it always found a same-object match at
+    distance 0 -- which, being smaller than any real distance to an
+    actual other piece, won every single time and silently "snapped to
+    itself" with a zero-length move instead of ever reaching toward a
+    real target. This affected every piece type identically, matching
+    the developer's "neither Wall nor Palisade" report exactly.
+    Not something introduced this session -- likely leaked in whenever
+    the definitions were originally hand-authored onto these prefabs
+    (same manual-authoring method used throughout this project's
+    placeholder content), and apparently pre-dates even the Step 16
+    snapping confirmation, meaning that confirmation may have relied
+    on aim/timing that happened not to expose it, or regressed
+    afterward via an Inspector "Apply to Prefab" on a placed instance.
+    Fix: cleared `_definition` back to None on all five piece prefabs.
+    Re-verified live (reflection-driven, in Play mode): with nothing
+    placed, `AllPieces.Count == 0` and `IsSnapped == False`; after
+    placing one real Foundation, `AllPieces.Count == 1` (the real piece
+    only); a Wall ghost aimed at the Foundation's edge point correctly
+    snapped (`IsSnapped == True`, final position matched the expected
+    edge coordinate exactly). No Console errors. Both this fix and the
+    Roof fix above are now confirmed working end-to-end via direct
+    in-Editor testing (not yet re-confirmed by the developer's own
+    manual playtest, but the underlying mechanism is verified sound).
+    Worth flagging for future placeholder-content authoring: don't
+    assign a BuildingPieceDefinition's own Prefab's `_definition` field
+    directly in the prefab Inspector -- it should stay empty.
+
+-   Third round of bug reports (developer, with screenshots): Wall/Door
+    only ever attach in one position, Palisade attaches at an edge
+    midpoint instead of a corner, Foundation sinks, Roof looks/behaves
+    like a floor. Investigated live in the developer's own running Play
+    session (read-only inspection plus small isolated far-away test
+    instances, careful not to disturb their placed pieces).
+-   Confirmed and fixed: `WoodPalisade.prefab`'s two snap points were on
+    the Y axis (top-center/bottom-center - meant for stacking
+    vertically), not the X axis (bottom-left/bottom-right corners,
+    what Step 21.3 actually specified for chaining palisades
+    side-by-side in a row). Rebuilt with correct
+    `SnapPoint_BottomLeft`/`SnapPoint_BottomRight` at `(-0.5,-0.5,0)`/
+    `(0.5,-0.5,0)`. Also re-cleared `_definition` on this prefab (the
+    delete/recreate touched the same component).
+-   Explained (not a new bug, a consequence of the previous Roof fix +
+    an existing known limitation): the developer had placed a Roof
+    directly on the ground with no Foundation underneath. Since Roof's
+    snap points are (by design, matching Foundation's own edge-midpoint
+    layout) on its underside, a Roof sitting on the ground is
+    geometrically indistinguishable from a mini-Foundation once
+    something else looks for a nearby snap point - confirmed live, a
+    Door had snapped to that Roof's own edge point, not to any
+    Foundation. This is the existing "no socket-type/compatibility
+    system - any BuildingSnapPoint can pull any other into alignment"
+    Technical Debt item, just newly visible now that Roof's shape
+    matches Foundation's. Combined with the previous fix flattening
+    Roof's *visual* to match its (necessarily flat, for correct height
+    math) collision footprint, this made Roof read as "just another
+    floor" both by eye and in practice.
+-   Fix (developer chose "tilt the mesh only, keep the hitbox/points
+    level"): `PlayerBuilding.ComputeHalfHeight` changed from reading
+    `GetComponentsInChildren<Renderer>()` bounds to reading the piece's
+    own `Collider` bounds instead (every piece already guarantees
+    exactly one via `[RequireComponent(typeof(Collider))]`). Behavior-
+    preserving for every existing piece (their Collider and Renderer
+    bounds were always identical - none had a separate visual mesh) -
+    this only matters once a piece's visual mesh diverges from its
+    collision box, which Roof now does. `WoodRoof.prefab` reworked:
+    root keeps only `BoxCollider` + `BuildingPiece` (no MeshFilter/
+    MeshRenderer - root itself is invisible, flat, level, exactly like
+    Foundation's collision footprint) plus its 4 (still-level, still
+    correctly-positioned) snap points; a new non-colliding child
+    `Visual` (a `-20` degree X-tilted cube, roughly 2.2 x 0.1 x 1.5 in
+    world size) provides the sloped-roof look. Rough placeholder
+    numbers, not final art - easy to retune by hand in the Inspector.
+    Doesn't address the Roof-acts-like-Foundation ambiguity itself
+    (that's the pre-existing no-socket-types limitation) - flagged, not
+    fixed, since fixing it properly needs a real socket-type/compat
+    system, an architecture change requiring its own separate
+    conversation per CLAUDE.md.
+-   Investigated but could NOT reproduce as a data/algorithm bug:
+    Wall/Door "only one position" and Foundation "sinking". Replayed
+    `PlayerBuilding`'s exact snap search (reflection, live) for a Wall
+    ghost against all 4 Foundation edges independently - each matched
+    correctly with the expected position AND rotation (0 or 90 degrees
+    per edge). Verified `ComputeHalfHeight` returns the geometrically
+    correct value for every piece type (Foundation/Roof 0.1, Wall/Door/
+    Palisade 1.0). Suspect at least some of what looked like "wall/door
+    only attach one way" was actually the Door-snapped-to-Roof mix-up
+    above rather than a Wall/Foundation-specific bug. NOT YET
+    CONFIRMED either way - needs a clean re-test (fresh Play session,
+    for the ComputeHalfHeight fix to take effect; a real Foundation
+    present, not a bare Roof) before concluding whether these two are
+    real remaining bugs or were artifacts of the Roof/Definition issues
+    fixed this round.
+
+-   Fourth round (developer, with screenshots): Roof's new visual read
+    as a small floating disconnected rectangle rather than the liked
+    'full-length diagonal' look; Palisade still wasn't attaching at a
+    Foundation corner. Root cause for the Palisade complaint was
+    mis-diagnosed last round -- the fix needed wasn't on Palisade's own
+    points at all. `WoodFoundation` never had any corner points, only
+    the 4 edge-midpoints -- there was no corner target for anything to
+    snap to, regardless of what points Palisade itself carried. Added 4
+    new corner points to `WoodFoundation.prefab`
+    (`SnapPoint_CornerNE/NW/SE/SW` at local `(±0.5, 0.5, ±0.5)`) --
+    purely additive, doesn't touch the existing 4 edge points other
+    pieces already rely on. Verified live: aiming a Palisade ghost
+    genuinely near a corner (not exactly on top of the shared boundary
+    between a corner and its neighboring edge-midpoint, which is a
+    literal tie and resolves to whichever point the loop visits first)
+    now correctly matches the new corner point instead of the edge
+    midpoint.
+-   `WoodRoof`'s `Visual` child reworked to match the shape the
+    developer liked before (a single full-length diagonal slab) instead
+    of the smaller offset lean-to panel from the previous round: local
+    scale `(1, 0.5, 1.2)` / rotation `(45,0,0)` / position `(0, 0.5, 0)`
+    against the root's `(2, 0.2, 2)` scale -- works out to the same
+    `(2, 0.1, 2.4)` world size and 45-degree tilt the original
+    (accidentally-broken) prefab had, just as a non-colliding child now
+    instead of the root itself. Verified live: Roof-to-Foundation
+    snapping still matches correctly (root/collider math untouched by
+    this), and the visual's world bounds sit centered right at the
+    footprint's top surface rather than offset to one side.
+    NOT YET CONFIRMED by the developer visually (rough placeholder
+    proportions, not final art) -- needs a fresh Play session (the
+    ComputeHalfHeight code change from the previous round only takes
+    effect after Play is restarted) and a normal playtest: Foundation,
+    Wall/Door on edges, Roof on a Wall's top points, Palisade at a
+    corner and chained along an edge.
+
+-   Developer feedback: Palisade should attach ONLY at Foundation
+    corners - the edge-midpoint attachment (still possible after the
+    previous round's fix, since nothing stopped a Palisade's point from
+    matching an edge-midpoint target too) needed to go away entirely.
+    This needed a real (if minimal) architecture addition, not just more
+    content: added `BuildingSnapPoint.Kind` (`enum SnapKind { Edge,
+    Corner }`, defaults to `Edge`) and changed
+    `PlayerBuilding.TryApplySnap`'s inner loop to skip any
+    (ghost point, target point) pair whose `Kind` doesn't match. This is
+    still not a full socket-compatibility system (no notion of e.g.
+    'only a wall may plug into this'), just enough of a category so
+    edge-hardware and corner-hardware stop being interchangeable.
+    Set `Kind = Corner` on `WoodFoundation`'s 4 new corner points and
+    `WoodPalisade`'s 2 points; everything else (Foundation's original 4
+    edge points, all of Wall/Door/Roof's points) keeps the `Edge`
+    default unchanged, so their existing behavior from prior rounds is
+    untouched. Verified live (reflection): aiming a Palisade ghost
+    exactly at a Foundation edge midpoint now finds NO match at all
+    (previously it would snap there); aiming at/near a corner still
+    matches correctly; Palisade-to-Palisade chaining (both ends are
+    `Corner`) still matches correctly. No Console errors.
+    Note for future content: any new snap point that should behave like
+    a corner-post attachment needs `Kind` set to `Corner` explicitly in
+    the Inspector (or via code, since the default is `Edge`).
+
+-   Combat: Death and Loot/drop (closes every remaining Phase 7 checklist
+    item except Damage feedback). `PlayerHealth` gained `IsAlive`/`Died`
+    (fires once at 0 HP)/`Revive()`; `PlayerCombat` delegates `IsAlive` to
+    it and stops applying damage/block/parry once dead. New `PlayerDeath`
+    (Scripts/Gameplay/Player) disables Motor/Combat/Interactor/Building
+    and frees the cursor on death, re-enables them and calls a new
+    `PlayerMotor.Teleport(...)` back to the scene's starting
+    position/rotation on Respawn. New `DeathUIController` +
+    `DeathPanel.uxml`/`.uss` (Scripts/UI) - centered "You Died" + Respawn
+    overlay, same pattern/palette as `PauseUIController`/`PausePanel`.
+    `CombatDummy` gained a **Loot Drops** list (reuses `ResourceNodeDrop`
+    from Items as-is) and scatters it as physical `ItemPickup`s via the
+    existing `ItemPickup.SpawnInWorld` path on death (mirrors
+    `ResourceNode.SpawnDrops`); guarded to fire once; the dummy itself
+    does not despawn (reusable test target, not content).
+    `PlayerDebugHud`'s Health line now appends `(DEAD)`. Explicitly out of
+    scope: Phase 6's Gravestone/Respawn (inventory loss/recovery per
+    GDD_v0.1.md section 9) and Damage feedback (VFX/audio). NOT YET
+    CONFIRMED - see `UNITY_SETUP_NEXT_STEPS.md` Step 22.

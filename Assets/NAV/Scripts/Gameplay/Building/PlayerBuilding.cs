@@ -226,21 +226,17 @@ namespace NAV.Gameplay.Building
             _ghostInstance.SetActive(false);
         }
 
+        // Uses the piece's own Collider bounds, not its Renderer(s) - every piece is
+        // guaranteed exactly one via [RequireComponent(typeof(Collider))], and unlike a
+        // Renderer it stays a clean, level footprint no matter what a piece's *visual* mesh
+        // looks like (e.g. a purely cosmetic tilted child mesh on a roof piece). Bounds are
+        // still read right after Instantiate, before anything below disables the collider -
+        // a disabled Collider's .bounds collapses to zero, which is exactly the silent-zero
+        // bug this method was already written once to avoid (see the SpawnGhost comment).
         private static float ComputeHalfHeight(GameObject instance)
         {
-            Renderer[] renderers = instance.GetComponentsInChildren<Renderer>();
-            if (renderers.Length == 0)
-            {
-                return 0f;
-            }
-
-            Bounds bounds = renderers[0].bounds;
-            for (int i = 1; i < renderers.Length; i++)
-            {
-                bounds.Encapsulate(renderers[i].bounds);
-            }
-
-            return bounds.extents.y;
+            Collider collider = instance.GetComponentInChildren<Collider>();
+            return collider != null ? collider.bounds.extents.y : 0f;
         }
 
         private void DestroyGhost()
@@ -334,6 +330,15 @@ namespace NAV.Gameplay.Building
 
                     foreach (BuildingSnapPoint ghostPoint in _ghostSnapPoints)
                     {
+                        // Only match points of the same Kind - e.g. a Palisade's Corner points
+                        // should only pull toward a Foundation's actual corners, never its
+                        // edge midpoints (which Walls/Doors/Roof use). Without this, whichever
+                        // point is merely closest wins regardless of what it conceptually is.
+                        if (targetPoint.Kind != ghostPoint.Kind)
+                        {
+                            continue;
+                        }
+
                         float sqrDistance = (targetPoint.transform.position - ghostPoint.transform.position).sqrMagnitude;
                         if (sqrDistance < bestSqrDistance)
                         {

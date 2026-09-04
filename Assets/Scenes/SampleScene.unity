@@ -1997,6 +1997,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &917861181
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 917861184}
+  - component: {fileID: 917861183}
+  - component: {fileID: 917861182}
+  m_Layer: 5
+  m_Name: UIDocument
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &917861182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917861181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9122ff0bf1a89a41b2bea107ebf95f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.UI.DeathUIController
+  _playerDeath: {fileID: 1082341857}
+--- !u!114 &917861183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917861181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 3f60f9736981a62448553c7082d83e0c, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 4d582d05c5b8a1541a05617af19aee47, type: 3}
+  m_SortingOrder: 10
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &917861184
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917861181}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &924922385
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2075,6 +2144,7 @@ GameObject:
   - component: {fileID: 1082341854}
   - component: {fileID: 1082341855}
   - component: {fileID: 1082341856}
+  - component: {fileID: 1082341857}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2292,6 +2362,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e300f77b80f425f499120dbfe0c225d8, type: 2}
   - {fileID: 11400000, guid: bf2b9736309913341beeaa0d58f8b3b0, type: 2}
   - {fileID: 11400000, guid: 4210893fc7e43d34c8422a07d1759333, type: 2}
+  - {fileID: 11400000, guid: 659ff3e635719de4fa3985cdd9dfe013, type: 2}
   _maxPlacementDistance: 15
   _rotationStepDegrees: 45
   _placementLayers:
@@ -2335,6 +2406,23 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   _maxAimDistance: 15
+  _building: {fileID: 1082341854}
+--- !u!114 &1082341857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082341843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d96c3d069b39d944b9c31b612cde88c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Player.PlayerDeath
+  _inputHandler: {fileID: 1082341846}
+  _motor: {fileID: 1082341845}
+  _combat: {fileID: 1082341856}
+  _interactor: {fileID: 1082341851}
   _building: {fileID: 1082341854}
 --- !u!1001 &1089374822
 PrefabInstance:
@@ -3600,6 +3688,13 @@ MonoBehaviour:
   _attackDamage: 5
   _attackInterval: 2
   _attackRange: 2.5
+  _lootDrops:
+  - _item: {fileID: 11400000, guid: d1fd953b9b8a1980f86d7949fb041879, type: 2}
+    _amount: 15
+    _chance: 0.52
+  _lootScatterRadius: 1
+  _lootScatterForce: 1.5
+  _lootUpwardForce: 2
 --- !u!135 &1754583151
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -5091,3 +5186,4 @@ SceneRoots:
   - {fileID: 1978621540}
   - {fileID: 1150316254}
   - {fileID: 3374303427736706218}
+  - {fileID: 917861184}
