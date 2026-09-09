@@ -115,6 +115,35 @@ namespace NAV.Editor
             passed &= Check(weightedInventory.TotalWeight == 25f, "total weight should now be exactly at the 25kg cap");
             passed &= Check(weightedInventory.IsOverloaded, "an inventory at exactly its max weight should report overloaded");
 
+            // --- ExtractAll: used by PlayerDeath to move the whole inventory into a Gravestone ---
+            var extractInventory = new Inventory(3);
+            extractInventory.AddItem(itemA, 4);
+            extractInventory.SetSlot(2, itemB, 2); // slot 2 specifically, to check layout is preserved
+
+            Inventory extracted = extractInventory.ExtractAll();
+            passed &= Check(extracted.Capacity == extractInventory.Capacity, "ExtractAll's returned Inventory should have the same capacity as the source");
+            passed &= Check(extractInventory.IsEmpty, "ExtractAll should empty every slot of the source inventory");
+            passed &= Check(extracted.GetTotalQuantity(itemA) == 4 && extracted.GetTotalQuantity(itemB) == 2, "ExtractAll's returned Inventory should carry the exact quantities that were taken");
+            passed &= Check(extracted.Slots[2].Definition == itemB && extracted.Slots[2].Quantity == 2, "ExtractAll should preserve the original slot layout, not compact it");
+
+            passed &= Check(extractInventory.ExtractAll().IsEmpty, "ExtractAll on an already-empty inventory should return an empty Inventory");
+
+            // --- MoveSlotTo: the cross-inventory counterpart of MoveSlot (Gravestone -> player drag) ---
+            var sourceInventory = new Inventory(2);
+            var targetInventory = new Inventory(2);
+            sourceInventory.AddItem(itemA, 3); // slot 0: 3x itemA
+
+            bool movedAcross = sourceInventory.MoveSlotTo(targetInventory, 0, 0);
+            passed &= Check(movedAcross, "MoveSlotTo into an empty slot of a different inventory should report a change");
+            passed &= Check(sourceInventory.Slots[0].IsEmpty, "source slot should be empty after moving out");
+            passed &= Check(targetInventory.Slots[0].Definition == itemA && targetInventory.Slots[0].Quantity == 3, "target inventory should receive the moved stack");
+
+            sourceInventory.AddItem(itemB, 1); // slot 0 (source) is empty again -> slot 0: 1x itemB
+            movedAcross = sourceInventory.MoveSlotTo(targetInventory, 0, 0); // itemB onto itemA - different items -> swap across inventories
+            passed &= Check(movedAcross, "MoveSlotTo between different items across inventories should swap and report a change");
+            passed &= Check(sourceInventory.Slots[0].Definition == itemA && sourceInventory.Slots[0].Quantity == 3, "swap should leave itemA back in the source inventory");
+            passed &= Check(targetInventory.Slots[0].Definition == itemB && targetInventory.Slots[0].Quantity == 1, "swap should leave itemB in the target inventory");
+
             Object.DestroyImmediate(itemA);
             Object.DestroyImmediate(itemB);
             Object.DestroyImmediate(heavyItem);

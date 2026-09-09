@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using NAV.Gameplay.Player;
 
@@ -13,6 +14,11 @@ namespace NAV.Gameplay.Interaction
 
         public IInteractable CurrentInteractable { get; private set; }
         public string CurrentPrompt => CurrentInteractable?.InteractionPrompt;
+
+        /// <summary>Fires right after Interact() is called on whatever was just interacted
+        /// with - lets UI (e.g. GravestoneUIController) react to a specific interaction
+        /// without this class knowing anything about UI itself.</summary>
+        public event Action<IInteractable> Interacted;
 
         private void Awake()
         {
@@ -71,7 +77,14 @@ namespace NAV.Gameplay.Interaction
 
         private void HandleInteractPerformed()
         {
-            CurrentInteractable?.Interact(gameObject);
+            IInteractable interactable = CurrentInteractable;
+            if (interactable == null)
+            {
+                return;
+            }
+
+            interactable.Interact(gameObject);
+            Interacted?.Invoke(interactable);
         }
     }
 }

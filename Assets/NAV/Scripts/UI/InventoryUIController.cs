@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -32,6 +33,11 @@ namespace NAV.UI
 
         private VisualElement _dragGhost;
         private int _dragSourceIndex = -1;
+
+        /// <summary>Fires whenever this panel's shown/hidden state actually changes - lets
+        /// GravestoneUIController close itself in lockstep when Inventory closes, without
+        /// depending on input-event subscription order (see that class's own comment).</summary>
+        public event Action<bool> VisibilityChanged;
 
         private void Awake()
         {
@@ -114,6 +120,17 @@ namespace NAV.UI
             }
         }
 
+        /// <summary>Opens this panel if it's closed. Safe to call when already open - used by
+        /// GravestoneUIController to force Inventory open alongside its own panel without
+        /// disturbing an already-in-progress drag if the player had it open already.</summary>
+        public void Show()
+        {
+            if (!_visible)
+            {
+                SetVisible(true);
+            }
+        }
+
         private void SetVisible(bool visible)
         {
             _visible = visible;
@@ -128,6 +145,8 @@ namespace NAV.UI
             {
                 CancelDrag();
             }
+
+            VisibilityChanged?.Invoke(visible);
         }
 
         private void BuildSlots()

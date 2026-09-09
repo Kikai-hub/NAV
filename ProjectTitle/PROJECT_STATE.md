@@ -2763,3 +2763,159 @@ same as the pause before Building itself started.
     from the existing bare-bones `PlayerHealth`/`PlayerDeath`) - proposed
     as the next candidate, waiting for the developer's go-ahead, same
     pause pattern as every prior stage transition.
+
+### v0.1 --- 2026-09-09
+
+-   Developer chose **Recover (Gravestone)** of the two remaining
+    Vertical Slice gaps. Implemented GDD_v0.1 section 9 "Death"
+    literally: on death, a Gravestone is created at the death location
+    holding the player's entire Inventory contents (as one object, not
+    scattered pickups - matches the GDD's "stored inside the
+    gravestone" wording, distinct from how `CombatDummy`/`Creature`
+    loot scatters via `ItemPickup.SpawnInWorld`); the player respawns
+    with an empty inventory and must walk back to recover it.
+-   `Inventory` (Scripts/Gameplay/Inventory) gained `ExtractAll()` -
+    empties every slot and returns a `List<ItemStack>` snapshot of what
+    was taken. Used only by `PlayerDeath`; every other add/remove path
+    (`AddItem`/`RemoveItem`/`RemoveFromSlot`/`MoveSlot`/`SetSlot`) is
+    unchanged. Covered by new `InventorySanityChecks.cs` assertions
+    (same pattern as the existing `MoveSlot`/`RemoveFromSlot`/weight
+    coverage).
+-   Added `Gravestone` (Scripts/Gameplay/Player, alongside `PlayerDeath`
+    - it's death-flow-owned data/behavior, same reasoning
+    `Workbench`/`ResourceNode` shared their parent system's folder
+    rather than getting a new one). Raycast `IInteractable`, same idiom
+    as `ItemPickup`/`ResourceNode`: holds the extracted `ItemStack`
+    list, `Interact()` returns each stack into the interactor's
+    `PlayerInventory` via the normal weight-aware `AddItem`. A stack
+    that doesn't fully fit (recoverer's inventory full/overloaded)
+    stays in the gravestone rather than being lost - the gravestone
+    only destroys itself once every stack is fully recovered, so a
+    second visit can finish an interrupted recovery.
+-   `PlayerDeath` gained two required serialized fields (**Inventory**,
+    **Gravestone Prefab**) and now calls `Inventory.ExtractAll()` +
+    `Gravestone.Spawn(...)` at the death position/rotation as part of
+    `HandleHealthDied`, before showing the death screen. Its own doc
+    comment (previously explicit about *not* implementing this - see
+    the old Technical Debt note that pointed here) is updated to
+    describe the gravestone flow instead of flagging it as future work.
+-   `DEVELOPMENT_ROADMAP_v0.1.md` Phase 6 checkboxes updated: Death,
+    Gravestone, and Respawn are now checked (shared mechanism with
+    Phase 7's own already-checked Death item); Health/Stamina/Food/Food
+    effects/Regeneration/Environmental effects remain unchecked (Food -
+    "Eat" - is the other still-open Vertical Slice gap, not picked up
+    this round).
+-   Deliberately out of scope for this increment: items are not
+    scattered around the gravestone (kept as one container object, per
+    the GDD's literal wording), no gravestone expiry timer, no "one
+    gravestone per player" limit (dying again before reaching an
+    existing gravestone creates a second one - not a bug, just
+    unconstrained at this scope).
+-   NOT YET CONFIRMED - needs a `Gravestone` prefab (placeholder Cube +
+    Collider + the new component) and `PlayerDeath`'s two new fields
+    wired on Player; see `UNITY_SETUP_NEXT_STEPS.md` Step 27.
+-   Developer playtested before wiring it up and flagged two problems
+    from the screenshot/description alone: the gravestone prefab reads
+    as half-buried (pivot-centered on the death position instead of
+    resting on top of it), and there was no actual UI for recovery - a
+    plain instant "E picks everything up" interaction, no visible
+    feedback of what's inside. Requested a real window instead: same
+    grid look as the Inventory panel, opened by E, showing the
+    gravestone's contents; drag-and-drop (mouse) from that window into
+    the player's Inventory grid; a **Move All** button at the bottom;
+    the gravestone window opens to the right of Inventory, and opening
+    it always opens Inventory too (the two are meant to be used
+    together).
+-   Reworked before any of the above was ever confirmed, so this
+    replaces (not adds to) the previous bullet's design rather than
+    layering on top of it:
+    -   **Ground anchoring fix:** `Gravestone.SnapToGround` (new) reads
+        the spawned instance's own `Collider.bounds.extents.y` and
+        offsets it upward by that amount, so its bottom rests on the
+        death position instead of the prefab's pivot sinking halfway
+        into it - same lesson `PlayerBuilding`'s own ground-anchor fix
+        already learned (Building increment 2's Technical Debt note).
+    -   **`Inventory.ExtractAll()` redefined:** now returns a whole new
+        `Inventory` (same Capacity, unlimited weight) with contents
+        copied into the *same slot indices* they occupied before, empty
+        slots and all - not a compacted `List<ItemStack>` like the first
+        pass. This is what makes the Gravestone's UI grid line up
+        exactly with the Inventory panel's, since it's genuinely the
+        same shape of container, not a different data structure the UI
+        would have to lay out differently.
+    -   **`Inventory.MoveSlot` refactored onto a new `MoveSlotTo(target,
+        from, to)`:** the same merge-or-swap logic as before, but usable
+        across two different `Inventory` instances, not just within one
+        - `MoveSlot(from, to)` is now a one-line call to
+        `MoveSlotTo(this, from, to)`. This single addition is what makes
+        dragging an item out of a Gravestone's `Contents` into the
+        player's own `Inventory` possible at all, and it's exactly the
+        same code path (and the same guarantees - merge onto a matching
+        stack, swap onto a different one) as dragging within one
+        inventory already used.
+    -   **`Gravestone` no longer moves items itself.** `Contents` is now
+        a real `Inventory` (not a raw stack list); `Interact()` is an
+        empty method - it exists only so the interaction fires, not to
+        act on it (gameplay code owning a UI-opening decision would
+        violate ARCHITECTURE_v0.1.md's UI/gameplay separation). Still
+        self-destroys via `Contents.Changed` once emptied, however that
+        happened (drag, Move All, or a mix over multiple visits).
+    -   **`PlayerInteractor` gained `event Action<IInteractable>
+        Interacted`,** fired right after calling `.Interact(...)` on
+        whatever was aimed at - a small, generically reusable hook so a
+        UI controller can react to a specific interaction without
+        knowing about interactable types itself (`GravestoneUIController`
+        is the only current listener, filtering for `is Gravestone`).
+    -   **`InventoryUIController` gained `event Action<bool>
+        VisibilityChanged` and a `Show()` method** (opens if closed,
+        no-op if already open). `GravestoneUIController` uses `Show()`
+        to force Inventory open whenever its own panel opens, and
+        subscribes to `VisibilityChanged` to close itself in lockstep
+        whenever Inventory closes - deliberately *not* symmetric: closing
+        the gravestone panel never closes Inventory, since the player may
+        have opened Inventory on its own first.
+    -   Added `GravestoneUIController` + `GravestonePanel.uxml`/`.uss`
+        (Scripts/UI) - same UIDocument-per-controller pattern as every
+        other panel, positioned like `CraftingPanel` (`right: 24px`,
+        i.e. the "other side" slot from Inventory's `left: 24px`) rather
+        than a brand new screen position. Slot grid is visually identical
+        to Inventory's but under a distinct `gravestone-slot` CSS class -
+        both UIDocuments share `NAV_PanelSettings.asset`, which means
+        they render into one actual runtime panel and are mutually
+        hit-testable (`panel.Pick` from either one can find the other's
+        elements), which is exactly what makes cross-panel dragging work;
+        the distinct class name is what lets the drag code tell "this is
+        an Inventory slot" apart from "this is one of my own slots"
+        during that hit-test. LMB drag mirrors
+        `InventoryUIController`'s own drag gesture, but its pointer-up
+        handler only recognizes an `inventory-slot` target (no drop-to-
+        world case - gravestone items are only ever recovered into the
+        player's Inventory, never thrown into the world directly). Move
+        All button loops every non-empty slot in `Contents`, calling the
+        same `Inventory.AddItem`/`RemoveFromSlot` any other item transfer
+        already uses - nothing new needed there.
+    -   **Known interaction-system subtlety, not a bug:** once this panel
+        is open, a second E press can never reach `Gravestone.Interact`
+        again to "toggle" it closed, because opening it always opens
+        Inventory too, and `PlayerInputHandler` suppresses `Interact`
+        entirely while `MenuOpen` is true (same suppression Jump/Attack/
+        RotatePiece/CycleNext/CyclePrevious already get). Closing is only
+        ever reachable via the Inventory toggle key (I, which is
+        deliberately never suppressed) - by design, not an oversight; see
+        `GravestoneUIController`'s own doc comment.
+    -   `InventorySanityChecks.cs` updated for the new `ExtractAll`
+        signature (asserts against the returned `Inventory`'s
+        `Capacity`/`GetTotalQuantity`/slot layout instead of a list) and
+        extended with `MoveSlotTo` coverage (cross-inventory merge and
+        swap, mirroring the existing single-inventory `MoveSlot` checks).
+-   Still deliberately out of scope: items are not scattered around the
+    gravestone (kept as one container, per the GDD's literal wording),
+    no gravestone expiry timer, no "one gravestone per player" limit, no
+    reverse direction (dragging a player Inventory item back into a
+    Gravestone) - only requested one-way.
+-   NOT YET CONFIRMED - needs the `Gravestone` prefab (Step 27.1,
+    unchanged from before), `PlayerDeath`'s two fields (Step 27.2,
+    unchanged), and a new `GravestoneUI` GameObject (UIDocument +
+    `GravestoneUIController`, wired to `PlayerInteractor`/
+    `PlayerInventory`/the existing `InventoryUI`'s `InventoryUIController`)
+    - see the rewritten `UNITY_SETUP_NEXT_STEPS.md` Step 27 in full.

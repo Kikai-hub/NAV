@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="GravestonePanel.uss" />
+    <ui:VisualElement name="gravestone-root" class="gravestone-root">
+        <ui:VisualElement name="gravestone-panel" class="gravestone-panel">
+            <ui:Label text="Gravestone" class="gravestone-title" />
+            <ui:VisualElement name="slot-container" class="gravestone-grid" />
+            <ui:Button name="move-all-button" text="Move All" class="gravestone-move-all-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

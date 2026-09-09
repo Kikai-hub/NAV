@@ -103,9 +103,9 @@ system.
 -   [ ] Food effects
 -   [ ] Regeneration
 -   [ ] Environmental effects
--   [ ] Death
--   [ ] Gravestone
--   [ ] Respawn
+-   [x] Death (shared with Phase 7's own Death item - same PlayerHealth/PlayerDeath)
+-   [x] Gravestone
+-   [x] Respawn (respawn-in-place only; see PROJECT_STATE.md for the exact scope)
 
 ------------------------------------------------------------------------
 
@@ -119,7 +119,7 @@ system.
 -   [x] Parrying
 -   [x] Stamina interaction
 -   [ ] Damage feedback (console/HUD only - no VFX/audio/hit reaction; see PROJECT_STATE.md)
--   [x] Death (player: freeze + respawn-in-place; CombatDummy: stops attacking/taking damage. No gravestone yet - that's Phase 6's separate Gravestone/Respawn item)
+-   [x] Death (player: freeze + respawn-in-place + Gravestone, see Phase 6; CombatDummy: stops attacking/taking damage)
 -   [x] Loot/drop (CombatDummy only - real creature loot is Phase 8)
 
 ------------------------------------------------------------------------

@@ -40,6 +40,22 @@ namespace NAV.Gameplay.Inventory
 
         public bool IsOverloaded => MaxWeight > 0f && TotalWeight >= MaxWeight;
 
+        public bool IsEmpty
+        {
+            get
+            {
+                foreach (ItemStack slot in _slots)
+                {
+                    if (!slot.IsEmpty)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
         public event Action Changed;
 
         public Inventory(int capacity, float maxWeight = 0f)
@@ -116,20 +132,42 @@ namespace NAV.Gameplay.Inventory
         }
 
         /// <summary>
-        /// Moves/merges/swaps the contents of one slot into another - used by inventory UI
-        /// drag-and-drop. If the target is empty or holds the same item, source stacks onto
-        /// it (as much as fits); otherwise the two slots swap contents outright. Returns
-        /// whether anything actually changed.
+        /// Moves/merges/swaps the contents of one slot into another within this same
+        /// inventory - used by InventoryUIController's drag-and-drop. Thin wrapper over
+        /// MoveSlotTo(this, ...); see that method for the actual merge/swap rules.
         /// </summary>
         public bool MoveSlot(int fromIndex, int toIndex)
         {
-            if (fromIndex == toIndex || fromIndex < 0 || fromIndex >= _slots.Length || toIndex < 0 || toIndex >= _slots.Length)
+            if (fromIndex == toIndex)
+            {
+                return false;
+            }
+
+            return MoveSlotTo(this, fromIndex, toIndex);
+        }
+
+        /// <summary>
+        /// Moves/merges/swaps the stack at fromIndex in this inventory into toIndex of
+        /// target (which may be this same inventory, or a different one - e.g. dragging an
+        /// item out of a Gravestone's contents into the player's own Inventory). If the
+        /// target slot is empty or holds the same item, the source stacks onto it (as much
+        /// as fits); otherwise the two slots swap contents outright. Returns whether
+        /// anything actually changed.
+        /// </summary>
+        public bool MoveSlotTo(Inventory target, int fromIndex, int toIndex)
+        {
+            if (target == null || fromIndex < 0 || fromIndex >= _slots.Length || toIndex < 0 || toIndex >= target._slots.Length)
+            {
+                return false;
+            }
+
+            if (target == this && fromIndex == toIndex)
             {
                 return false;
             }
 
             ItemStack from = _slots[fromIndex];
-            ItemStack to = _slots[toIndex];
+            ItemStack to = target._slots[toIndex];
 
             if (from.IsEmpty)
             {
@@ -156,6 +194,10 @@ namespace NAV.Gameplay.Inventory
             if (changed)
             {
                 Changed?.Invoke();
+                if (target != this)
+                {
+                    target.Changed?.Invoke();
+                }
             }
 
             return changed;
@@ -241,6 +283,37 @@ namespace NAV.Gameplay.Inventory
 
             _slots[index] = new ItemStack(definition, quantity);
             Changed?.Invoke();
+        }
+
+        /// <summary>
+        /// Creates a new, unlimited-weight Inventory with the same Capacity as this one,
+        /// copies every slot's contents into the matching slot index there, and clears this
+        /// inventory completely - used by PlayerDeath to hand the player's whole Inventory
+        /// over to a Gravestone as one unit, same slot layout intact, so its UI grid lines up
+        /// exactly with the player's own Inventory panel.
+        /// </summary>
+        public Inventory ExtractAll()
+        {
+            var extracted = new Inventory(Capacity);
+            bool changed = false;
+
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                ItemStack slot = _slots[i];
+                if (!slot.IsEmpty)
+                {
+                    extracted.SetSlot(i, slot.Definition, slot.Quantity);
+                    slot.Clear();
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                Changed?.Invoke();
+            }
+
+            return extracted;
         }
 
         public int GetTotalQuantity(ItemDefinition definition)
