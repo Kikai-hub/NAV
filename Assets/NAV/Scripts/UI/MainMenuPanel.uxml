@@ -1,11 +1,43 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="MainMenuPanel.uss" />
     <ui:VisualElement name="main-menu-root" class="main-menu-root">
-        <ui:VisualElement class="main-menu-panel">
+        <ui:VisualElement name="main-menu-panel" class="main-menu-panel">
             <ui:Label text="NAV" class="main-menu-title" />
             <ui:Label text="A Fairy-Tale Rus Survival" class="main-menu-subtitle" />
             <ui:Button name="play-button" text="Play" class="main-menu-button" />
+            <ui:Button name="load-button" text="Load" class="main-menu-button" />
             <ui:Button name="quit-button" text="Quit" class="main-menu-button" />
+        </ui:VisualElement>
+        <ui:VisualElement name="create-world-panel" class="main-menu-panel create-world-panel">
+            <ui:Label text="Create World" class="main-menu-title load-game-title" />
+            <ui:VisualElement class="create-world-field">
+                <ui:Label text="World Name" class="create-world-field__label" />
+                <ui:TextField name="world-name-field" class="create-world-field__input" />
+            </ui:VisualElement>
+            <ui:VisualElement class="create-world-field">
+                <ui:Label text="Seed" class="create-world-field__label" />
+                <ui:VisualElement class="create-world-seed-row">
+                    <ui:TextField name="world-seed-field" class="create-world-field__input create-world-seed-row__input" />
+                    <ui:Button name="randomize-seed-button" text="Randomize" class="create-world-seed-row__randomize" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button name="create-world-button" text="Create World" class="main-menu-button" />
+            <ui:Button name="create-world-back-button" text="Back" class="main-menu-button" />
+        </ui:VisualElement>
+        <ui:VisualElement name="load-game-panel" class="main-menu-panel load-game-panel">
+            <ui:Label text="Load Game" class="main-menu-title load-game-title" />
+            <ui:ScrollView name="save-list" class="save-list" />
+            <ui:Label name="save-list-empty-label" text="No saves yet." class="save-list-empty" />
+            <ui:Button name="load-back-button" text="Back" class="main-menu-button" />
+        </ui:VisualElement>
+        <ui:VisualElement name="confirm-dialog-root" class="confirm-dialog-root">
+            <ui:VisualElement class="confirm-dialog">
+                <ui:Label name="confirm-dialog-message" class="confirm-dialog__message" />
+                <ui:VisualElement class="confirm-dialog__buttons">
+                    <ui:Button name="confirm-dialog-cancel-button" text="Cancel" class="main-menu-button confirm-dialog__button" />
+                    <ui:Button name="confirm-dialog-confirm-button" text="Confirm" class="main-menu-button confirm-dialog__button confirm-dialog__button--danger" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

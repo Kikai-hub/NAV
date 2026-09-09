@@ -345,7 +345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 604e1c1a9c1f56d41b2c6f5d54721915, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NAV.UI.MainMenuUIController
-  _gameSceneName: SampleScene
+  _gameSceneName: WorldGenTest
   _sceneLoader: {fileID: 1716461846}
   _loadingScreen: {fileID: 1092780993}
 --- !u!114 &1286587469

@@ -126,35 +126,35 @@ system.
 
 ## Phase 8 --- Creatures and AI
 
--   [ ] Creature data
--   [ ] Health
--   [ ] Perception
--   [ ] Target selection
--   [ ] Patrol
--   [ ] Chase
--   [ ] Attack
--   [ ] Search
--   [ ] Return
--   [ ] Death
--   [ ] Loot
--   [ ] One neutral animal
--   [ ] One hostile creature
+-   [x] Creature data
+-   [x] Health
+-   [x] Perception (trigger-radius detection only, no line-of-sight raycast; see PROJECT_STATE.md)
+-   [x] Target selection (single nearest-in-trigger target, no multi-target prioritization)
+-   [x] Patrol
+-   [x] Chase
+-   [x] Attack
+-   [x] Search
+-   [x] Return
+-   [x] Death
+-   [x] Loot
+-   [x] One neutral animal (Wild Boar - flees when attacked)
+-   [x] One hostile creature (Forest Wolf - chases/attacks on sight)
 
 ------------------------------------------------------------------------
 
 ## Phase 9 --- World
 
--   [ ] Seed system
--   [ ] Deterministic random
--   [ ] Terrain generation
--   [ ] Ocean
--   [ ] Plains
--   [ ] Forest
+-   [x] Seed system
+-   [x] Deterministic random
+-   [x] Terrain generation (single bounded Unity Terrain, no chunk/streaming; see PROJECT_STATE.md Known Risk #1)
+-   [x] Ocean (sea-level water plane placeholder, no waves/shader)
+-   [x] Plains
+-   [x] Forest (ground texture only - no distinct vegetation/trees yet, see PROJECT_STATE.md)
 -   [ ] Birch grove
 -   [ ] Dense forest
 -   [ ] Resource distribution
 -   [ ] Vegetation distribution
--   [ ] Spawn regions
+-   [ ] Spawn regions (no guaranteed-dry player spawn point yet; see PROJECT_STATE.md)
 -   [ ] Points of interest
 
 ------------------------------------------------------------------------
@@ -175,16 +175,16 @@ system.
 
 ## Phase 11 --- Save/Load
 
--   [ ] Player save
--   [ ] Inventory save
--   [ ] Equipment save
--   [ ] Skill save
--   [ ] World seed save
--   [ ] World changes
--   [ ] Building save
--   [ ] Container save
--   [ ] Time/weather save
--   [ ] Save versioning
+-   [x] Player save (position/rotation, health, inventory contents)
+-   [x] Inventory save (part of Player save above - same JSON, same slot indices)
+-   [ ] Equipment save (no Equipment system exists yet - Phase 2/4 slots still unchecked)
+-   [ ] Skill save (no Skills system exists yet)
+-   [x] World seed save (world is regenerated from the saved seed on load, not stored as terrain data - see PROJECT_STATE.md's "known limitation" note on generation-settings changes invalidating old saves)
+-   [ ] World changes (which resource nodes were gathered/depleted is NOT saved - every load respawns all resources fresh from the seed; deliberate Increment 1 scope cut, see PROJECT_STATE.md)
+-   [x] Building save (placed pieces only - position/rotation/definition; no structural/snap state beyond that)
+-   [ ] Container save (no storage containers/chests exist yet)
+-   [ ] Time/weather save (Phase 10 not started)
+-   [ ] Save versioning (known gap - a WorldGenerationSettings change after a save was made silently desyncs old saves' terrain from their stored building/player coordinates; see PROJECT_STATE.md)
 -   [ ] Backup/recovery
 
 ------------------------------------------------------------------------

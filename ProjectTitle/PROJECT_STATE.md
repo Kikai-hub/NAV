@@ -1237,6 +1237,297 @@ time). NOT YET CONFIRMED - needs `PlayerDeath` added to Player, a
 `DeathUI` UIDocument object created and wired, and `CombatDummy_Basic`'s
 new Loot Drops list populated; see `UNITY_SETUP_NEXT_STEPS.md` Step 22.
 
+CONFIRMED - developer completed Step 22.1-22.4 end-to-end (PlayerDeath
+wired onto Player, DeathUI created/wired at Sort Order 10, CombatDummy's
+Loot Drops populated with placeholder Rock/Wood, and the full playtest:
+CombatDummy defeated -> loot scatters and is pickupable, dummy stops
+attacking/taking damage but stays in scene; player reduced to 0 HP ->
+input/camera/build freeze, cursor frees, You Died screen with Respawn
+appears, `PlayerDebugHud`'s Health line shows `(DEAD)`; Respawn ->
+screen closes, player returns to the scene's start position at full HP
+and responds to input again). This closes Phase 7 (Combat) except the
+already-deferred **Damage feedback** item (VFX/audio - "Not Yet
+Decided").
+
+Per the Core Rule's development order
+(Foundation -> Player -> Interaction -> Items -> Inventory -> Gathering
+-> Crafting -> Workbench -> Building -> Combat -> **Creatures** -> World
+-> Save -> Polish -> Multiplayer), the next unstarted stage is
+**Creatures and AI** (`DEVELOPMENT_ROADMAP_v0.1.md` Phase 8: creature
+data, health, perception, target selection, patrol, chase, attack,
+search, return, death, loot, one neutral animal, one hostile creature).
+Same pause-and-wait-for-go pattern as before Building and Combat -
+waiting for the developer's explicit go-ahead before starting it.
+
+Developer said go. Creatures increment 1: implemented the whole Phase 8
+checklist in one increment (creature data, health, perception, target
+selection, patrol, chase, attack, search, return, death, loot, one
+neutral + one hostile creature) - same reasoning as Combat increment 1:
+these states are tightly coupled (Search/Return can't be verified
+without Chase losing a target first, Flee needs TakeDamage already
+wired) and every prior stage shipped its first pass as one coherent
+increment rather than being split further.
+
+Added `Assets/NAV/Scripts/Gameplay/AI/` (new folder - `ScriptableObjects
+/Creatures` already existed as an empty skeleton from the original
+ARCHITECTURE_v0.1.md folder plan): `CreatureDefinition` (ScriptableObject
+- identity/IsHostile, stats, detection radius, attack numbers, patrol/
+search/flee tuning, a `LootDrops` list reusing `ResourceNodeDrop` as-is,
+same "item + amount + chance" type `CombatDummy`/`ResourceNode` already
+use) and `Creature` (MonoBehaviour, implements `IDamageable` like
+`PlayerCombat`/`CombatDummy` do). This is the project's first use of
+`com.unity.ai.navigation` (`NavMeshAgent`/`NavMeshSurface`, already
+present in Packages but never wired into a scene before).
+
+`Creature` runs a small explicit state machine (`CreatureState`: Patrol,
+Chase, Attack, Search, Return, Flee, Dead) on top of a `NavMeshAgent`.
+Perception is a trigger `SphereCollider` sized from
+`CreatureDefinition.DetectionRadius` - the same "physics event, not a
+per-frame distance scan" idiom `Workbench`/`CombatDummy` already use,
+not a new pattern. Hostile creatures (`IsHostile = true`) chase/attack
+anything `IDamageable` that enters the trigger (GDD 17's `Idle/Patrol ->
+Detect Player -> Chase -> Attack -> Search/Return`); neutral creatures
+never act on the trigger for aggro purposes and only react to actually
+being hit (GDD 17: "Neutral creatures may flee when threatened") by
+entering Flee. `IDamageable.TakeDamage(float)` carries no attacker
+reference (a pre-existing interface shape, unchanged by this increment -
+extending it would be a cross-cutting change touching every existing
+implementor, out of scope for one increment per CLAUDE.md's "No Silent
+Architecture Changes" rule), so Flee's direction is read from whatever
+is currently sitting in the creature's own detection trigger at the
+moment it takes damage - correct for the only damage source that exists
+today (melee, which requires standing within a few meters, well inside
+any sane DetectionRadius) but would need a real attacker parameter if
+ranged or creature-vs-creature damage is ever added.
+
+On death, `Creature` disables its `NavMeshAgent`, scatters
+`LootDrops` via the existing `ItemPickup.SpawnInWorld` path (same
+scatter shape and independent-chance roll as `CombatDummy.SpawnLoot`/
+`ResourceNode.SpawnDrops`), and - unlike `CombatDummy`, which is reusable
+test infrastructure - despawns itself after a short delay, since a real
+creature is content, not a fixture.
+
+Deliberately out of scope for this increment (explicit Roadmap Phase 8
+refinements, same style as every other stage's first pass): no
+animations (no rig/Animator for creatures yet, same gap flagged for the
+player's own attack/block/gather animations), no line-of-sight raycast
+(detection is radius-only, so a creature can "sense" something through a
+thin wall), no pack/group behavior, no creature persistence/respawn
+(needs the Save system, Phase 11 - not started).
+
+Placeholder content (final creature roster is explicitly "Not Yet
+Decided", same status as every other content category):
+`ScriptableObjects/Items/RawMeat.asset` (new item, Food category, stack
+10, weight 1 - no WorldPrefab assigned yet, same "needs a Unity-side
+prefab before it can drop" situation Flint/Resin had before their own
+Step 0), `ScriptableObjects/Creatures/WildBoarCreature.asset` (neutral,
+40 HP, flees when hit, 75% chance to drop 1x Raw Meat) and
+`ScriptableObjects/Creatures/ForestWolfCreature.asset` (hostile, 35 HP,
+10m detection, 12 damage, guaranteed 1x Raw Meat on death) - hand-
+authored the same way Wood/Rock/StoneAxe/StoneSword/BasicWorkbench were.
+
+NOT YET CONFIRMED - needs a NavMesh baked in SampleScene (first time
+this project uses one), two test Capsule GameObjects
+(`CreatureTest_WildBoar`/`CreatureTest_ForestWolf`, each with
+`NavMeshAgent` + `Creature` + its Definition assigned), and a World
+Prefab assigned to `RawMeat.asset` (duplicating an existing item prefab,
+e.g. `Flint_item.prefab`) before loot can be picked up; see
+`UNITY_SETUP_NEXT_STEPS.md` Step 23.
+
+CONFIRMED - developer completed Step 23 end-to-end (NavMesh baked,
+`CreatureTest_WildBoar`/`CreatureTest_ForestWolf` created and wired,
+`RawMeat_item` World Prefab assigned) and verified the playtest: Wild
+Boar patrols and flees when hit instead of fighting back, Forest Wolf
+detects/chases/attacks on cooldown and returns to patrol after losing
+the player, both drop Raw Meat on death and despawn. Creatures
+increment 1 (Phase 8's full checklist) is now fully confirmed
+end-to-end.
+
+Per the Core Rule's development order
+(... -> Combat -> Creatures -> **World** -> Save -> Polish ->
+Multiplayer), the next unstarted stage is **World** (Phase 9: seed
+system, deterministic random, terrain generation, biomes, resource/
+vegetation distribution, spawn regions, points of interest) - by far
+the largest and riskiest stage so far (see Known Risk #1: "Procedural
+world generation can become too complex too early"), including the
+runtime NavMesh-baking-per-chunk question already flagged during Step
+23's discussion. Same pause-and-wait-for-go pattern as every prior
+stage transition - waiting for the developer's explicit go-ahead, and
+given the size/risk here, likely worth scoping down to a small first
+slice (e.g. one seeded flat-ish biome with basic height variation)
+rather than attempting the whole Phase 9 checklist at once the way
+Combat/Creatures did.
+
+Discussed scope with the developer before writing any code (per
+CLAUDE.md's Development Protocol - Plan before Implement, and given
+this is Known Risk #1). Agreed first-slice scope: **Unity Terrain**
+(not a hand-rolled mesh - faster to a playable result, chunking for a
+truly large/streamed world is explicitly future work), **one bounded,
+non-streaming Terrain** (fixed size, no chunk system yet), **three
+biomes** - Ocean, Plains, Forest (developer initially said "ocean
+(river)" but on the complexity trade-off being spelled out - a real
+carved river is its own algorithm, source-to-sea pathfinding through
+the heightmap - chose ocean-only for this slice, river deferred).
+
+Added `Assets/NAV/Scripts/World/` (new top-level area, matching
+`ARCHITECTURE_v0.1.md`'s World layer, which was planned from the start
+but unused until now): `BiomeDefinition` (`World/Biomes/` -
+ScriptableObject: display name, a `TerrainLayer` reference for ground
+texture, `IsWater`), `WorldGenerationSettings` (`World/Generation/` -
+ScriptableObject holding every tunable: seed, terrain width/length/max
+height/heightmap resolution, height-noise scale + a smaller detail-noise
+layer blended in, sea level as a 0-1 fraction of max height, a second
+independent moisture-noise channel + threshold that splits land into
+Plains vs Forest, and references to the three `BiomeDefinition`
+assets), and `WorldGenerator` (`World/Generation/` - MonoBehaviour,
+runs the actual pipeline).
+
+`WorldGenerator` follows `ARCHITECTURE_v0.1.md`'s documented pipeline
+almost verbatim for this slice: `Seed -> Noise -> Heightmap -> Land/
+Water -> Biome Assignment` (Terrain Features, Resources, Vegetation,
+Creatures/Spawn Rules, and Points of Interest are the pipeline's later
+stages - "Generation should be split into testable stages" - explicitly
+not attempted here). On `Start()` (also exposed as a `[ContextMenu(
+"Regenerate")]` for manual re-runs without entering Play), it seeds a
+`System.Random` from `WorldGenerationSettings.Seed` - deliberately not
+`UnityEngine.Random`, whose global state depends on unrelated call
+order elsewhere in the game - and derives per-channel noise offsets
+from it, so `Mathf.PerlinNoise` sampling is both seed-dependent and
+reproducible (GDD 4: "The same seed must produce the same world when
+generation settings are identical"). Per heightmap cell: height comes
+from two blended Perlin layers (broad shape + a smaller weighted detail
+pass), moisture from an independent third Perlin channel. Cells at or
+below `SeaLevel` become Ocean; land cells split into Plains/Forest by
+`ForestMoistureThreshold` - a hard per-cell choice, no blending between
+biome edges yet. Heights feed `TerrainData.SetHeights`; the three
+biomes' `TerrainLayer`s become `TerrainData.terrainLayers`, painted via
+`SetAlphamaps` (each cell fully weighted onto its chosen layer). A
+placeholder water plane (flat quad, no shader/waves) is repositioned/
+rescaled to sea level and the terrain's footprint. Finally, an optional
+`NavMeshSurface.BuildNavMesh()` runs once against the freshly generated
+terrain - the same package/API Creatures increment 1 introduced for
+Step 23, now driven at runtime instead of an Editor-time Bake button,
+directly answering the runtime-NavMesh question raised during that
+step's discussion.
+
+Deliberately out of scope for this increment (explicit Roadmap Phase 9
+items, deferred - same style as every stage's first pass): chunk/
+streaming support for a truly large world (this generates exactly one
+fixed-size Terrain - see Known Risk #1, still open), rivers (see the
+scope discussion above), Birch grove/Dense forest as distinct biomes
+(only one generic "Forest"), Resource/Vegetation distribution (no
+trees/resource nodes placed procedurally - `SampleScene`'s hand-placed
+`TestResourceNode_*` etc. are untouched and still the only way to test
+Gathering), Spawn regions (no logic picks a guaranteed-dry player spawn
+point - an unlucky seed can spawn the fixed scene position underwater;
+flagged, not solved), Points of interest, and saving a generated world
+(needs Phase 11).
+
+Placeholder content: `ScriptableObjects/World/
+DefaultWorldGenerationSettings.asset` (seed 12345, 500x500 terrain, 60m
+max height) and `ScriptableObjects/Biomes/OceanBiome.asset`/
+`PlainsBiome.asset`/`ForestBiome.asset` - all three ship with **no**
+`TerrainLayer` assigned (final art/texture strategy is "Not Yet
+Decided" and I can't author texture assets) - Unity-side setup
+(`UNITY_SETUP_NEXT_STEPS.md` Step 24) has the developer create three
+placeholder `TerrainLayer`s and assign them.
+
+Testing this needed a new scene rather than reusing `SampleScene`
+directly - `WorldGenerator` replaces the ground `SampleScene`'s flat
+plane and every hand-placed test object (resource nodes, workbench,
+combat dummy, building pieces, the two Creatures test objects) already
+assumes; regenerating terrain under all of that would silently break
+every previously-confirmed system's test setup. Setup instructions have
+the developer duplicate `SampleScene` into a new `WorldGenTest` scene,
+strip the old ground/test objects, and keep `Player`/HUD - `SampleScene`
+itself stays untouched, exactly the same "duplicate, don't disturb"
+precedent `MainMenu` already established.
+
+NOT YET CONFIRMED - needs the new `WorldGenTest` scene, three
+placeholder `TerrainLayer` assets, a `Terrain` + `WaterPlane` +
+`NavMeshSurface`, and the `WorldGenerator` GameObject wired up; see
+`UNITY_SETUP_NEXT_STEPS.md` Step 24.
+
+Developer confirmed generation works (screenshot: seeded terrain,
+Ocean/Plains/Forest textures all visible, HUD/creatures/existing
+systems unaffected) - **CONFIRMED**, generation pipeline itself
+closes out Creatures increment 1's earlier NavMesh-question and the
+core of Phase 9's first slice. Developer feedback from the same
+screenshot: the terrain read as "one giant mountain range" despite the
+biome textures being correct - height and biome were being computed
+from independent noise passes, so the same high-frequency detail noise
+was added at full strength everywhere, including Plains.
+
+Root-cause fix (`WorldGenerator`/`BiomeDefinition`, no scene changes
+needed): height computation is now biome-first, not independent of it.
+The existing low-frequency base noise alone decides Land/Water and
+Plains/Forest (`GetBiome`, unchanged in spirit, now factored into its
+own method reused by painting and resource spawning too); only once a
+cell's biome is known does the high-frequency detail layer get added,
+scaled by that biome's new `HeightVariation` (0-1). `BiomeDefinition`
+gained this field - `OceanBiome`/`PlainsBiome` set to 0.15 (smooth
+seabed / flat fields), `ForestBiome` to 0.65 (rolling hills) - so
+Plains actually reads as flat ground instead of the same "everywhere is
+a hill" texture Forest gets. `WorldGenerationSettings` defaults also
+adjusted for a gentler overall silhouette: `MaxHeight` 60 -> 40,
+`HeightNoiseScale` 180 -> 260 (smoother/larger landmass shapes),
+`DetailNoiseWeight` 0.2 -> 0.35 (now a ceiling further multiplied by
+each cell's biome `HeightVariation`, not the same effective strength as
+before). `PaintBiomes` was refactored to read a shared `BiomeDefinition[,]`
+map built once during the height pass (instead of re-deriving biome
+from height/moisture arrays with its own separate threshold checks) -
+one source of truth for "which biome is this cell", removing a latent
+risk of painting and height shaping silently disagreeing near
+thresholds.
+
+Same conversation, developer asked for a second thing: per-biome
+control over which resource nodes spawn where (explicitly "как с
+ресурс нодов" - matching `ResourceNodeDefinition`'s existing
+item+amount+chance pattern). Added `BiomeResourceSpawn` (`Scripts/World/
+Biomes/BiomeDefinition.cs`, a small `[Serializable]` class - prefab +
+`Density` 0-1 + `MinSpacing`) and a `ResourceSpawns` list on
+`BiomeDefinition`. `WorldGenerator.SpawnResources` (new pass, runs
+after `PaintBiomes`, before `PlaceWater`/`BakeNavMesh` so newly spawned
+colliders are included in the NavMesh bake) walks a `MinSpacing`-sized
+grid per resource-spawn entry, jitters one candidate point per cell
+from a seed-derived `System.Random` (`Settings.Seed + 1` - independent
+of the terrain-shape RNG, still fully deterministic), keeps only points
+that land in the entry's own biome (via the same shared biome map
+`PaintBiomes` uses), rolls `Density`, and instantiates on a hit -
+positioned via `Terrain.SampleHeight` so nodes sit on the actual
+generated surface. Regenerating destroys and re-spawns every tracked
+instance first (`Application.isPlaying` ? `Destroy` : `DestroyImmediate`,
+since Regenerate is also usable from the Editor context menu outside
+Play), so repeated Regenerate calls don't accumulate duplicates.
+
+Wired to content that already existed but was unused anywhere:
+`Assets/NAV/Prefabs/World/SM_Rocks_03.prefab` and `Flint_Ore_Rock_01.prefab`
+(both already-configured `ResourceNode` prefabs) on Plains, `UNS_Spruce_
+WoodNode.prefab` (same) on Forest, denser there (Density 0.35 vs Plains'
+0.12/0.06) to actually read as a forest. Ocean's list is empty. All
+three are plain data on the `BiomeDefinition` assets - fully
+adjustable by the developer without touching code, per the request.
+
+Separately clarified (no code change - already exactly matches the
+request): Creature loot was asked to be made configurable "like
+resource nodes" - it already is, unchanged since Creatures increment 1.
+`CreatureDefinition.LootDrops` is the same `ResourceNodeDrop`
+(item + amount + chance) list `ResourceNodeDefinition.Drops` uses; it
+just lives on the `WildBoarCreature.asset`/`ForestWolfCreature.asset`
+ScriptableObject, not on the `Creature` component in the scene (which
+only shows loot-scatter *physics* fields - radius/force/upward force -
+not the loot list itself, which is likely why it read as missing).
+Flagged this distinction to the developer rather than adding a
+duplicate per-instance field, which would violate the project's
+existing "shared data lives on the Definition asset" convention used
+by every other content type (recipes, weapons, resource nodes, building
+pieces).
+
+NOT YET CONFIRMED (this addendum only - the base generation above is
+already confirmed) - needs a Regenerate/Play retest for the flatter
+Plains/hillier Forest terrain and the new resource scatter; no new
+Unity Editor setup required, see `UNITY_SETUP_NEXT_STEPS.md` Step 24.6.
+
 ------------------------------------------------------------------------
 
 ## Change Log
@@ -2031,6 +2322,77 @@ same as the pause before Building itself started.
     assign a BuildingPieceDefinition's own Prefab's `_definition` field
     directly in the prefab Inspector -- it should stay empty.
 
+### v0.1 --- 2026-09-06
+
+-   Developer confirmed `UNITY_SETUP_NEXT_STEPS.md` Step 22 end-to-end
+    (Death/Loot). This closes Phase 7 (Combat) except the already-
+    deferred Damage feedback item. Per the Core Rule's development
+    order, the next unstarted stage is Creatures and AI (Phase 8) -
+    waiting for the developer's go-ahead, same pattern as before
+    Building/Combat.
+-   Developer said go on Creatures (Phase 8). Creatures increment 1:
+    added `CreatureDefinition` + `Creature` (new
+    `Scripts/Gameplay/AI/` folder) - a `NavMeshAgent`-driven state
+    machine (Patrol/Chase/Attack/Search/Return/Flee/Dead), trigger-
+    radius perception (same idiom as `Workbench`/`CombatDummy`),
+    `IDamageable` implemented like `PlayerCombat`/`CombatDummy`. First
+    use of `com.unity.ai.navigation` in the project. Hostile creatures
+    chase/attack on detection; neutral creatures only flee once hit
+    (GDD 17). On death, scatters `LootDrops` (reusing
+    `ResourceNodeDrop`) via the existing `ItemPickup.SpawnInWorld` path
+    and despawns after a delay (unlike the reusable `CombatDummy`).
+    Placeholder content: `RawMeat.asset` (new Food item, no WorldPrefab
+    yet), `WildBoarCreature.asset` (neutral), `ForestWolfCreature.asset`
+    (hostile). Implements every Phase 8 checklist item in one pass, same
+    approach as Combat increment 1. NOT YET CONFIRMED - needs a baked
+    NavMesh, two test creature GameObjects, and a World Prefab for
+    RawMeat; see `UNITY_SETUP_NEXT_STEPS.md` Step 23.
+-   Developer confirmed Step 23 end-to-end (NavMesh bake, both test
+    creatures, RawMeat's World Prefab). Creatures increment 1 (all of
+    Phase 8) is closed. Per the Core Rule, the next unstarted stage is
+    World (Phase 9) - the largest/riskiest stage yet (procedural
+    terrain/biomes/seed); waiting for the developer's go-ahead, likely
+    scoped down to a small first slice rather than the full checklist.
+-   Developer said go on World (Phase 9), then scope was discussed
+    before writing code: Unity Terrain (not hand-rolled mesh), one
+    bounded non-streaming Terrain, three biomes (Ocean/Plains/Forest -
+    rivers explicitly deferred once the algorithmic cost was explained).
+    World increment 1: added `Scripts/World/` (`BiomeDefinition`,
+    `WorldGenerationSettings`, `WorldGenerator`) implementing
+    `ARCHITECTURE_v0.1.md`'s pipeline (Seed -> Noise -> Heightmap ->
+    Land/Water -> Biome Assignment) - seeded via `System.Random` (not
+    `UnityEngine.Random`) for reproducibility, two blended Perlin
+    layers for height + an independent moisture channel for Plains vs
+    Forest, `TerrainData.SetHeights`/`SetAlphamaps`, a placeholder water
+    plane at sea level, and a runtime `NavMeshSurface.BuildNavMesh()`
+    call once generation finishes (answers the runtime-NavMesh question
+    raised during Step 23). Terrain Features/Resources/Vegetation/
+    Creatures/POI are later pipeline stages, out of scope here.
+    Placeholder data ships with no `TerrainLayer` textures assigned (art
+    strategy still "Not Yet Decided"). Setup has the developer build a
+    new `WorldGenTest` scene (duplicated from `SampleScene`, old ground/
+    test objects stripped, Player/HUD kept) rather than regenerating
+    terrain under `SampleScene`'s existing confirmed test setup. NOT YET
+    CONFIRMED; see `UNITY_SETUP_NEXT_STEPS.md` Step 24.
+-   Developer confirmed generation works (screenshot). Follow-up
+    feedback: terrain read as one uniform mountain range despite
+    correct biome textures - fixed by making height computation
+    biome-first (a shared biome map decides Land/Water/Plains/Forest
+    before any detail noise is added, then that noise is scaled by a
+    new per-biome `HeightVariation`: Ocean/Plains 0.15, Forest 0.65) and
+    softening `WorldGenerationSettings` defaults (MaxHeight 60->40,
+    HeightNoiseScale 180->260, DetailNoiseWeight 0.2->0.35 as a ceiling
+    now further scaled per-biome). Also added `BiomeResourceSpawn`
+    (prefab + Density + MinSpacing) and a `ResourceSpawns` list on
+    `BiomeDefinition`, plus a `WorldGenerator.SpawnResources` pass
+    (deterministic, seed-derived RNG, positioned via
+    `Terrain.SampleHeight`) - wired to existing unused prefabs
+    (`SM_Rocks_03`/`Flint_Ore_Rock_01` on Plains, `UNS_Spruce_WoodNode`
+    on Forest). Separately clarified that Creature loot drops already
+    matched the ResourceNode pattern exactly (no code change - a
+    documentation/discoverability answer, not a bug). NOT YET CONFIRMED
+    for this addendum; see `UNITY_SETUP_NEXT_STEPS.md` Step 24.6.
+
 -   Third round of bug reports (developer, with screenshots): Wall/Door
     only ever attach in one position, Palisade attaches at an edge
     midpoint instead of a corner, Foundation sinks, Roof looks/behaves
@@ -2176,3 +2538,228 @@ same as the pause before Building itself started.
     scope: Phase 6's Gravestone/Respawn (inventory loss/recovery per
     GDD_v0.1.md section 9) and Damage feedback (VFX/audio). NOT YET
     CONFIRMED - see `UNITY_SETUP_NEXT_STEPS.md` Step 22.
+
+### v0.1 --- 2026-09-07
+
+-   Performance investigation (developer's own in-Editor profiler
+    screenshot after Step 24.6's resource-spawn addendum: 82 FPS, 1157
+    draw calls, 232 of them Non-SRP-Compatible, ~1.43M triangles). Read-
+    only findings, no code changed yet at this point: `WorldGenerator`
+    Instantiates every spawned resource as a fully separate GameObject
+    (no pooling/batching), Forest/Plains density+spacing plausibly
+    yields 1000+ instances map-wide, `SM_Rocks_03.prefab` has no
+    `LODGroup` at all (unlike the tree/Flint rock prefabs, which have
+    one), and `Assets/PolyOne/Rocks Stylized/Materials/Rocks Stylized_M.mat`
+    had GPU Instancing disabled (`m_EnableInstancingVariants: 0`) while
+    the tree/rock material sharing the same shader had it enabled - the
+    likely source of the 232 non-SRP-compatible draw calls. Explained
+    fixes to the developer (enable GPU Instancing on that material, add
+    a `LODGroup`/Culled zone to `SM_Rocks_03`) as manual Editor steps -
+    developer chose to do those two by hand rather than have them
+    scripted.
+-   Render Distance (Core layer, new): added
+    `Assets/NAV/Scripts/Core/RenderDistanceSettings.cs` (ScriptableObject:
+    Min/Max/Default distance, Fog Start Ratio, Resource Layer Name,
+    Resource Cull Ratio) and `RenderDistanceController.cs` (applies one
+    distance value to `RenderSettings` fog, `Camera.farClipPlane`, and
+    `Camera.layerCullDistances` for a dedicated `WorldResource` layer -
+    the actual performance win, since fog alone only hides pop-in
+    visually without reducing draw calls; culling the thousands of
+    small spawned resources at a shorter distance than the terrain is
+    what does). `SetDistance(float)` is the single entry point - no
+    Settings UI exists yet (see "Not Yet Decided" in this file), so this
+    is the API a future slider will bind to; until then it's tested live
+    by dragging the `Distance` field in the Inspector during Play Mode
+    (`OnValidate` re-applies through the same code path) and persists
+    across sessions via `PlayerPrefs`.
+-   `WorldGenerationSettings` gained **Resource Layer Name** (default
+    `WorldResource`, must match `RenderDistanceSettings`' own field of
+    the same name - two independent Core/World-layer assets by design,
+    not cross-referenced, per ARCHITECTURE_v0.1.md keeping Core
+    unaware of World). `WorldGenerator.SpawnBiomeResources` now
+    recursively assigns that layer (root + every child, so LOD
+    sub-meshes are covered too) to each spawned resource instance,
+    resolved once per `Generate()` call rather than per instance; logs
+    a clear error (not a silent no-op) if the layer doesn't exist yet in
+    the project.
+-   NOT YET CONFIRMED - needs the `WorldResource` Layer created, a
+    `RenderDistanceSettings` asset, and a `RenderDistanceController`
+    GameObject wired up in `WorldGenTest`; see
+    `UNITY_SETUP_NEXT_STEPS.md` Step 25.
+-   Per developer's explicit instruction, World (Phase 9) work pauses
+    here once Render Distance is confirmed - `DEVELOPMENT_ROADMAP_v0.1.md`
+    Phase 9 stays intentionally partial (Birch grove, Dense forest,
+    Vegetation distribution, Spawn regions, Points of interest are all
+    still unchecked and not being picked up now - not forgotten, just
+    deliberately deferred, same pause pattern used before
+    Building/Combat/Creatures each started). Per the Core Rule, the next
+    stage is **Save** (Phase 11).
+-   Playtest of Render Distance surfaced a visual artifact: the flat
+    `Fog Color` only matches the procedural Skybox's gradient at one
+    point (its horizon color, roughly), so distant terrain - even fully
+    fogged - still reads as a visible silhouette against the sky
+    (`RenderSettings.fog` never touches the Skybox itself, which draws
+    at infinite distance with its own gradient regardless of fog).
+    Explained the fix (flat `Skybox/Color` material matching Fog Color,
+    or `FogMode.ExponentialSquared` instead of `Linear`, or a shorter
+    `RenderDistanceSettings.MaxDistance` so the terrain's own 500x500
+    edge is never in view) but developer chose to defer tuning this
+    until Polish rather than iterate on it now. Per developer request,
+    Render Distance/Fog is **deactivated in the `WorldGenTest` scene** -
+    developer removed the `RenderDistanceController` GameObject entirely
+    (disabling it alone didn't visibly remove the fog, since
+    `RenderSettings.fog` is a separate scene Environment setting the
+    Step 25.5 instructions had them check by hand in the Lighting window
+    - it isn't owned/reset by the component, so it needed unchecking
+    there too). All the underlying code
+    (`RenderDistanceSettings`/`RenderDistanceController` scripts, the
+    `WorldResource` layer assignment in `WorldGenerator`/
+    `WorldGenerationSettings`) stays in place untouched and ready to
+    recreate/tune later - see `UNITY_SETUP_NEXT_STEPS.md` Step 25 for
+    the setup to redo (GameObject + Fog checkbox) whenever this is
+    revisited at Polish.
+    World (Phase 9) is now fully paused; moving on to **Save** (Phase
+    11) next, scoped down to Increment 1 = player state (position/HP/
+    inventory) + world seed only - world state (buildings, depleted/
+    gathered resource nodes) explicitly deferred, developer's own call.
+-   Save, Increment 1 (developer expanded the scope from the plan above
+    once discussion started: player + seed + **placed buildings**, plus
+    a Main Menu Load screen and periodic autosave-into-its-own-slot).
+    New `Assets/NAV/Scripts/Core/Save/` folder: `SaveGameData.cs` (plain
+    serializable data - seed, player position/rotation/health/inventory
+    slots, a list of placed buildings; deliberately NOT the terrain
+    itself, which regenerates deterministically from the seed),
+    `SaveSystem.cs` (static class - JSON file I/O under
+    `Application.persistentDataPath/Saves/`, plus
+    `PendingLoadSaveId`/`CurrentSaveId`/`CurrentSeed` static state that
+    survives the MainMenu -> WorldGenTest scene load within one Play
+    session without needing a DontDestroyOnLoad object),
+    `SaveManager.cs` (the gameplay-scene bootstrapper: on Start, either
+    begins a new game with a fresh random seed or loads a chosen save -
+    regenerating the world from its seed and restoring player/building
+    state - then runs a coroutine that autosaves on an interval,
+    **always overwriting the same save id**, never creating a second
+    file, per the developer's explicit "autosave replaces the world's
+    own save" requirement), `ItemDatabase.cs`/`BuildingPieceDatabase.cs`
+    (hand-maintained id->asset lookup lists, same "fixed serialized
+    list" pattern as `PlayerCrafting.KnownRecipes`/
+    `PlayerBuilding.KnownPieces` - needed because JSON can't hold a
+    direct Unity asset reference).
+-   Small supporting changes: `BuildingPieceDefinition` gained an
+    **Id** field (auto-fills from the asset name, same pattern
+    `ItemDefinition.Id` already had). `Inventory` gained `SetSlot(index,
+    definition, quantity)` (bypasses `AddItem`'s stacking/weight-budget
+    policy - a load restore of already-owned items must never be
+    rejected). `PlayerHealth` gained `SetHealth(value)` (same "force
+    state directly" precedent as the existing `Revive()`).
+    `WorldGenerator.Generate()` split into a parameterless overload
+    (uses `Settings.Seed` - manual Editor testing/Regenerate, unchanged
+    behavior) and `Generate(int seed)` (what `SaveManager` actually
+    calls - never mutates the `WorldGenerationSettings` asset itself,
+    since editing a ScriptableObject asset's fields at runtime
+    persists after stopping Play in the Editor, which would have
+    silently corrupted the asset). New **Generate On Start** toggle
+    (default on, preserves existing standalone-scene-testing behavior)
+    lets `SaveManager` be the sole caller of `Generate()` once turned
+    off, avoiding a double-generation race with `WorldGenerator`'s own
+    `Start()`.
+-   **Architecture decision (developer-confirmed, not made
+    unilaterally):** `WorldGenTest` becomes the real game's scene going
+    forward - `MainMenuUIController`'s `Game Scene Name` now defaults to
+    `WorldGenTest` instead of `SampleScene` in code (existing scene data
+    still needs the field updated by hand, see
+    `UNITY_SETUP_NEXT_STEPS.md` Step 26.8). Reasoning: seed-based
+    save/load only makes sense in the scene that actually has a
+    `WorldGenerator` - `SampleScene` never had one. `SampleScene` stays
+    in the project as a sandbox for testing systems outside world
+    generation, but is no longer what Play/Load actually loads.
+-   `MainMenuUIController`/`MainMenuPanel.uxml`/`.uss` reworked: Play
+    now explicitly starts a new game (clears
+    `SaveSystem.PendingLoadSaveId`); a new **Load** button switches the
+    same panel to a second view listing every save from
+    `SaveSystem.ListSaves()` (seed + saved-at timestamp per entry,
+    newest first) - clicking one sets `PendingLoadSaveId` and goes
+    through the identical loading-screen/SceneLoader flow Play already
+    used. `PauseUIController` gained an optional **Save Manager**
+    reference - if wired, "Leave to Main Menu" autosaves first so
+    progress since the last periodic autosave isn't lost.
+-   NOT YET CONFIRMED - needs `WorldGenTest` added to Build Settings, an
+    `ItemDatabase`/`BuildingPieceDatabase` asset populated with existing
+    content, `WorldGenerator.Generate On Start` turned off, a
+    `SaveManager` GameObject wired up, `PauseUI`'s new field set, and
+    `MainMenuUI`'s scene name field corrected by hand; see
+    `UNITY_SETUP_NEXT_STEPS.md` Step 26 for the full walkthrough and its
+    end-to-end playtest (new game -> autosave -> leave to menu -> Load
+    -> same seed/player/buildings restored).
+-   Explicitly deferred (developer's own scope call, same as the
+    original Increment 1 plan): which resource nodes were already
+    gathered/depleted is not saved - every load respawns all resources
+    fresh from the seed. No delete-save UI, no manual Save button (only
+    autosave + save-on-leave-to-menu), no multiple slots per world
+    lineage (every "New Game" creates a distinct save file; Load lists
+    all of them together).
+-   **Known limitation, flagged to the developer (not fixed - this is
+    Roadmap Phase 11's own separate unchecked "Save versioning" item):**
+    a save only stores the world Seed, not the terrain itself - loading
+    regenerates it from scratch via WorldGenerator.Generate(seed) using
+    whatever WorldGenerationSettings values exist *at load time*. If
+    those settings (or the generation algorithm) change after a save
+    was made, the same seed produces a *different* terrain, and that
+    save's stored building/player world-space coordinates silently stop
+    matching the new ground (buildings floating/buried, player possibly
+    spawning in water). No version/hash check exists yet to detect or
+    warn about this mismatch. Practical implication right now: avoid
+    tweaking WorldGenerationSettings if existing test saves need to stay
+    valid. There is also no in-game "regenerate this save's world"
+    feature - New Game always creates a brand new save file with a new
+    seed rather than touching an existing one.
+-   Load screen polish (developer request): each save card in
+    `MainMenuUIController`'s Load list gained a delete (`✕`) button, and
+    both loading and deleting now go through a shared confirmation
+    dialog (new `confirm-dialog-root` overlay in `MainMenuPanel.uxml`/
+    `.uss`, generic `ShowConfirm(message, onConfirm)` in the
+    controller) instead of acting immediately on click.
+    `SaveSystem.DeleteSave(saveId)` added (no-op if the file doesn't
+    exist). No new Inspector wiring - same `MainMenuUI` GameObject/
+    fields as Step 26. NOT YET CONFIRMED - see the addendum to
+    `UNITY_SETUP_NEXT_STEPS.md` Step 26.
+-   Create World screen (developer request): Play no longer starts a
+    game immediately - it now opens a new `create-world-panel` (World
+    Name text field, Seed text field pre-filled with a script-generated
+    random number, a Randomize reroll button, Create World/Back
+    buttons). `SaveGameData` gained `WorldName`; `SaveSystem` gained
+    `PendingNewGameName`/`PendingNewGameSeed` (same
+    set-before-scene-load, read-once-and-clear pattern as
+    `PendingLoadSaveId`) and `CurrentWorldName`. `SaveManager.StartNewGame`
+    reads them (falling back to a random seed + "New World" if empty -
+    i.e. the gameplay scene was entered directly, not through this
+    screen) and threads `CurrentWorldName` through to every
+    `Autosave()`/`LoadFrom()`. The seed field accepts non-numeric text
+    too (`MainMenuUIController.ResolveSeed`/`StableHash`) - hashed into a
+    deterministic int with a custom FNV-1a-style hash rather than
+    `string.GetHashCode()`, which is intentionally randomized per
+    process by .NET and would make the "same word -> same world"
+    guarantee false. Save list cards now show `<WorldName> (seed N)`
+    instead of an anonymous `World (seed N)`; pre-existing saves from
+    before this change display as `Unnamed World (seed N)` (no data
+    loss, they just never had a name field). No new Inspector wiring.
+    NOT YET CONFIRMED - see the second addendum to
+    `UNITY_SETUP_NEXT_STEPS.md` Step 26.
+-   CONFIRMED - developer verified Step 26 end-to-end (base Save
+    Increment 1, delete/confirm dialog, and the Create World name/seed
+    screen): new game -> autosave -> leave to menu -> Load -> same
+    world/player/buildings restored correctly. Save (Phase 11) is now
+    closed at Increment 1's scope - `DEVELOPMENT_ROADMAP_v0.1.md`
+    checked off Player save/Inventory save/World seed save/Building
+    save; World changes/Equipment save/Skill save/Container save/Time-
+    weather save/Save versioning/Backup-recovery stay unchecked
+    (systems they depend on don't exist yet, or explicitly deferred -
+    see this file's own "known limitation" note above). Per the Core
+    Rule, Save was the last explicitly-named stage before Polish: the
+    remaining gaps blocking a real Phase 12 Vertical Slice loop (`Spawn
+    -> Gather -> Build -> Craft -> Explore -> Fight -> Eat -> Die ->
+    Recover -> Save -> Reload`) are Eat (no food/hunger mechanic yet)
+    and Recover (Phase 6's Gravestone/loot-recovery on death, separate
+    from the existing bare-bones `PlayerHealth`/`PlayerDeath`) - proposed
+    as the next candidate, waiting for the developer's go-ahead, same
+    pause pattern as every prior stage transition.

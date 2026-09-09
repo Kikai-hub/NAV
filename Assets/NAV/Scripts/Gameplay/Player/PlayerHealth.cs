@@ -70,5 +70,15 @@ namespace NAV.Gameplay.Player
             CurrentHealth = _stats.MaxHealth;
             Changed?.Invoke();
         }
+
+        /// <summary>Directly sets current health to an arbitrary saved value (clamped to
+        /// 0..MaxHealth) - used by SaveManager on load. Deliberately bypasses TakeDamage/Heal's
+        /// IsAlive guard and Died-event firing, same "force state directly" precedent as
+        /// Revive().</summary>
+        public void SetHealth(float value)
+        {
+            CurrentHealth = Mathf.Clamp(value, 0f, _stats.MaxHealth);
+            Changed?.Invoke();
+        }
     }
 }

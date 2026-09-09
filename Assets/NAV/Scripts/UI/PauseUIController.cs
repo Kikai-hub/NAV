@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using NAV.Core.Save;
 using NAV.Gameplay.Player;
 
 namespace NAV.UI
@@ -19,6 +20,8 @@ namespace NAV.UI
     {
         [SerializeField] private string _mainMenuSceneName = "MainMenu";
         [SerializeField] private PlayerInputHandler _inputHandler;
+        [Tooltip("Optional. If assigned, leaving to the Main Menu autosaves first so a manual quit never loses progress the periodic autosave hasn't caught yet.")]
+        [SerializeField] private SaveManager _saveManager;
 
         private UIDocument _document;
         private VisualElement _root;
@@ -96,6 +99,7 @@ namespace NAV.UI
 
         private void HandleMainMenuClicked()
         {
+            _saveManager?.Autosave();
             Time.timeScale = 1f;
             SceneManager.LoadScene(_mainMenuSceneName);
         }

@@ -227,6 +227,22 @@ namespace NAV.Gameplay.Inventory
             return removed;
         }
 
+        /// <summary>
+        /// Directly sets one slot's contents, bypassing AddItem's stacking/weight-budget policy -
+        /// used by SaveManager to restore an exact saved layout (already-owned items must never be
+        /// rejected by a live weight recalculation on load).
+        /// </summary>
+        public void SetSlot(int index, ItemDefinition definition, int quantity)
+        {
+            if (index < 0 || index >= _slots.Length || definition == null || quantity <= 0)
+            {
+                return;
+            }
+
+            _slots[index] = new ItemStack(definition, quantity);
+            Changed?.Invoke();
+        }
+
         public int GetTotalQuantity(ItemDefinition definition)
         {
             if (definition == null)

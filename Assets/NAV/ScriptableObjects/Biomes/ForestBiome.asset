@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 361de9b037aa6154344c9279e01ee3a0, type: 3}
+  m_Name: ForestBiome
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Biomes.BiomeDefinition
+  _displayName: Forest
+  _terrainLayer: {fileID: 8574412962073106934, guid: 526b0480996617546ad70677a4ab1857, type: 2}
+  _isWater: 0
+  _heightVariation: 0.65
+  _resourceSpawns:
+  - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
+    _density: 0.35
+    _minSpacing: 9

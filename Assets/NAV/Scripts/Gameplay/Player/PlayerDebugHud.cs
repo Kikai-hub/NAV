@@ -22,7 +22,7 @@ namespace NAV.Gameplay.Player
         [SerializeField] private PlayerBuilding _building;
         [SerializeField] private PlayerCombat _combat;
 
-        private bool _visible = true;
+        private bool _visible;
         private GUIStyle _style;
 
         private void Update()

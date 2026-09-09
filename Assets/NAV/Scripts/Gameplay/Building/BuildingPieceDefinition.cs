@@ -14,6 +14,7 @@ namespace NAV.Gameplay.Building
     public class BuildingPieceDefinition : ScriptableObject
     {
         [Header("Identity")]
+        [SerializeField] private string _id;
         [SerializeField] private string _displayName;
         [SerializeField] private Sprite _icon;
 
@@ -23,6 +24,10 @@ namespace NAV.Gameplay.Building
         [Header("World")]
         [SerializeField] private GameObject _prefab;
 
+        /// <summary>Stable identifier used by SaveManager/BuildingPieceDatabase to reference this
+        /// definition from a save file (JSON can't hold a direct asset reference) - same pattern
+        /// as ItemDefinition.Id. Auto-fills from the asset name if left blank.</summary>
+        public string Id => _id;
         public string DisplayName => _displayName;
         public Sprite Icon => _icon;
         public IReadOnlyList<RecipeIngredient> Cost => _cost;
@@ -59,6 +64,14 @@ namespace NAV.Gameplay.Building
             foreach (RecipeIngredient ingredient in _cost)
             {
                 inventory.RemoveItem(ingredient.Item, ingredient.Amount);
+            }
+        }
+
+        private void OnValidate()
+        {
+            if (string.IsNullOrWhiteSpace(_id))
+            {
+                _id = name;
             }
         }
     }
