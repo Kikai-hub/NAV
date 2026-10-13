@@ -169,3 +169,9 @@ Packages/packages-lock.json linguist-generated
 
 # Exceptions for .asset files such as lightning pre-baking
 LightingData.asset     binary
+
+# Unity always serializes these as binary even in Force Text mode - without this the
+# "*.asset unity-yaml" rule above (eol=lf) rewrites CRLF bytes inside them and corrupts them.
+*Terrain*.asset         binary
+NavMesh*.asset          binary
+*Occlusion*.asset       binary

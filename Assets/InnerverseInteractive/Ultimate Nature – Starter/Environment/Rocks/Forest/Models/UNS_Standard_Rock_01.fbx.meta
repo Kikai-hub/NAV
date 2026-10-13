@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 872845ac0a2b8c6469d5e67ad0aba08e
+AssetOrigin:
+  serializedVersion: 1
+  productId: 176906
+  packageName: "Ultimate Nature \u2013 Starter"
+  packageVersion: 1.3.0
+  assetPath: "Assets/InnerverseInteractive/Ultimate Nature \u2013 Starter/Environment/Rocks/Forest/Models/UNS_Standard_Rock_01.fbx"
+  uploadId: 964150
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
@@ -31,7 +38,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages:
     - 0.25
@@ -116,10 +123,3 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 176906
-  packageName: "Ultimate Nature \u2013 Starter"
-  packageVersion: 1.3.0
-  assetPath: "Assets/InnerverseInteractive/Ultimate Nature \u2013 Starter/Environment/Rocks/Forest/Models/UNS_Standard_Rock_01.fbx"
-  uploadId: 964150
