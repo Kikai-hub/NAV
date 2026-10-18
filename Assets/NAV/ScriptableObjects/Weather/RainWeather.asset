@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 429324f8fe52a1b4db066f5cc13051e5, type: 3}
+  m_Name: RainWeather
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Weather.WeatherDefinition
+  _id: Rain
+  _displayName: Rain
+  _minDurationSeconds: 120
+  _maxDurationSeconds: 240
+  _transitions:
+  - _target: {fileID: 11400000, guid: 3da18292f47cc2e4f951146358aab652, type: 2}
+    _weight: 0.5
+  - _target: {fileID: 11400000, guid: 186938d0a265d2944bd400ba96908ee9, type: 2}
+    _weight: 0.35
+  - _target: {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
+    _weight: 0.15
+  _rainRate: 1500
+  _sunMultiplier: 0.3
+  _ambientMultiplier: 0.75
+  _skyExposureMultiplier: 0.6
+  _overcast: 0.6
+  _fogDensity: 0.008
+  _hasLightning: 0
+  _minLightningInterval: 6
+  _maxLightningInterval: 16

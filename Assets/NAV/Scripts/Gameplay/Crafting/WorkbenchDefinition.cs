@@ -20,16 +20,26 @@ namespace NAV.Gameplay.Crafting
         [SerializeField] private int _tier = 1;
 
         [Header("Range")]
+        [Tooltip("How close the player must stand to craft at it (trigger sphere).")]
         [SerializeField] private float _range = 4f;
+        [Tooltip("Building pieces that need a workbench can only be placed within this distance of one (Valheim-style build area).")]
+        [SerializeField] private float _buildRadius = 20f;
+
+        [Header("Shelter")]
+        [Tooltip("Crafting at it only works while it stands under a roof (a placed building piece overhead).")]
+        [SerializeField] private bool _requiresRoof = true;
 
         public string DisplayName => _displayName;
         public int Tier => _tier;
         public float Range => _range;
+        public float BuildRadius => _buildRadius;
+        public bool RequiresRoof => _requiresRoof;
 
         private void OnValidate()
         {
             _tier = Mathf.Max(1, _tier);
             _range = Mathf.Max(0.5f, _range);
+            _buildRadius = Mathf.Max(_range, _buildRadius);
 
             if (string.IsNullOrWhiteSpace(_displayName))
             {

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_sword1H8
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_sword1H8
+  _displayName: Sword 8
+  _description: Sword from the LowPoly Weapons Pack. Placeholder stats - no materials,
+    tier or recipe yet.
+  _icon: {fileID: 21300000, guid: 25e18b10196f453458979e579a56311a, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 3
+  _worldPrefab: {fileID: 8147045109367513099, guid: 8060ca59177b84047bbd6abf37d196c1, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 3d569e11c0df61e42ab47e97a3e40ecf, type: 2}
+  _heldPrefab: {fileID: 1238605674008176167, guid: 32fbab87be0f59442986c898d2ff3236, type: 3}
+  _heldInLeftHand: 0

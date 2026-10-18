@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="BuildMenuPanel.uss" />
+    <ui:VisualElement name="build-menu-root" class="build-root">
+        <ui:VisualElement name="build-menu-panel" class="build-panel">
+            <ui:Label text="Build" class="build-title" />
+            <ui:Label text="Click a piece to build it, or the hammer to demolish" class="build-hint" />
+            <ui:VisualElement name="slot-container" class="build-grid" />
+            <ui:Label name="info-label" text="" class="build-info" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

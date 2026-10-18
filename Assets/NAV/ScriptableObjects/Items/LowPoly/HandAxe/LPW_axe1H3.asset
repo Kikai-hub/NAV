@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_axe1H3
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_axe1H3
+  _displayName: Hand Axe 3
+  _description: Hand Axe from the LowPoly Weapons Pack. Placeholder stats - no materials,
+    tier or recipe yet.
+  _icon: {fileID: 21300000, guid: 26bdb3b3525d2d247b71f921dd3b9553, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 3
+  _worldPrefab: {fileID: 8436529962398623917, guid: bd3e34506150f804dbc023299fcb7dcd, type: 3}
+  _food: {fileID: 0}
+  _toolType: 1
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: abc20295cb903de44b66f4dcdf8800cb, type: 2}
+  _heldPrefab: {fileID: 4553322327095570555, guid: 14721bc6e3dc7634e9fda2f04876bd46, type: 3}
+  _heldInLeftHand: 0

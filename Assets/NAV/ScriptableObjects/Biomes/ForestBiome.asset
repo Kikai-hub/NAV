@@ -20,3 +20,14 @@ MonoBehaviour:
   - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
     _density: 0.35
     _minSpacing: 9
+  - _prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
+    _density: 0.12
+    _minSpacing: 14
+  - _prefab: {fileID: 7000480892539141789, guid: e14dea2f61bf28549875fb6463133d6a, type: 3}
+    _density: 0.04
+    _minSpacing: 18
+  _creatureSpawns:
+  - _prefab: {fileID: 7615035062538442650, guid: 72c4127d0a2e60742800947a9ea68e84, type: 3}
+    _count: 4
+  - _prefab: {fileID: 3278574604635449654, guid: 629c4ab8949b6ef47936ac8e868c5957, type: 3}
+    _count: 3

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_spear1
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_spear1
+  _displayName: Spear 1
+  _description: Spear from the LowPoly Weapons Pack. Placeholder stats - no materials,
+    tier or recipe yet.
+  _icon: {fileID: 21300000, guid: eac88f26a48ac054d8e951493e45e724, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 4
+  _worldPrefab: {fileID: 5033753397578775447, guid: 92dbdd1222f57df4db4d6254f28e8761, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 1fc14ca77b6bc174b92a0baa7e993511, type: 2}
+  _heldPrefab: {fileID: 3471449823704430004, guid: cdf116302e330f84ca30f76d7701695e, type: 3}
+  _heldInLeftHand: 0

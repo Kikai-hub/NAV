@@ -13,11 +13,16 @@ MonoBehaviour:
   m_Name: StoneSword
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
   _displayName: Stone Sword
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: cf87104b793db134590f066d9f330987, type: 3}
+  _weaponClass: 3
   _damage: 15
   _range: 2.5
   _attackCooldown: 0.6
   _attackStaminaCost: 10
+  _attackStyle: 1
+  _attackAnimationSpeed: 1.5
+  _hitWindowStart: 0.04
+  _hitWindowEnd: 0.32
   _blockDamageReduction: 0.5
   _blockStaminaCostPerHit: 10
   _parryWindowSeconds: 0.25

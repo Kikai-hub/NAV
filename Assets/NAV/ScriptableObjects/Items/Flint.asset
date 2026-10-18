@@ -16,8 +16,9 @@ MonoBehaviour:
   _displayName: Flint
   _description: A sharp-edged stone chip, gathered from coastal deposits. Placeholder
     Tier 1 resource - not final content.
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: eaf9120959b7997499d2fed3e752340b, type: 3}
   _category: 0
   _maxStackSize: 40
   _weight: 0.5
   _worldPrefab: {fileID: 2882303901343305340, guid: fe2a9457f522665498e87679367537ca, type: 3}
+  _food: {fileID: 0}

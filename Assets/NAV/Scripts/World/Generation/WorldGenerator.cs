@@ -9,8 +9,8 @@ namespace NAV.World.Generation
     /// <summary>
     /// First slice of the World Generation pipeline from ARCHITECTURE_v0.1.md:
     /// Seed -> Noise -> Heightmap -> Land/Water -> Biome Assignment (-> a first pass at
-    /// Resources, see SpawnResources below - Vegetation/Creatures/POI are still later pipeline
-    /// stages, out of scope here).
+    /// Resources and Creatures, see SpawnResources/SpawnCreatures below - Vegetation/POI are
+    /// still later pipeline stages, out of scope here).
     ///
     /// Deterministic: every noise sample is offset by values derived from a seed via a seeded
     /// System.Random (not Unity's global Random, whose state depends on call order elsewhere in
@@ -22,9 +22,10 @@ namespace NAV.World.Generation
     /// itself is never mutated at runtime (see SaveManager's own doc comment).
     ///
     /// Bounded, non-streaming: generates one fixed-size Terrain, not chunks - see PROJECT_STATE.md
-    /// Known Risk #1. Chunk/streaming support for a truly large open world is future work, as is
-    /// picking a guaranteed-dry spawn point for the player (today's fixed scene spawn can land in
-    /// ocean for an unlucky seed - see UNITY_SETUP_NEXT_STEPS.md Step 24).
+    /// Known Risk #1. Chunk/streaming support for a truly large open world is future work. A dry,
+    /// flat player spawn point is picked per seed (SpawnPoint - see FindSpawnPoint), and
+    /// resource nodes get stable spawn-index ids so gathered ones can be saved and skipped on
+    /// load (GetDepletedResourceIds / Generate(seed, depletedResourceIds)).
     ///
     /// Height/biome classification is deliberately biome-first, not the other way around: a low-
     /// frequency "base noise" pass alone decides Land/Water and Plains/Forest (see GetBiome) -
@@ -46,10 +47,52 @@ namespace NAV.World.Generation
         [SerializeField] private NavMeshSurface _navMeshSurface;
         [Tooltip("Optional parent for spawned resource-node prefabs (see SpawnResources), purely for Hierarchy organization - spawning still works with this left empty.")]
         [SerializeField] private Transform _resourceContainer;
+        [Tooltip("No creature is spawned within this distance of the player spawn point (see SpawnPoint).")]
+        [SerializeField, Min(0f)] private float _creatureSafeRadius = 30f;
+
+        [Header("Player Spawn Point")]
+        [Tooltip("Ring spacing (m) of the outward spiral search from the terrain centre.")]
+        [SerializeField, Min(1f)] private float _spawnSearchStep = 4f;
+        [Tooltip("Minimum ground height above sea level for a spawn point.")]
+        [SerializeField, Min(0f)] private float _spawnMinHeightAboveSea = 1.5f;
+        [Tooltip("Max height difference (m) between the spawn point and ground 2 m around it - keeps spawns off slopes.")]
+        [SerializeField, Min(0.05f)] private float _spawnMaxHeightDifference = 0.5f;
+        [Tooltip("Radius (m) that must be free of colliders (trees, rocks) around the spawn point.")]
+        [SerializeField, Min(0.1f)] private float _spawnClearRadius = 1.5f;
+
+        [Header("Starter Resources")]
+        [Tooltip("Pickups scattered close to the spawn point so a new player can gather the wood/stone for their first tools (trees need an Axe, rock needs a Pickaxe). Tracked like resources - picked up ones stay gone after load.")]
+        [SerializeField] private List<StarterSpawn> _starterSpawns = new();
+        [SerializeField, Min(0f)] private float _starterMinRadius = 3f;
+        [SerializeField, Min(0.5f)] private float _starterMaxRadius = 15f;
+
+        [System.Serializable]
+        private class StarterSpawn
+        {
+            public GameObject Prefab;
+            [Min(0)] public int Count = 5;
+        }
         [Tooltip("Off when SaveManager drives generation instead (New Game/Load pick the seed) - see UNITY_SETUP_NEXT_STEPS.md's Save step. On for standalone testing of this scene without a SaveManager present (e.g. WorldGenTest before Save existed).")]
         [SerializeField] private bool _generateOnStart = true;
 
         private readonly List<GameObject> _spawnedResources = new();
+        private readonly List<GameObject> _spawnedCreatures = new();
+
+        // Attempts per requested creature before giving up on finding a valid point (right
+        // biome, on the NavMesh, outside the safe zone) - bounds the loop for biomes that are
+        // tiny or missing in an unlucky seed.
+        private const int CreaturePlacementAttemptsPerSpawn = 30;
+        private const float CreatureNavMeshSampleDistance = 2f;
+        private const float SpawnFlatnessProbeDistance = 2f;
+        private readonly Collider[] _spawnOverlapBuffer = new Collider[16];
+        private ICollection<int> _depletedOnLoad;
+
+        /// <summary>A dry, flat, unobstructed ground point picked deterministically from the
+        /// seed during Generate (nearest such point to the terrain centre). SaveManager places a
+        /// new-game player here and uses it as the respawn point; creatures keep their distance
+        /// from it. Only valid when HasSpawnPoint is true.</summary>
+        public Vector3 SpawnPoint { get; private set; }
+        public bool HasSpawnPoint { get; private set; }
 
         private void Start()
         {
@@ -75,7 +118,12 @@ namespace NAV.World.Generation
             Generate(_settings.Seed);
         }
 
-        public void Generate(int seed)
+        public void Generate(int seed) => Generate(seed, null);
+
+        /// <summary>Generates the world for a seed, skipping resource nodes whose spawn index is in
+        /// depletedResourceIds (gathered in a previous session - see GetDepletedResourceIds).
+        /// Skipped before the NavMesh bake, so a gathered tree leaves no hole in the mesh.</summary>
+        public void Generate(int seed, ICollection<int> depletedResourceIds)
         {
             if (_settings == null || _terrain == null)
             {
@@ -124,9 +172,113 @@ namespace NAV.World.Generation
             terrainData.SetHeights(0, 0, heights);
 
             PaintBiomes(terrainData, biomeMap);
-            SpawnResources(biomeMap, seed);
+            SpawnResources(biomeMap, seed, depletedResourceIds);
             PlaceWater();
+            FindSpawnPoint(biomeMap);
+            SpawnStarterResources(seed);
             BakeNavMesh();
+            SpawnCreatures(biomeMap, seed);
+        }
+
+        /// <summary>Spawn indices of resource nodes that no longer exist (gathered until
+        /// depleted - ResourceNode destroys itself) or were skipped as already depleted on load.
+        /// Indices are stable for a given seed + generation settings, so SaveManager can store
+        /// just these numbers instead of every node.</summary>
+        public List<int> GetDepletedResourceIds()
+        {
+            var ids = new List<int>();
+            for (int i = 0; i < _spawnedResources.Count; i++)
+            {
+                if (_spawnedResources[i] == null)
+                {
+                    ids.Add(i);
+                }
+            }
+
+            return ids;
+        }
+
+        /// <summary>Spiral search outward from the terrain centre for the first point that is
+        /// land (non-water biome), high enough above sea level, flat, and free of colliders
+        /// (trees/rocks spawned just before). Deterministic for a seed, so a loaded save gets the
+        /// same respawn point its world had when it was created.</summary>
+        private void FindSpawnPoint(BiomeDefinition[,] biomeMap)
+        {
+            HasSpawnPoint = false;
+            Physics.SyncTransforms();
+
+            Vector3 origin = _terrain.transform.position;
+            float seaHeight = origin.y + _settings.SeaLevel * _settings.MaxHeight;
+            int heightRes = biomeMap.GetLength(0);
+            Vector3 centre = origin + new Vector3(_settings.Width * 0.5f, 0f, _settings.Length * 0.5f);
+            float maxRadius = Mathf.Min(_settings.Width, _settings.Length) * 0.5f - SpawnFlatnessProbeDistance;
+
+            for (float radius = 0f; radius <= maxRadius; radius += _spawnSearchStep)
+            {
+                int samples = radius <= 0f ? 1 : Mathf.Max(8, Mathf.CeilToInt(2f * Mathf.PI * radius / _spawnSearchStep));
+                for (int i = 0; i < samples; i++)
+                {
+                    float angle = i * Mathf.PI * 2f / samples;
+                    Vector3 candidate = centre + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+                    if (IsValidSpawnPoint(candidate, biomeMap, heightRes, origin, seaHeight, out Vector3 ground))
+                    {
+                        SpawnPoint = ground;
+                        HasSpawnPoint = true;
+                        return;
+                    }
+                }
+            }
+
+            Debug.LogWarning($"{nameof(WorldGenerator)}: no valid player spawn point found - the player keeps its scene position.", this);
+        }
+
+        private bool IsValidSpawnPoint(Vector3 candidate, BiomeDefinition[,] biomeMap, int heightRes, Vector3 origin, float seaHeight, out Vector3 ground)
+        {
+            ground = candidate;
+            float localX = candidate.x - origin.x;
+            float localZ = candidate.z - origin.z;
+            int hx = Mathf.Clamp(Mathf.RoundToInt(localX / _settings.Width * (heightRes - 1)), 0, heightRes - 1);
+            int hz = Mathf.Clamp(Mathf.RoundToInt(localZ / _settings.Length * (heightRes - 1)), 0, heightRes - 1);
+            BiomeDefinition biome = biomeMap[hz, hx];
+            if (biome == null || biome.IsWater || ReferenceEquals(biome, _settings.OceanBiome))
+            {
+                return false;
+            }
+
+            float height = origin.y + _terrain.SampleHeight(candidate);
+            if (height < seaHeight + _spawnMinHeightAboveSea)
+            {
+                return false;
+            }
+
+            Vector3[] probes =
+            {
+                Vector3.forward, Vector3.back, Vector3.left, Vector3.right,
+            };
+            foreach (Vector3 direction in probes)
+            {
+                Vector3 probe = candidate + direction * SpawnFlatnessProbeDistance;
+                if (Mathf.Abs(origin.y + _terrain.SampleHeight(probe) - height) > _spawnMaxHeightDifference)
+                {
+                    return false;
+                }
+            }
+
+            ground = new Vector3(candidate.x, height, candidate.z);
+            Vector3 bottom = ground + Vector3.up * (_spawnClearRadius + 0.1f);
+            Vector3 top = ground + Vector3.up * Mathf.Max(1.8f, _spawnClearRadius + 0.2f);
+            int hits = Physics.OverlapCapsuleNonAlloc(bottom, top, _spawnClearRadius, _spawnOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hits; i++)
+            {
+                // The ground itself may poke into the capsule on a gentle slope - only
+                // trees/rocks/buildings count as obstructions.
+                if (_spawnOverlapBuffer[i] is not TerrainCollider)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>Land/Water first (base noise vs SeaLevel), then Plains/Forest by moisture -
@@ -193,9 +345,11 @@ namespace NAV.World.Generation
         /// keeps it only if that point actually falls inside this biome (via biomeMap - so a
         /// Forest-only prefab never lands on Plains just because its grid technically overlaps the
         /// terrain), and then rolls Density to decide whether it actually spawns.</summary>
-        private void SpawnResources(BiomeDefinition[,] biomeMap, int seed)
+        private void SpawnResources(BiomeDefinition[,] biomeMap, int seed, ICollection<int> depletedResourceIds)
         {
-            ClearSpawnedResources();
+            _depletedOnLoad = depletedResourceIds;
+
+            ClearSpawned(_spawnedResources);
 
             // Offset from the height/detail/moisture seeds so resource placement varies
             // independently of terrain shape while staying fully deterministic per seed.
@@ -256,6 +410,16 @@ namespace NAV.World.Generation
                         worldPos.y = origin.y + _terrain.SampleHeight(worldPos);
 
                         Quaternion rotation = Quaternion.Euler(0f, (float)resourceRng.NextDouble() * 360f, 0f);
+
+                        // The list index is the node's stable id. An already-gathered node keeps
+                        // its slot as null (after the RNG draws above, so every later node still
+                        // gets the same position/rotation/index as when the world was created).
+                        if (_depletedOnLoad != null && _depletedOnLoad.Contains(_spawnedResources.Count))
+                        {
+                            _spawnedResources.Add(null);
+                            continue;
+                        }
+
                         GameObject instance = Instantiate(spawn.Prefab, worldPos, rotation, _resourceContainer);
                         if (resourceLayer >= 0)
                         {
@@ -263,6 +427,62 @@ namespace NAV.World.Generation
                         }
 
                         _spawnedResources.Add(instance);
+                    }
+                }
+            }
+        }
+
+        /// <summary>Scatters _starterSpawns around SpawnPoint (deterministic, seed + 3). Appended
+        /// after the biome resources in _spawnedResources, so they get ids the same way and
+        /// picked-up ones are skipped on load.</summary>
+        private void SpawnStarterResources(int seed)
+        {
+            if (!HasSpawnPoint || _starterSpawns.Count == 0)
+            {
+                return;
+            }
+
+            const int attemptsPerItem = 10;
+            var rng = new System.Random(seed + 3);
+            Vector3 origin = _terrain.transform.position;
+            float seaHeight = origin.y + _settings.SeaLevel * _settings.MaxHeight;
+            int resourceLayer = LayerMask.NameToLayer(_settings.ResourceLayerName);
+
+            foreach (StarterSpawn spawn in _starterSpawns)
+            {
+                if (spawn == null || spawn.Prefab == null)
+                {
+                    continue;
+                }
+
+                for (int n = 0; n < spawn.Count; n++)
+                {
+                    for (int attempt = 0; attempt < attemptsPerItem; attempt++)
+                    {
+                        float angle = (float)rng.NextDouble() * Mathf.PI * 2f;
+                        float distance = Mathf.Lerp(_starterMinRadius, _starterMaxRadius, (float)rng.NextDouble());
+                        float yaw = (float)rng.NextDouble() * 360f;
+                        Vector3 position = SpawnPoint + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * distance;
+                        position.y = origin.y + _terrain.SampleHeight(position);
+                        if (position.y < seaHeight + 0.3f)
+                        {
+                            continue;
+                        }
+
+                        if (_depletedOnLoad != null && _depletedOnLoad.Contains(_spawnedResources.Count))
+                        {
+                            _spawnedResources.Add(null);
+                            break;
+                        }
+
+                        GameObject instance = Instantiate(spawn.Prefab, position, Quaternion.Euler(0f, yaw, 0f), _resourceContainer);
+                        if (resourceLayer >= 0)
+                        {
+                            SetLayerRecursively(instance.transform, resourceLayer);
+                        }
+
+                        _spawnedResources.Add(instance);
+                        break;
                     }
                 }
             }
@@ -277,9 +497,9 @@ namespace NAV.World.Generation
             }
         }
 
-        private void ClearSpawnedResources()
+        private static void ClearSpawned(List<GameObject> spawned)
         {
-            foreach (GameObject instance in _spawnedResources)
+            foreach (GameObject instance in spawned)
             {
                 if (instance == null)
                 {
@@ -296,7 +516,92 @@ namespace NAV.World.Generation
                 }
             }
 
-            _spawnedResources.Clear();
+            spawned.Clear();
+        }
+
+        /// <summary>Destroys creatures spawned last time, then places each biome's CreatureSpawns
+        /// at random (seeded) points that fall inside that biome and onto the freshly baked
+        /// NavMesh - which is why this runs after BakeNavMesh, unlike SpawnResources (whose
+        /// colliders must exist before the bake). Play Mode only: an Editor-time Regenerate would
+        /// otherwise save live creatures into the scene file. Creatures are not persisted by the
+        /// Save system - every load re-spawns them from the seed, same as resources.</summary>
+        private void SpawnCreatures(BiomeDefinition[,] biomeMap, int seed)
+        {
+            ClearSpawned(_spawnedCreatures);
+
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            if (_navMeshSurface == null)
+            {
+                Debug.LogWarning($"{nameof(WorldGenerator)} on '{name}' has no NavMeshSurface - creatures need a baked NavMesh, so none were spawned.", this);
+                return;
+            }
+
+            var creatureRng = new System.Random(seed + 2);
+            int heightRes = biomeMap.GetLength(0);
+
+            SpawnBiomeCreatures(_settings.OceanBiome, biomeMap, heightRes, creatureRng);
+            SpawnBiomeCreatures(_settings.PlainsBiome, biomeMap, heightRes, creatureRng);
+            SpawnBiomeCreatures(_settings.ForestBiome, biomeMap, heightRes, creatureRng);
+        }
+
+        private void SpawnBiomeCreatures(BiomeDefinition biome, BiomeDefinition[,] biomeMap, int heightRes, System.Random creatureRng)
+        {
+            if (biome == null)
+            {
+                return;
+            }
+
+            Vector3 origin = _terrain.transform.position;
+
+            foreach (BiomeCreatureSpawn spawn in biome.CreatureSpawns)
+            {
+                if (spawn.Prefab == null || spawn.Count <= 0)
+                {
+                    continue;
+                }
+
+                int placed = 0;
+                int attempts = spawn.Count * CreaturePlacementAttemptsPerSpawn;
+
+                for (int i = 0; i < attempts && placed < spawn.Count; i++)
+                {
+                    float localX = (float)creatureRng.NextDouble() * _settings.Width;
+                    float localZ = (float)creatureRng.NextDouble() * _settings.Length;
+                    int hx = Mathf.Clamp(Mathf.RoundToInt(localX / _settings.Width * (heightRes - 1)), 0, heightRes - 1);
+                    int hz = Mathf.Clamp(Mathf.RoundToInt(localZ / _settings.Length * (heightRes - 1)), 0, heightRes - 1);
+                    float yaw = (float)creatureRng.NextDouble() * 360f;
+
+                    if (!ReferenceEquals(biomeMap[hz, hx], biome))
+                    {
+                        continue;
+                    }
+
+                    Vector3 candidate = new Vector3(origin.x + localX, 0f, origin.z + localZ);
+                    candidate.y = origin.y + _terrain.SampleHeight(candidate);
+
+                    if (HasSpawnPoint && Vector3.Distance(candidate, SpawnPoint) < _creatureSafeRadius)
+                    {
+                        continue;
+                    }
+
+                    if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, CreatureNavMeshSampleDistance, NavMesh.AllAreas))
+                    {
+                        continue;
+                    }
+
+                    _spawnedCreatures.Add(Instantiate(spawn.Prefab, navHit.position, Quaternion.Euler(0f, yaw, 0f)));
+                    placed++;
+                }
+
+                if (placed < spawn.Count)
+                {
+                    Debug.LogWarning($"{nameof(WorldGenerator)}: placed only {placed}/{spawn.Count} '{spawn.Prefab.name}' in {biome.DisplayName} (not enough valid NavMesh points).", this);
+                }
+            }
         }
 
         private BiomeDefinition SampleBiomeMap(BiomeDefinition[,] biomeMap, int x, int z, int fromRes, int toRes)

@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 203b808125b816141b10304d8767c84e, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 0f1401d983cde1c49a7f687a57e62c5a, type: 2}
   m_HaloStrength: 0.157
   m_FlareStrength: 0.223
   m_FlareFadeSpeed: 3
@@ -119,6 +119,71 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &125577331
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 125577334}
+  - component: {fileID: 125577333}
+  - component: {fileID: 125577332}
+  m_Layer: 0
+  m_Name: WorldClock
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &125577332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125577331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5305ce0f06d8b24999c40a70d685637, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Lighting.DayNightLighting
+  _clock: {fileID: 125577333}
+  _sun: {fileID: 410087040}
+  _weather: {fileID: 582060415}
+  _weatherSkyboxShader: {fileID: 4800000, guid: 6b18a05982eaab8468cf9640dc84ebb0, type: 3}
+  _skyboxSet: {fileID: 11400000, guid: 876d6b4f890800141b09c8d2e355a0e0, type: 2}
+  _panoramicBlendShader: {fileID: 4800000, guid: 2d2f2d23208aa1c45bb15009938671d8, type: 3}
+--- !u!114 &125577333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125577331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12e0ef7ff044690498c63bb8238a3237, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.TimeOfDay.WorldClock
+  _settings: {fileID: 11400000, guid: ddc87f5e985994b469589ede59920f01, type: 2}
+  _timeMultiplier: 1
+--- !u!4 &125577334
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125577331}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -402,6 +467,112 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &416331180
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 416331182}
+  - component: {fileID: 416331181}
+  m_Layer: 0
+  m_Name: WorkbenchAreaIndicator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &416331181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416331180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46dbcbd22093b164a89fe8ba21dc2825, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Building.WorkbenchAreaIndicator
+  _building: {fileID: 1082341854}
+  _groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _unlitShader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
+  _color: {r: 1, g: 0.85, b: 0.35, a: 1}
+  _width: 0.1
+  _dashPeriod: 1.2
+  _groundOffset: 0.12
+  _segments: 128
+--- !u!4 &416331182
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416331180}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &582060414
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 582060416}
+  - component: {fileID: 582060415}
+  m_Layer: 0
+  m_Name: Weather
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &582060415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 582060414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66491c05e9a11c74d93d3a150fad5c69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Weather.WeatherSystem
+  _weathers:
+  - {fileID: 11400000, guid: 3da18292f47cc2e4f951146358aab652, type: 2}
+  - {fileID: 11400000, guid: 06bc896831938814a91d08e969ffa0a1, type: 2}
+  - {fileID: 11400000, guid: 186938d0a265d2944bd400ba96908ee9, type: 2}
+  - {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
+  _initialWeather: {fileID: 11400000, guid: 3da18292f47cc2e4f951146358aab652, type: 2}
+  _transitionSeconds: 30
+  _debugWeather: {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
+--- !u!4 &582060416
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 582060414}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &638691754
 GameObject:
   m_ObjectHideFlags: 0
@@ -449,6 +620,10 @@ PrefabInstance:
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4522755119702896260, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e5b47fc8a767e4447893ba2099647dd4, type: 2}
     - target: {fileID: 7135790475038435720, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -500,6 +675,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7515587546222981938, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 813183042}
+    - targetCorrespondingSourceObject: {fileID: 7515587546222981938, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 813183044}
+    - targetCorrespondingSourceObject: {fileID: 7515587546222981938, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 813183045}
   m_SourcePrefab: {fileID: 100100000, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
 --- !u!1 &805039153
 GameObject:
@@ -538,6 +719,10 @@ MonoBehaviour:
   _interactor: {fileID: 1082341851}
   _combat: {fileID: 1082341856}
   _building: {fileID: 1082341854}
+  _food: {fileID: 1082341858}
+  _worldClock: {fileID: 125577333}
+  _weather: {fileID: 582060415}
+  _equipment: {fileID: 1082341859}
 --- !u!114 &805039155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -600,7 +785,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Animation.PlayerAnimator
   _inputHandler: {fileID: 1082341846}
   _motor: {fileID: 1082341845}
+  _combat: {fileID: 1082341856}
+  _equipment: {fileID: 1082341859}
+  _building: {fileID: 1082341854}
   _moveDampTime: 0.15
+  _comboResetSeconds: 1.2
+  _fullStanceFadeSpeed: 4
+--- !u!114 &813183044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813183040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4be1137be44921428437ac823ae642c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Equipment.HeldItemView
+  _equipment: {fileID: 1082341859}
+  _handSocket: {fileID: 1431519819}
+  _leftHandSocket: {fileID: 1808341549}
+  _fistRadius: 0.15
+--- !u!114 &813183045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813183040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31084b3110c418d4c82da9dc66060982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Animation.FootGrounding
+  _motor: {fileID: 1082341845}
+  _groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _rayStartHeight: 0.5
+  _rayDepth: 0.6
+  _maxBodyDrop: 0.45
+  _maxFootAngle: 40
+  _liftForFreeFoot: 0.15
+  _footSmoothing: 18
+  _bodySmoothing: 10
+  _weightSmoothing: 8
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -824,6 +1054,18 @@ MonoBehaviour:
   _waterPlane: {fileID: 1335896911}
   _navMeshSurface: {fileID: 1571528515}
   _resourceContainer: {fileID: 0}
+  _creatureSafeRadius: 30
+  _spawnSearchStep: 4
+  _spawnMinHeightAboveSea: 1.5
+  _spawnMaxHeightDifference: 0.5
+  _spawnClearRadius: 1.5
+  _starterSpawns:
+  - Prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
+    Count: 12
+  - Prefab: {fileID: 7000480892539141789, guid: e14dea2f61bf28549875fb6463133d6a, type: 3}
+    Count: 5
+  _starterMinRadius: 3
+  _starterMaxRadius: 15
   _generateOnStart: 0
 --- !u!4 &1017573454
 Transform:
@@ -862,6 +1104,8 @@ GameObject:
   - component: {fileID: 1082341855}
   - component: {fileID: 1082341856}
   - component: {fileID: 1082341857}
+  - component: {fileID: 1082341858}
+  - component: {fileID: 1082341859}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1059,6 +1303,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 657c908c18bcef281e9154ad3d8ccb8c, type: 2}
   - {fileID: 11400000, guid: c4a95659f0c8e0587fb57b7a9e08c119, type: 2}
   - {fileID: 11400000, guid: dabec712b1d925652c4a438c880e1bd1, type: 2}
+  - {fileID: 11400000, guid: cedf55cc5dbc728499439cdfca080d63, type: 2}
 --- !u!114 &1082341854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1074,12 +1319,16 @@ MonoBehaviour:
   _inputHandler: {fileID: 1082341846}
   _playerInventory: {fileID: 1082341852}
   _cameraTransform: {fileID: 330585546}
+  _equipment: {fileID: 1082341859}
   _knownPieces:
   - {fileID: 11400000, guid: 9c95edb5e819c594f8c08277a12c92b2, type: 2}
   - {fileID: 11400000, guid: e300f77b80f425f499120dbfe0c225d8, type: 2}
   - {fileID: 11400000, guid: bf2b9736309913341beeaa0d58f8b3b0, type: 2}
   - {fileID: 11400000, guid: 4210893fc7e43d34c8422a07d1759333, type: 2}
   - {fileID: 11400000, guid: 659ff3e635719de4fa3985cdd9dfe013, type: 2}
+  - {fileID: 11400000, guid: 826deb7d88f7ac248864107ce096af9a, type: 2}
+  - {fileID: 11400000, guid: 48bb8abc4f7c6514aad9f88da542a958, type: 2}
+  _placeCooldown: 0.6
   _maxPlacementDistance: 15
   _rotationStepDegrees: 45
   _placementLayers:
@@ -1089,6 +1338,10 @@ MonoBehaviour:
   _snapSearchRadius: 6
   _validGhostMaterial: {fileID: 2100000, guid: e2848b712b377cf4a8698a1739d323fb, type: 2}
   _invalidGhostMaterial: {fileID: 2100000, guid: 93020e84a2db082418ff21c2fed198ec, type: 2}
+  _demolishRange: 8
+  _demolishTint: {r: 1, g: 0.35, b: 0.3, a: 1}
+  _dropScatterForce: 1.5
+  _dropUpwardForce: 2
 --- !u!114 &1082341855
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1118,10 +1371,12 @@ MonoBehaviour:
   _health: {fileID: 1082341855}
   _stamina: {fileID: 1082341850}
   _cameraTransform: {fileID: 330585546}
-  _equippedWeapon: {fileID: 11400000, guid: ea9ade5f385089d6e7605da55dc96af2, type: 2}
+  _equipment: {fileID: 1082341859}
+  _unarmedWeapon: {fileID: 11400000, guid: 342614e1a2a4b7044ae7622f9244488f, type: 2}
   _hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  _hitboxSource: {fileID: 813183044}
   _maxAimDistance: 15
   _building: {fileID: 1082341854}
 --- !u!114 &1082341857
@@ -1143,6 +1398,38 @@ MonoBehaviour:
   _inventory: {fileID: 1082341852}
   _gravestonePrefab: {fileID: 5340976678533722809, guid: 91cc70a9fc8de854f805ee1f8ad83f10, type: 3}
   _building: {fileID: 1082341854}
+--- !u!114 &1082341858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082341843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26726ee72bd1dc8469e5efb5097fc925, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Survival.PlayerFood
+  _playerInventory: {fileID: 1082341852}
+  _health: {fileID: 1082341855}
+  _stamina: {fileID: 1082341850}
+  _maxActiveFoods: 3
+  _refreshThreshold: 0.25
+--- !u!114 &1082341859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082341843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 077da506684844e40ac75cc712da3c22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.PlayerEquipment
+  _playerInventory: {fileID: 1082341852}
+  _inputHandler: {fileID: 1082341846}
+  _hotbarSlotCount: 6
 --- !u!1 &1100439199
 GameObject:
   m_ObjectHideFlags: 0
@@ -1206,6 +1493,78 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100439199}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1132040913
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1132040916}
+  - component: {fileID: 1132040915}
+  - component: {fileID: 1132040914}
+  m_Layer: 5
+  m_Name: BuildMenuUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1132040914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1132040913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65c8b302bfe585746a1f48c1b42b15d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.UI.BuildMenuUIController
+  _building: {fileID: 1082341854}
+  _inputHandler: {fileID: 1082341846}
+  _playerInventory: {fileID: 1082341852}
+  _demolishIcon: {fileID: 21300000, guid: 041adf86674b22d46b3b382f5f616ded, type: 3}
+--- !u!114 &1132040915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1132040913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 3f60f9736981a62448553c7082d83e0c, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 197140718d0ad154ebaaeb253fe4fe4f, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &1132040916
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1132040913}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1327,6 +1686,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335896910}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1431519819 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4633218996775260429, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+  m_PrefabInstance: {fileID: 641444811}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1482588595
 GameObject:
   m_ObjectHideFlags: 0
@@ -1359,6 +1723,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.UI.InventoryUIController
   _playerInventory: {fileID: 1082341852}
   _inputHandler: {fileID: 1082341846}
+  _playerFood: {fileID: 1082341858}
+  _playerEquipment: {fileID: 1082341859}
+  _building: {fileID: 1082341854}
 --- !u!114 &1482588597
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1524,6 +1891,55 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1591855024
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1591855026}
+  - component: {fileID: 1591855025}
+  m_Layer: 0
+  m_Name: WeatherEffects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1591855025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1591855024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d342a95a8a66b64dbfe70027d3014a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Weather.WeatherEffects
+  _weather: {fileID: 582060415}
+  _followTarget: {fileID: 0}
+  _rainVolume: 0.6
+  _thunderVolume: 0.9
+  _lightningIntensity: 3
+--- !u!4 &1591855026
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1591855024}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1659569354
 GameObject:
   m_ObjectHideFlags: 0
@@ -1556,7 +1972,12 @@ MonoBehaviour:
   _worldGenerator: {fileID: 1017573453}
   _playerMotor: {fileID: 1082341845}
   _playerHealth: {fileID: 1082341855}
+  _playerDeath: {fileID: 1082341857}
   _playerInventory: {fileID: 1082341852}
+  _playerFood: {fileID: 1082341858}
+  _playerEquipment: {fileID: 1082341859}
+  _worldClock: {fileID: 125577333}
+  _weatherSystem: {fileID: 582060415}
   _itemDatabase: {fileID: 11400000, guid: ea880a290d3f48e4da7642c920ffe08f, type: 2}
   _buildingPieceDatabase: {fileID: 11400000, guid: a416f69fc99d97d49bf10d126eb0de77, type: 2}
   _autosaveIntervalSeconds: 900
@@ -1575,6 +1996,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1745063295
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1745063297}
+  - component: {fileID: 1745063296}
+  m_Layer: 0
+  m_Name: WeaponArsenal (TEMP)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1745063296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1745063295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df4b24fe4cd329a4b9e5044212c1cc1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Dev.WeaponArsenalSpawner
+  _worldGenerator: {fileID: 1017573453}
+  _arsenal: {fileID: 11400000, guid: fccac75023d3df64d945ce187b038dc6, type: 2}
+  _rackPrefab: {fileID: 4640028001087596183, guid: 3cffc52d476b8ee4ba2856960cd4261b, type: 3}
+  _radius: 7
+  _arcDegrees: 200
+  _groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!4 &1745063297
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1745063295}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1808341549 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 104393831527878051, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+  m_PrefabInstance: {fileID: 641444811}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2016760232
 GameObject:
   m_ObjectHideFlags: 0
@@ -1664,3 +2142,9 @@ SceneRoots:
   - {fileID: 1017573454}
   - {fileID: 1659569356}
   - {fileID: 2016760235}
+  - {fileID: 125577334}
+  - {fileID: 582060416}
+  - {fileID: 1591855026}
+  - {fileID: 1745063297}
+  - {fileID: 1132040916}
+  - {fileID: 416331182}

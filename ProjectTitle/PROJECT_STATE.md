@@ -168,10 +168,11 @@ altar + ritual items; - bosses tied to progression.
         unchecked "Basic structural validation" item.
     -   No save/load of building state - blocked on the Save system
         (Phase 11), which hasn't started yet.
-    -   No resource refund on demolish.
-    -   No dedicated Building UI - piece selection is
-        Next/Previous-key cycling plus a `PlayerDebugHud` line only,
-        unlike Inventory/Crafting's real panels.
+    -   ~~No resource refund on demolish.~~ Resolved 2026-10-18: the
+        hammer's Demolish tool gives the full cost back (dropped on the ground).
+    -   ~~No dedicated Building UI~~ - resolved 2026-10-18: build menu
+        (`BuildMenuUIController`), opened with the inventory key in build
+        mode; Next/Previous cycling still works too.
     -   Ground-anchoring (resting a piece's bottom on the raycast hit
         point) assumes pieces only ever yaw; it was not designed for
         pitch/roll placement.
@@ -181,17 +182,114 @@ altar + ritual items; - bosses tied to progression.
     added), rather than assuming the Phase 5 checkboxes being ticked
     in the roadmap means the system is production-ready.
 
--   **`PlayerHealth`/`PlayerHealthStats` (added to back the new HP HUD
-    bar) is not the Phase 6 "Health" system** - it's current/max HP
-    and `TakeDamage`/`Heal` only. No regeneration, no food interaction,
-    no death handling (reaching 0 HP just stays at 0). Do not treat
-    `DEVELOPMENT_ROADMAP_v0.1.md` Phase 6's "Health" checkbox as done
-    because of this - it isn't checked, and shouldn't be until
-    regen/death/food are actually built.
+-   ~~`PlayerHealth` is not the Phase 6 Health system~~ - resolved
+    2026-10-15: death (PlayerDeath/Gravestone), food bonuses and
+    regeneration now exist (see Change Log 2026-10-15, Food).
+-   **Food (2026-10-15) is a first pass.** Only one food (Cooked Meat)
+    and one cooking recipe exist, so the 3-slot limit is untested in
+    real play; bonuses are flat for the whole duration (no Valheim-style
+    decay curve); the cooking spit has one slot, no fuel, no burning,
+    and whatever is on it is lost on demolish; eating is RMB in the
+    Inventory panel only (no hotbar quick-use - hotbar has no
+    selection yet).
+
+-   **LowPoly pack weapons (2026-10-17) have no resources or recipes yet
+    - developer asked to record this.** All 155 pack weapons are real
+    items (9 classes, own attack animation each) but every one is
+    obtained from TEMPORARY weapon racks near the spawn, not crafted.
+    To do, in order:
+    1.  **Resources.** Only Wood/Rock/Flint/Resin exist. The weapons need
+        materials that differ per class and tier - e.g. ores + smelting
+        (copper/bronze/iron... -> bars, per the GDD metal progression),
+        leather/hide and sinew/rope (grips, shield straps), bone,
+        hardwood/planks (hafts, shields), gems/decor for the fancy
+        variants. Each needs an ItemDefinition, a node or drop source,
+        and for metals a processing station.
+    2.  **Workbench recipes for every weapon**, from different ingredients
+        per class (e.g. dagger = small metal + grip, greatsword = lots of
+        metal, spear = hardwood shaft + head, shield = planks + metal rim
+        + leather) and higher workbench tiers for better variants. Add
+        them to `PlayerCrafting` known recipes.
+    3.  **Real stats/tiers per weapon** (now one placeholder stat line per
+        class in `WeaponPackGenerator`'s class table; re-running the
+        generator rewrites stats, so move tuning into the class table or
+        stop regenerating once hand-tuned).
+    4.  **Delete the temporary arsenal**: `Scripts/Dev/` (WeaponArsenal,
+        WeaponArsenalSpawner, WeaponRack), `Prefabs/Dev/WeaponRack`,
+        `ScriptableObjects/Dev/WeaponArsenal`, `Materials/WeaponRack_Wood`
+        and the "WeaponArsenal (TEMP)" object in `WorldGenTest`.
+    Also: the pack has no pickaxe model; shields still take the main-hand
+    slot (no off-hand yet - shield OR weapon, not both).
+-   **Sky (2026-10-17) is a first pass - the developer wants to come
+    back to it later** (roadmap Phase 10 "Sky polish"). Works: painted
+    FS003 skies cross-faded over the day, sun/moon discs, 8 moon
+    phases, moving clouds. Known gaps:
+    -   The moving cloud layer is a flat noise deck (no volume/depth),
+        fades out by ~25 degrees above the horizon; the painted horizon
+        clouds are static apart from the slow sky rotation, so the two
+        layers can disagree.
+    -   Only `FS003SkyboxSet` exists; FS002/FS013/FS017 and the Snowy
+        variants are imported but unused.
+    -   Sun and moon are procedural shader discs (moon "seas" are a few
+        soft blobs, no texture); stars are baked into the painted night
+        sky, don't twinkle and turn with the sky rotation.
+    -   Lightning flashes don't light the clouds; clouds cast no
+        shadows on the ground.
+    -   Environment reflections still come from the static scene
+        skybox bake, not the live sky.
+    -   No quality toggle: the cloud layer adds 6 texture samples per
+        sky pixel (remove `Cloud Noise` from the Skybox Set to disable).
+    -   The asset's demo scenes (`Assets/Fantasy Skybox FREE/Scenes`)
+        are unused and could be deleted.
 
 ------------------------------------------------------------------------
 
 ## Current Next Step
+
+**Status as of 2026-10-18 (read this first - it supersedes the
+2026-10-15 status below).** Phases 0--8 are essentially done; every step of
+the Vertical Slice loop exists in `WorldGenTest`. The agreed order of work
+from here is in `DEVELOPMENT_ROADMAP_v0.1.md`, "Production Order from here":
+
+1.  **Stage A - close the Vertical Slice (next):** damage feedback (hit
+    reaction/stagger, hit VFX, placeholder sounds), storage chest +
+    container save, save versioning, then the developer's full Phase 12
+    playthrough and fixes from it.
+2.  **Stage B - creatures:** real boar/wolf models and animations,
+    line-of-sight perception, wolf packs, night creatures, spawning by
+    biome/time, loot (hide/bone/fangs - feeds weapon recipes), a couple of
+    new Slavic-setting creatures. **Early visuals** (hit/gather VFX,
+    post-processing, forest vegetation, Birch grove) run in parallel with
+    Stages A--B.
+3.  **Stage C - resources and progression tiers 1--2:** ores/smelter,
+    workbench tiers, armor, recipes + real stats for the pack weapons, then
+    delete the temporary weapon racks.
+4.  **Stage D - bosses (Phase 14):** framework proven on one placeholder
+    boss (altar, ritual items, arena, phases, reward, tier unlock); real
+    bosses only once the developer designs them (Boss Status: NOT
+    FINALIZED).
+5.  **Final visuals** (Phase 13/16, after Stage C): decide the asset
+    strategy first, then sky polish, atmosphere, final models/VFX.
+
+**Status as of 2026-10-15 (older - the history below is a
+chronological log and its last paragraph is no longer the current
+state).** The real game scene is `WorldGenTest` (MainMenu -> Create
+World/Load -> WorldGenTest); `SampleScene` is a sandbox only. The
+Gravestone/Recover increment is CONFIRMED. The 2026-10-15 audit (see
+Change Log) closed the gaps that kept the game scene itself from
+supporting the Vertical Slice loop: placeable workbench, creatures
+spawned by world generation, Raw Meat world prefab, and the
+interaction-ray fix. **Eat** (the last Vertical Slice gap) was added
+later the same day: Campfire -> cook Raw Meat -> eat Cooked Meat
+(RMB in Inventory) -> temporary max HP/stamina + HP regen, saved with
+the game. Every step of `Spawn -> Gather -> Build -> Craft -> Explore
+-> Fight -> Eat -> Die -> Recover -> Save -> Reload` now exists in
+`WorldGenTest` - next is a full manual Phase 12 playthrough by the
+developer, then the rest of Phase 10 - **day/night and weather are done (2026-10-15) - Phase 10 is complete** (placeholder audio). Safe player spawn + saved resource depletion also done (2026-10-15). Equipment + tool gating done too (2026-10-15). Next candidates: better placeholder icons (developer feedback), storage chest, combat feedback, save versioning, armor. All items
+and building pieces have placeholder icons (`Art/Icons`, regenerate
+with `Tools/make_icons.py`). Unity MCP: the project has `.mcp.json`
+(`unityMCP`, MCP For Unity 10.2.0, bridge on port 6400) - a Claude
+session must be *started* in this folder for it to load.
 
 Player Foundation is complete and verified end-to-end, including the
 interaction system and its range fix. "Animation placeholders" is the
@@ -2919,3 +3017,877 @@ same as the pause before Building itself started.
     `GravestoneUIController`, wired to `PlayerInteractor`/
     `PlayerInventory`/the existing `InventoryUI`'s `InventoryUIController`)
     - see the rewritten `UNITY_SETUP_NEXT_STEPS.md` Step 27 in full.
+-   CONFIRMED (developer, 2026-10-15) - Gravestone + recovery window work
+    end-to-end; wired in both `SampleScene` and `WorldGenTest`.
+
+### v0.1 --- 2026-10-13
+
+-   Project moved to `C:\dev\NAV\NAV`. Commit `abbfeb7` ("fix crash
+    files") shrank `Assets/_Recovery/0.unity` (64 MB -> 3.5 KB) after an
+    Editor crash. Nothing in the Change Log above was lost in code, but
+    see 2026-10-15: `RawMeat`'s World Prefab (recorded as assigned in
+    Step 23) was not in the project or in git history.
+
+### v0.1 --- 2026-10-15
+
+Audit of everything marked done/unconfirmed against the actual project
+(scenes, prefabs, assets, Editor log), then fixes. Done through the
+Unity Editor bridge (MCP For Unity, port 6400) and verified in Play
+Mode in `WorldGenTest`.
+
+-   **Raw Meat had no World Prefab** (`RawMeat.asset` `_worldPrefab`
+    was empty, no `RawMeat_item` prefab anywhere) - every creature death
+    logged "has no WorldPrefab assigned" and dropped nothing. Added
+    `Prefabs/Item/RawMeat_item.prefab` (flattened capsule mesh +
+    `Materials/RawMeat_material.mat`, Rigidbody, `ItemPickup` ->
+    RawMeat) and assigned it. Uses a **BoxCollider**, not the capsule's
+    own collider: the first version rolled 100+ m down a slope in
+    playtest. Verified: wolf death drops meat that comes to rest ~2 m
+    from the body.
+-   **No workbench in the real game scene** - `Workbench` existed only
+    as `SampleScene`'s hand-placed `Test_WorkBench`, so Stone Axe/Stone
+    Pickaxe (RequiredWorkbenchTier 1) were uncraftable in `WorldGenTest`.
+    Added a buildable workbench: `Prefabs/Build/WoodWorkbench.prefab`
+    (root: BoxCollider + `BuildingPiece`; placeholder table mesh from
+    cubes + `Materials/Workbench_material.mat`; child `WorkbenchRange`
+    on layer **Ignore Raycast** with the trigger `SphereCollider` +
+    `Workbench` -> `BasicWorkbench`) and
+    `ScriptableObjects/Building/WoodWorkbenchPiece.asset` (cost 10 Wood).
+    Registered in `BuildingPieceDatabase` (so it saves/loads like other
+    pieces) and in Player's `PlayerBuilding.KnownPieces` in both scenes.
+    Matches `UNITY_SETUP_TIER1_ITEMS.md`'s intended flow (hammer first,
+    then place the first workbench) - but building still does not
+    require a hammer in hand (no tool gating exists yet).
+-   `Workbench` now tracks which `PlayerCrafting`s it registered and
+    unregisters them in `OnDisable` - a demolished workbench never gets
+    `OnTriggerExit`, so the player kept a stale registration. Verified:
+    tier goes 1 -> 0 on demolish.
+-   **Interaction ray was swallowed by proximity triggers.**
+    `PlayerInteractor` raycasts with `QueryTriggerInteraction.Collide`
+    and stopped at the first hit, so any big trigger (workbench range,
+    a creature's 10 m detection sphere) blocked E on everything inside
+    or behind it. Now uses `RaycastNonAlloc` sorted by distance and
+    skips triggers that don't carry an `IInteractable` on their own
+    GameObject (no parent lookup for triggers - otherwise the workbench
+    range child resolved to its parent `BuildingPiece` and the whole 4 m
+    sphere became a "Demolish Workbench" target, which playtest caught).
+    Non-trigger colliders still use parent lookup (Gravestone's child
+    collider relies on it). Verified both cases in Play Mode.
+-   **No creatures in the real game scene** - Wild Boar/Forest Wolf
+    existed only as `SampleScene` capsules. Added
+    `BiomeCreatureSpawn` (prefab + Count) and
+    `BiomeDefinition.CreatureSpawns`; `WorldGenerator.SpawnCreatures`
+    runs **after** `BakeNavMesh` (agents need the mesh), picks seeded
+    random points (`seed + 2`) inside the biome, snaps them with
+    `NavMesh.SamplePosition`, skips points within
+    `_creatureSafeRadius` (30 m) of `_creatureSafeZoneCenter` (Player
+    in `WorldGenTest`), and only runs in Play Mode (an Editor-time
+    Regenerate would save live creatures into the scene). Not saved -
+    re-spawned from the seed on every load, same as resources.
+    Prefabs `Prefabs/Creatures/WildBoar.prefab`/`ForestWolf.prefab`
+    (copied from the SampleScene test capsules, now brown/grey
+    placeholder materials). Spawns: Plains 6 boar + 2 wolf, Forest 4
+    wolf + 3 boar. Verified: 15 creatures, all `isOnNavMesh`, patrolling.
+-   `Creature` now ignores other `Creature`s in its detection trigger -
+    with several wolves per biome they would otherwise hunt each other
+    (and boars). Creature-vs-creature behaviour is out of scope.
+-   Roadmap checkboxes brought in line with reality (Phase 0, Inventory
+    UI, Item dropping, Animation placeholders = locomotion only, Phase 4
+    crafting/workbench items, Workbench placement).
+-   Known, not changed: a new game drops the player from y~539 to the
+    ground (several seconds of falling, no fall damage) - SaveManager
+    doesn't place the player on a new game, so it starts wherever the
+    Player sits in `WorldGenTest`; pre-existing, tied to the open "no
+    guaranteed-dry spawn point" item. Creature respawn after death does not
+    exist (killed animals stay dead until the next load).
+-   Added project `.mcp.json` (`unityMCP` via `uvx mcpforunityserver`,
+    same as Scaz/Rebonk). Test saves created by the playtest were
+    deleted afterwards.
+
+### v0.1 --- 2026-10-15 (Food / Eat)
+
+Last missing Vertical Slice step. Design follows GDD 16 (Valheim-style:
+food temporarily raises attributes; no hunger meter, no starvation).
+Raw meat is not edible - it must be cooked, which ties Eat to
+Build (campfire) and Fight/Hunt (meat).
+
+-   New `Scripts/Gameplay/Survival/` (namespace `NAV.Gameplay.Survival`):
+    -   `FoodDefinition` (ScriptableObject): HealthBonus, StaminaBonus,
+        HealthRegenPerSecond, DurationSeconds. `ItemDefinition` gained an
+        optional **Food** reference (`IsEdible` = has one).
+    -   `PlayerFood` (on Player): up to `MaxActiveFoods` (3) different
+        foods at once, each with its own timer; sums bonuses and pushes
+        them into `PlayerHealth.SetBonusMaxHealth/SetBonusRegenPerSecond`
+        and `PlayerStamina.SetBonusMaxStamina` (Player classes don't know
+        food exists). Same food can't stack - re-eating is allowed only
+        at <= 25% remaining (`RefreshThreshold`) and restarts its timer.
+        All food is cleared on `PlayerHealth.Died`. `RestoreFood` for
+        loading.
+    -   `CookingStation` (IInteractable) + `CookingRecipe`: single-slot
+        spit - E puts one input item on (removed from inventory), it
+        cooks for CookSeconds, E takes the output (dropped beside the
+        fire if the inventory is full). Shows cooking/ready meat visuals.
+-   `PlayerHealth`: MaxHealth = stats + food bonus; regenerates
+    `Stats.BaseRegenPerSecond + food regen` per second, paused for
+    `Stats.RegenDelayAfterDamage` (3 s) after each hit. Base regen is 0,
+    so without food HP does not come back (Valheim-style) - same as
+    before this change. When max drops (food expires) current HP is
+    clamped; when it rises, current HP regenerates into the headroom.
+    `PlayerStamina`: MaxStamina = stats + food bonus.
+-   UI: `InventoryUIController` - **RMB on a slot eats** that item
+    (optional `Player Food` field). `PlayerHudController` + `PlayerHud`
+    uxml/uss - new `food-container` bottom-left next to the HP bar: one
+    icon per active food with a remaining-time bar (turns red at 25%).
+-   Save: `PlayerSaveData.ActiveFoods` (item id + remaining seconds),
+    restored before health so the max-HP bonus exists when HP is
+    clamped. Older saves simply have no foods. `SaveManager` gained an
+    optional `Player Food` field.
+-   Content (placeholder balance): `Items/CookedMeat.asset` (Food, stack
+    10, weight 1) + `Food/CookedMeatFood.asset` (+30 max HP, +15 max
+    stamina, 2 HP/s, 600 s); `Building/CampfirePiece.asset` (5 Wood +
+    3 Rock) -> `Prefabs/Build/Campfire.prefab` (root BoxCollider +
+    BuildingPiece; stones/logs/glowing flame from primitives, orange
+    point light, spit with a `Spit` child collider carrying
+    `CookingStation` Raw Meat -> Cooked Meat in 10 s - aim at the spit
+    to cook, at the base to demolish). Registered in ItemDatabase /
+    BuildingPieceDatabase and Player's known pieces in both scenes;
+    `PlayerFood` added and wired on Player in both scenes.
+-   3D placeholders: `Prefabs/Item/CookedMeat_item.prefab` (brown slab,
+    same shape/physics as RawMeat_item); materials CookedMeat, Fire /
+    FireCore (URP Unlit), CampfireStone.
+-   Placeholder icons: 17 PNGs (128x128, transparent) in
+    `Assets/NAV/Art/Icons/` imported as Sprites and assigned to every
+    item, the Stone Sword weapon and every building piece. Generated by
+    `Tools/make_icons.py` (Pillow; `uv run --with pillow python
+    Tools/make_icons.py Assets/NAV/Art/Icons`) - edit/re-run it when
+    items are added.
+-   Verified in Play Mode (WorldGenTest): campfire placed, raw meat ->
+    cooking -> ready -> taken; eating raises max HP 100->130 / stamina
+    100->115; second Cooked Meat refused ("already eaten"); after a 60
+    damage hit HP regenerated at exactly 2/s after the 3 s delay; HUD
+    shows the food slot; autosave JSON contains ActiveFoods; reloading
+    the save restores the food (remaining time), the max-HP bonus and
+    the campfire; dying clears food and max HP returns to 100. No
+    console errors. Test save deleted afterwards.
+
+### v0.1 --- 2026-10-15 (Day/Night - Phase 10, increment 1)
+
+Scope: day/night cycle, lighting and sky. Weather (rain/heavy rain/
+thunderstorm) and ambient audio are the next Phase 10 increment.
+
+-   `Scripts/World/Time/` (namespace `NAV.World.TimeOfDay` - not
+    `.Time`, which would shadow `UnityEngine.Time` for all code inside
+    `NAV.World`):
+    -   `TimeOfDaySettings` (ScriptableObject,
+        `ScriptableObjects/World/DefaultTimeOfDaySettings.asset`): day
+        length (24 real minutes per in-game day), new-game start hour
+        (08:00), sunrise 06:00 / sunset 20:00, sun/moon arc (yaw 330,
+        max elevation 65/50), sun colour gradient + intensity curve
+        over day progress, moon colour/intensity, ambient sky/equator
+        gradients, skybox exposure curve + tint gradient over the 24 h,
+        sky rotation per day. Defaults are authored in code (field
+        initializers) - edit the asset to tune.
+    -   `WorldClock` (on the `WorldClock` GameObject in `WorldGenTest`):
+        Day (1+) and Hour (0..24), advances with scaled time (pause
+        stops it), `NightChanged(bool)` / `DayChanged(int)` events for
+        future systems (creature night behaviour, weather), `SetTime`
+        for loading, Inspector `Time Multiplier` + context menu "Skip 1
+        Hour"/"Skip 6 Hours" for testing.
+-   `Scripts/Presentation/Lighting/DayNightLighting.cs` (same
+    GameObject): drives the scene's existing `Directional Light` as the
+    sun by day and the moon by night (swaps at sunrise/sunset while its
+    intensity is ~0 - one shadow-casting light only), switches ambient
+    to **Trilight** at startup (the scene's Skybox ambient is a static
+    bake that stayed bright all night), sets ambient/fog colours and
+    reflection intensity, and dims/tints/rotates a **runtime copy** of
+    the HDRI skybox material (the `UNS_HDRI` asset is never modified).
+-   Save: `SaveGameData.Day`/`Hour` (Day 0 = save from before this
+    change - clock keeps its start time). `SaveManager` gained an
+    optional `World Clock` field (wired).
+-   HUD: `clock-label` top-right "Day N  HH:MM" (bluish at night);
+    `PlayerHudController` gained an optional `World Clock` field (wired
+    in `WorldGenTest`; hidden in `SampleScene`, which has no clock).
+-   **Player model fix (developer report: no shadow, doesn't darken at
+    night):** the dummy's material `HumanDummy_Red` uses the Built-in
+    pipeline shader `Unlit/Texture` - ignores all lighting and has no
+    URP shadow-caster pass. Added `Materials/Player_Dummy_material.mat`
+    (URP Lit, same palette texture + the original's UV offset (0, 0.875)
+    that selects the red column) and assigned it to the player body in
+    both scenes and to `Prefabs/Player/HumanDummy_F Red.prefab`. The
+    Kevin Iglesias pack's own material is untouched. A scan of every
+    scene renderer and NAV prefab found no other non-URP shaders.
+-   Verified in Play Mode (screenshots at 07:00, 13:00, 19:30, 23:30 and
+    00:30): warm dawn, white noon, pink sunset sky, dark blue night with
+    a dim moon shadow; campfire light reads well at night; player now
+    shaded and casting a shadow by day and by moonlight; save/reload
+    restores Day 3 21:15 and the night lighting. No console errors.
+    Test saves deleted (the developer's own 18:03 save left alone).
+-   Not done / known: no stars or moon disc in the sky (static HDRI with
+    clouds, just darkened); the placeholder water plane stays fairly
+    saturated blue at night; distant tree billboards look slightly
+    brighter than nearby terrain at night; creatures don't react to
+    night yet (`NightChanged` exists for that).
+
+### v0.1 --- 2026-10-15 (Weather - Phase 10, increment 2)
+
+GDD 5's four initial weathers. Purely visual/audio - weather has no
+gameplay effect yet (no wetness, no fire/stamina interaction).
+
+-   `Scripts/World/Weather/` (namespace `NAV.World.Weather`):
+    -   `WeatherDefinition` (ScriptableObject) + `WeatherTransition`
+        (target + weight): id/name, min/max duration, weighted next
+        weathers, rain rate, sun/ambient/sky-exposure multipliers,
+        overcast (sky desaturation), fog density, lightning on/off +
+        interval. Assets in `ScriptableObjects/Weather/`:
+        `ClearWeather` (4-8 min; -> Clear 45% / Rain 55%),
+        `RainWeather` (2-4 min, 1500 drops/s, sun x0.3; -> Clear 50 /
+        Heavy 35 / Storm 15), `HeavyRainWeather` (1.5-3 min, 4500/s,
+        sun x0.18; -> Rain 50 / Storm 30 / Clear 20),
+        `ThunderstormWeather` (1.5-3 min, 5000/s, sun x0.1, lightning
+        every 6-16 s; -> Heavy 50 / Rain 50). Clear keeps fog OFF (the
+        developer's earlier choice - fog/skybox mismatch).
+    -   `WeatherSystem` (on the `Weather` GameObject in `WorldGenTest`):
+        state machine on scaled time, `Current`/`Previous`/`Blend`
+        (30 s transitions), `Evaluate(selector)` lerp helper,
+        `WeatherChanged` event, `Restore` for loading, Inspector
+        `Debug Weather` + context menu "Force Debug Weather".
+-   `Scripts/Presentation/Weather/` (namespace `NAV.Presentation.Weather`):
+    -   `WeatherEffects` (on the `WeatherEffects` GameObject, follows the
+        camera): rain particle volume built in code (36x36 m box above
+        the camera, stretched billboards, length from fall speed only +
+        `maxParticleSize` 0.006 so drops next to the camera don't read
+        as thick poles - tuned in Play Mode), fog density (exp2),
+        lightning = separate shadowless directional light flickered for
+        0.18 s, thunder 0.4-3 s later, rain loop volume follows rain
+        rate.
+    -   `PlaceholderWeatherAudio`: procedural rain loop (low-passed
+        noise) and 3 thunder variants (crack + brown-noise rumble).
+        Swap for real clips when audio is decided.
+    -   Note: inside `NAV.Presentation`, `Camera` means the
+        `NAV.Presentation.Camera` namespace - use `UnityEngine.Camera`.
+-   `DayNightLighting` now takes an optional `WeatherSystem`: multiplies
+    sun intensity / ambient / sky exposure, lowers sun shadow strength
+    with overcast (down to 0.3), and drives `_Overcast` on the sky. New
+    shader `Assets/NAV/Shaders/SkyboxCubemapWeather.shader`
+    ("NAV/Skybox/Cubemap Weather") - same inputs as Skybox/Cubemap plus
+    luminance-preserving desaturation towards grey; assigned to
+    `DayNightLighting.Weather Skybox Shader` (keeps it in builds). The
+    runtime sky copies `_Tex/_Tint/_Exposure/_Rotation` from the scene's
+    HDRI material, which itself stays untouched.
+-   Save: `SaveGameData.WeatherId` + `WeatherRemainingSeconds`
+    (`SaveManager` optional `Weather System` field, wired). HUD clock
+    shows "Day N  HH:MM  |  Rain".
+-   Verified in Play Mode at noon: Clear / Rain / Heavy Rain /
+    Thunderstorm screenshots (grey desaturated sky, fog hiding the
+    distance, progressively darker light and softer shadows); lightning
+    fires and reschedules, thunder and rain audio play; autosave writes
+    Thunderstorm + remaining time and reload restores it with no blend;
+    zeroing the timer picked a weighted next weather (Storm -> Rain)
+    and blended in. No console errors. Test saves deleted.
+-   Not done / known: rain falls through roofs (no particle collision /
+    shelter check); no splashes or wet surfaces; lightning has no
+    visible bolt (flash only) and the flash moment itself was not
+    captured on screenshot (too short for the tool); weather is global
+    (not per biome); creatures/fire/stamina ignore weather.
+
+### v0.1 --- 2026-10-15 (Safe spawn + saved resource depletion)
+
+Two Vertical Slice hardening items picked by the developer.
+
+-   **Safe player spawn.** `WorldGenerator.FindSpawnPoint` (runs after
+    resources + water, before the NavMesh bake and creatures): spiral
+    search outward from the terrain centre (4 m rings) for the first
+    point that is a non-water biome, >= 1.5 m above sea level, flat
+    (ground 2 m N/S/E/W within 0.5 m) and free of non-terrain colliders
+    in a 1.5 m capsule. Exposed as `SpawnPoint`/`HasSpawnPoint` -
+    deterministic per seed, so it is recomputed on load, not saved.
+    Inspector tunables under "Player Spawn Point".
+    -   `SaveManager.StartNewGame` teleports the player there (feet on
+        the ground - the old new-game drop from y~539 is gone), and both
+        new game and load call `PlayerDeath.SetRespawnPoint` (new) so
+        respawn after death goes to the world spawn point instead of the
+        scene start position. `SaveManager` gained a `Player Death`
+        field (wired).
+    -   Creatures' safe zone now uses `SpawnPoint` (30 m) instead of the
+        Player transform - `WorldGenerator._creatureSafeZoneCenter`
+        removed (the player wasn't at its real position yet when
+        creatures spawned).
+-   **Saved resource depletion.** Resource nodes already spawn in a
+    deterministic order, so a node's index in `_spawnedResources` is a
+    stable id. A gathered node destroys itself (unchanged
+    `ResourceNode`), leaving a null slot; `GetDepletedResourceIds()`
+    returns those indices and `SaveManager.Autosave` stores them in
+    `SaveGameData.DepletedResourceIds`. On load,
+    `Generate(seed, depletedIds)` skips those indices (after the RNG
+    draws, so every other node keeps its exact position/rotation/index)
+    - before the NavMesh bake, so no holes. Old saves have an empty
+    list. Same validity caveat as the terrain: changing generation
+    settings or biome resource lists invalidates the ids (Save
+    versioning, still open).
+-   Verified in Play Mode: new game spawned at (3.9, 38.3, 19.6) -
+    grounded, 19 m above sea, no obstacles, nearest creature 163 m;
+    gathered 2 rocks (ids 175, 374 of 1520) -> saved -> reloaded: same
+    1520 slots, neighbouring nodes at identical positions, the two
+    rocks absent, ids carried into the next save; died 120 m away (in
+    water) and respawned exactly at the spawn point. Test saves deleted.
+-   Observed, not fixed: 17x "Concave Mesh Colliders are not supported
+    when used with dynamic Rigidbody" appeared only when a test called
+    `Interact` 30 times on one node within a single frame (impossible in
+    play - a depleted node is destroyed at end of frame). Not
+    reproducible with the normal hit count; no item prefab has a
+    concave collider on a dynamic Rigidbody. Worth a look if it ever
+    shows up in real play.
+-   Still not saved: partly hit nodes, items lying on the ground,
+    killed creatures (respawn from the seed on load). No resource
+    regrowth.
+
+### v0.1 --- 2026-10-15 (Equipment + tools)
+
+Main-hand equipment, tool-gated gathering, weapon from what's held,
+equipment save.
+
+-   **Data.** `Gameplay/Items/ToolType.cs` (None/Axe/Pickaxe/Hammer).
+    `ItemDefinition` gained Tool Type, Tool Tier (1+) and Weapon
+    (`WeaponDefinition`); `IsEquippable` = tool or weapon.
+    `ResourceNodeDefinition` gained Required Tool + Min Tool Tier.
+-   **`Gameplay/Equipment/PlayerEquipment`** (on Player, both scenes):
+    one main-hand slot (armor slots later). Valheim-style - the item
+    stays in the inventory and is only marked as held; it is unequipped
+    automatically when its last copy leaves the inventory (drop, death
+    -> gravestone). `ToggleFromSlot`, `HasTool(type, tier)`,
+    `FindEquippedSlotIndex`, `Restore` (load), `Changed` event.
+-   **Input.** New action `HotbarSlot` (keys 1-6) ->
+    `PlayerInputHandler.HotbarSlotPerformed(int)` -> equip/unequip that
+    hotbar slot. **Build-mode piece cycling moved from keys 1/2 to the
+    mouse wheel** (`Next` = scroll down, `Previous` = scroll up;
+    gamepad d-pad unchanged).
+-   **Combat.** `PlayerCombat` uses the held item's weapon, else the new
+    `Unarmed Weapon` (fists, `Weapons/Unarmed.asset`: 4 dmg, 1.8 m).
+    The old fixed `_equippedWeapon` field is gone. New weapon stats:
+    `StoneAxeWeapon` (11 dmg), `StonePickaxeWeapon` (9 dmg); the hammer
+    has none (fists while held).
+-   **Gathering.** `ResourceNode` refuses hits without the required
+    tool and implements the new `Interaction/IContextualPrompt`
+    ("Gather Tree (needs Axe)" only when it's missing).
+    `PlayerInteractor.CurrentPrompt` prefers it. Trees (TreeWoodNode)
+    need an Axe; stone (StoneRockNode) and flint (FlintDeposit) need a
+    Pickaxe. Also fixed: `Interact` on an already-depleted node (before
+    its end-of-frame Destroy) no longer re-spawns its drops - that was
+    the source of the earlier 17 "concave mesh collider" errors.
+-   **Bootstrap (no deadlock).** Axe and pickaxe both cost wood + rock,
+    so gathering wood/rock can't need them: `Prefabs/World/LooseBranch`
+    (2 Wood) and `LooseStone` (2 Rock) - kinematic copies of the
+    existing drop prefabs, with `NavMeshModifier` Ignore From Build -
+    are scattered by the biomes (Plains/Forest resource lists) and by
+    the new **Starter Resources** on `WorldGenerator` (12 branches + 5
+    stones within 3-15 m of the spawn point, seed + 3). Both are
+    tracked like resources, so picked-up ones stay gone after load.
+-   **Content.** `Items/StoneSwordItem.asset` (id `StoneSword`, Weapon,
+    uses the existing `StoneSword` weapon stats) + `Recipes/
+    StoneSwordRecipe.asset` (2 Wood + 3 Rock + 3 Flint, workbench tier
+    1), known in both scenes and in the ItemDatabase. Tool items got
+    their tool types/weapons. 3D placeholders `Prefabs/Item/
+    StoneAxe_item`, `StonePickaxe_item`, `WoodHammer_item`,
+    `StoneSword_item` (primitives) so tools can be dropped.
+-   **UI.** RMB in the Inventory panel now "uses" an item: eat food or
+    equip/unequip a tool/weapon. Held item gets a gold frame in the
+    Inventory grid and the hotbar; hotbar slots show their key number;
+    new `interact-prompt` label under the crosshair "[E] ...".
+-   **Save.** `PlayerSaveData.MainHandItemId`, restored after the
+    inventory (`SaveManager` optional `Player Equipment` field, wired).
+-   **Console clean-up (developer report: "so many errors").** 838
+    entries were all "RuntimeNavMeshBuilder: Source mesh ... does not
+    allow read access" - one per loose branch/stone, whose mesh
+    colliders the runtime NavMesh bake tried to read. Fixed with
+    `NavMeshModifier` (Ignore From Build) on those two prefabs. The one
+    other entry ("Ghost: Destroy may not be called from edit mode") is
+    fixed in `PlayerBuilding.DestroyGhost` (DestroyImmediate outside Play
+    Mode). Verified afterwards: 0 errors, 0 warnings on a fresh world.
+-   Verified in Play Mode: 14 branches / 6 stones within 20 m of spawn;
+    tree refuses bare hands ("needs Axe"), takes a hit with the axe;
+    rock refuses the axe, takes a hit with the pickaxe; a real key "3"
+    press (Input System) equipped the sword and combat used its stats;
+    dropping the held sword unequipped it and spawned its 3D
+    placeholder; held axe saved and restored after reload. Mouse-wheel
+    binding resolves to `/Mouse/scroll/down|up` and fired once on a
+    synthetic scroll, but an end-to-end check through PlayerBuilding was
+    inconclusive (synthetic mouse events mixed with live editor input) -
+    **please try the wheel in build mode.** Test saves deleted.
+-   Not done: no held-item model in the character's hand; gathering is
+    still E (not an LMB swing); building does not require the hammer;
+    tools have no durability; armor slots.
+-   **Icons redrawn** (developer feedback: "icons look so-so"):
+    `Tools/make_icons.py` rewritten - top-lit gradient shading, outline,
+    highlights, soft drop shadow, clearer silhouettes (axe/hammer heads
+    on the handle, two-sided pickaxe, sword with guard/grip/pommel). All
+    17 PNGs regenerated in place (same file names and .meta, so every
+    asset reference and Sprite import setting is unchanged). Still
+    programmer placeholders, not final art.
+
+### v0.1 --- 2026-10-17 (Sky - Fantasy Skybox, sun/moon, moon phases, moving clouds)
+
+First pass, developer asked to revisit later - see Technical Debt "Sky"
+and roadmap Phase 10 "Sky polish".
+
+-   Imported **Fantasy Skybox FREE** (Render Knight, Asset Store) to
+    `Assets/Fantasy Skybox FREE/` (built-in Skybox/Panoramic and
+    Skybox/Cubemap materials - render fine in URP).
+-   `Shaders/SkyboxPanoramicBlend.shader` (`NAV/Skybox/Panoramic
+    Blend`): cross-fades two lat-long skies (time of day) and fades to an
+    overcast sky (weather); draws sun and moon discs (horizon clip,
+    hidden behind painted clouds, faded in rain); moon phase lighting
+    (waxing lit on the right, waning on the left; the dark part hides the
+    stars); moving cloud layer sampled from a tiling noise texture.
+-   `Scripts/Presentation/Lighting/SkyboxSet.cs` (ScriptableObject,
+    `ScriptableObjects/World/FS003SkyboxSet.asset`): textures/tint/
+    exposure + cloud colours per phase (Night/Sunrise/Day/Sunset, using
+    the asset's Sunless/Moonless variants), transition hours, overcast
+    sky, sun/moon disc look, cloud layer (scale, coverage clear/overcast,
+    softness, wind direction/speed, storm wind, morph speed).
+-   `DayNightLighting`: optional `Skybox Set` + `Panoramic Blend Shader`
+    fields (wired on `WorldClock`); when set, replaces the old HDRI path
+    (kept as fallback). Sun/moon disc arcs match the light's yaw/elevation
+    and continue below the horizon; cloud wind offsets are accumulated
+    and wrapped (no jumps on wind changes); moonlight scales with phase.
+-   `TimeOfDaySettings`: `SunriseHour`/`SunsetHour` getters; moon phases
+    (`Moon Phase Count` 8, `First Night Moon Phase` 4 = full, `Dark Moon
+    Light` 0.3); phase steps at midday so it never changes while the
+    moon is up; derived from Day, so saves need no change. Sky rotation
+    per day 12 -> 30.
+-   `WorldClock`: `MoonPhaseIndex`, `MoonCycle`, context menu "Skip 1
+    Day (next moon phase)".
+-   `Scripts/Editor/CloudNoiseGenerator.cs`: menu **NAV > Sky > Generate
+    Cloud Noise Texture** -> `Art/Textures/CloudNoise.png` (deterministic).
+-   Scene: `WorldGenTest` skybox set to `FS003_Day_Sunless` (editor
+    preview only - replaced at runtime).
+-   Verified in Play Mode: noon, dawn, sunset, night, heavy rain, all 8
+    moon phases (rendered contact sheet), cloud motion over time. No
+    console errors.
+
+### v0.1 --- 2026-10-17 (Weapons in hand, attack animations, contact hits)
+
+Developer request: stone sword and axe from the LowPoly Weapons Pack,
+craftable at the workbench, shown in inventory and in the character's
+hand; Human Melee Animations FREE applied to combat, each weapon type with
+its own style; damage only at the moment the weapon touches the target
+(creatures, and trees/rocks).
+
+-   **Assets.** Imported **LowPoly Weapons Pack** (PolySoft3D) to
+    `Assets/LowPolyWeapons/`; its `colors.mat` converted from Built-in
+    Standard to **URP Lit** (was pink) - re-importing the package reverts
+    that. **Human Melee Animations FREE** was already in the project
+    (only its demo texture is missing - not needed).
+-   **Models.** Stone Sword = `sword1H10` (knapped-stone wavy blade),
+    Stone Axe = `axe1H9` (dark stone head, crooked haft).
+    -   `Prefabs/Item/Held/StoneSword_held`, `StoneAxe_held`: model scaled
+        to fit the hand (0.33 / 0.30), grip at the origin, +Y along the
+        handle (Kevin rig `B-handProp.R` convention, zero offset); axe
+        model turned 180 degrees so its edge leads the chop; each has a
+        `MeleeHitbox` (blade / axe-head capsule).
+    -   `StoneSword_item` / `StoneAxe_item` (world drops): primitives
+        replaced by the model lying flat, box collider fitted.
+-   **Icons.** `Scripts/Editor/ItemIconRenderer.cs` - menu **NAV > Items >
+    Render Icons From Held Models**: renders every item with a Held Prefab
+    to `Art/Icons/Rendered/Icon_{Id}.png` (transparent, 256 px, Sprite)
+    and assigns it to the item and its weapon. The old `Icon_StoneSword`/
+    `Icon_StoneAxe` from `Tools/make_icons.py` are now unused.
+-   **Crafting.** Already in place: `StoneSwordRecipe` / `StoneAxeRecipe`
+    need workbench tier 1 and are known in `WorldGenTest` - unchanged.
+-   **Code.**
+    -   `ItemDefinition`: `Held Prefab` (model in hand).
+    -   `WeaponDefinition`: `Attack Style` (new enum `WeaponAttackStyle`:
+        Unarmed / OneHanded / TwoHanded / Polearm - int values are the
+        Animator's), `Attack Animation Speed`, `Hit Window Start/End`.
+    -   `PlayerCombat`: **contact hits.** Attack input spends cooldown/
+        stamina and fires `AttackStarted`; between Hit Window Start and End
+        the striking capsule (`IMeleeHitboxSource`) is swept every
+        LateUpdate from last frame's pose to this one (sub-stepped, a fast
+        tip moves ~1 m/frame), and whatever it touches is hit once per
+        swing: `IDamageable` takes damage, `IMeleeHitReceiver` takes a
+        gather-hit. No hitbox source = old camera-ray hit at window start.
+        `Range` now only drives the crosshair target query.
+    -   New `IMeleeHitboxSource`, `IMeleeHitReceiver`, `MeleeHitbox`
+        (Gameplay/Combat).
+    -   `ResourceNode` implements `IMeleeHitReceiver` - a weapon touching a
+        tree/rock counts as a gather-hit with the usual tool requirement
+        (E still works too).
+    -   `Presentation/Equipment/HeldItemView` (on the character model):
+        spawns the Held Prefab under `B-handProp.R` on equip (colliders/
+        rigidbodies stripped), and is the hitbox source (held MeleeHitbox,
+        else a 0.15 m fist sphere at the hand).
+    -   `PlayerAnimator`: optional Combat/Equipment refs - sets
+        AttackStyle/AttackSpeed/AttackMirror and fires Attack; one-handed
+        attacks alternate right/left while attacking within 1.2 s;
+        HoldingItem closes the right hand.
+    -   `Scripts/Editor/PlayerCombatAnimatorSetup.cs` - menu **NAV >
+        Animation > Setup Player Combat Layers** (re-runnable): adds the
+        parameters and two layers to `PlayerAnimatorController` -
+        "Upper Body" (override, new `Animations/Player/UpperBodyMask` =
+        torso/head/arms, legs keep walking): Unarmed Swipe (1H_R), 1H Slash
+        Right/Left, 2H Chop, Polearm Thrust from Any State; "Right Hand"
+        (Kevin right-hand mask): fist pose while holding an item.
+-   **Weapon tuning** (impact times measured from the clips' tip speed:
+    1H_R 0.30 s, 1H_L ~0.07 s, 2H 0.56 s, polearm 0.39 s at speed 1):
+    Unarmed swipe x1.6, window 0.12-0.30 s; Stone Sword one-handed combo
+    x1.5, 0.04-0.32 s; Stone Axe and Stone Pickaxe two-handed chop x1.8,
+    0.20-0.42 s.
+-   **Scene `WorldGenTest`:** `HeldItemView` added to `HumanDummy_M Red`
+    (socket `B-handProp.R`), wired into `PlayerAnimator` and
+    `PlayerCombat.Hitbox Source`.
+-   Verified: compiles clean; held models posed on sampled attack frames
+    (grip, blade direction, axe edge leading); in Play Mode the sword/axe
+    appear in hand on equip; one axe swing at a spruce = exactly one
+    gather-hit (probe counted 4 attack starts -> 3 contact strikes, no
+    duplicates), tree felled after 3 swings.
+-   Not done / known gaps: Pickaxe and Wood Hammer have no hand model yet
+    (pickaxe swings use the fist hitbox); unarmed has no real punch clip
+    (uses the 1H slash); no hit VFX/sound/hit-stop; the attack doesn't
+    root the player or turn the legs; `SampleScene` is not wired (falls
+    back to the camera-ray hit).
+-   **Fix (same day, developer report: "the character swings off to the
+    left, not where they face").** Cause: the Kevin attacks are authored
+    from a combat stance with the hips turned ~36 degrees right; the
+    Upper Body mask keeps the hips from locomotion (facing forward) but the
+    torso's twist relative to the hips from the clip, so every swing landed
+    ~30 degrees left. Fix: `PlayerCombatAnimatorSetup` now bakes the attack
+    clips into `Animations/Player/Combat/*.anim` copies (Kevin files
+    untouched) with an `AttackTwist` Animator curve = the clip's hip yaw
+    over time (from the hip-joint line on `HumanCharacterDummy_M`), and the
+    Upper Body states use those copies. `PlayerAnimator` (now
+    `[DefaultExecutionOrder(-50)]`, before PlayerCombat) turns the Spine
+    bone by AttackTwist in LateUpdate, so both the visible swing and the
+    hitbox sweep follow the aim. Verified in Play Mode by logging the
+    weapon tip's angle to the facing every frame: sword right slash ends at
+    +4 degrees (was ~-30), left slash starts at +5, axe chop crosses +4 at
+    its impact (0.33 s, inside the hit window) and follows through
+    down-left. Note: re-run the setup menu after changing attack clips.
+
+### v0.1 --- 2026-10-17 (All LowPoly pack weapons, 9 classes, temporary racks)
+
+Developer request: every weapon of the LowPoly Weapons Pack in the game,
+split into classes matched to the melee animations; they should be
+craftable at the workbench from different ingredients, but as only
+wood/stone exist yet, add them temporarily without crafting and record that
+resources and recipes are needed (see Technical Debt "LowPoly pack
+weapons" and roadmap Phase 13).
+
+-   **155 weapons** (all pack models; `_001` = recoloured "b" variants;
+    sword1H10/axe1H9 skipped - they are the Stone Sword/Axe), generated by
+    `Scripts/Editor/WeaponPackGenerator.cs` - menu **NAV > Items > Generate
+    Weapons From LowPoly Pack** (re-runnable, updates in place). Per model:
+    WeaponDefinition (`ScriptableObjects/Weapons/LowPoly/<Class>/`),
+    ItemDefinition (`Items/LowPoly/<Class>/`, id `LPW_<model>`, category
+    Weapon), held + world prefabs (`Prefabs/Item/LowPoly/<Class>/`), icon
+    (`Art/Icons/Rendered/`), entry in `DefaultItemDatabase` (saves).
+-   **Classes -> animation** (new `WeaponClass` enum on WeaponDefinition;
+    placeholder stats per class in the generator's table):
+
+    | Class | Pack folder | Style / clip | Dmg | Cooldown |
+    |---|---|---|---|---|
+    | Dagger (20) | Daggers | One-handed combo, fastest (x1.9) | 9 | 0.45 |
+    | Sword (19) | Swords1H | One-handed combo (x1.5) | 15 | 0.6 |
+    | Greatsword (30) | Swords2H | Two-handed chop (x1.45) | 25 | 1.0 |
+    | Hand Axe (8) | Axes1H | Two-handed chop (x1.8), also Axe tool | 13 | 0.8 |
+    | Battle Axe (11) | Axes2H | Two-handed chop (x1.35), also Axe tool | 27 | 1.1 |
+    | Mace (10) | Hammers1H | One-handed combo, heavy (x1.3) | 17 | 0.75 |
+    | Warhammer (10) | Hammers2H | Two-handed chop, slowest (x1.3) | 30 | 1.2 |
+    | Spear (9) | Spears | Polearm thrust (x1.5), reach 3.2 | 18 | 0.85 |
+    | Shield (38) | Shields | NEW Shield bash (x1.2), left hand, block 85% | 6 | 0.8 |
+
+    Existing weapons got classes too: Unarmed, Stone Pickaxe = Tool,
+    Stone Sword = Sword, Stone Axe = Hand Axe.
+-   **Held placement** per class from Kevin's demo props: swords/daggers
+    gripped mid-handle below the guard (pack pivot = guard), greatswords
+    near the guard, axes/maces/hammers near the bottom, spears 14% up the
+    shaft, shields centred on `B-handProp.L` with the plate 8 cm in front
+    (model turned 180). One scale per class (its average size) keeps the
+    variants' relative sizes. MeleeHitbox per class: blade, head, spear
+    tip, shield face. Checked by rendering one of each class in its
+    attack pose.
+-   **Code.** `WeaponAttackStyle.Shield` (= 4); `ItemDefinition.Held In
+    Left Hand`; `HeldItemView` left-hand socket (wired to `B-handProp.L`);
+    `PlayerAnimator` sets `HoldingLeftItem`; animator setup adds "Shield
+    Bash" (baked `AttackShield_Bash.anim` with AttackTwist) and a "Left
+    Hand" grip layer. `ItemIconRenderer.RenderIcons(items)` is now callable.
+-   **Container panel generalised:** new `IItemContainer` (Contents +
+    ContainerTitle); `Gravestone` implements it; `GravestoneUIController`
+    opens for any IItemContainer and shows its title (`container-title`
+    label in `GravestonePanel.uxml`).
+-   **TEMPORARY access (no crafting):** `Scripts/Dev/` - `WeaponArsenal`
+    (ScriptableObject, `ScriptableObjects/Dev/WeaponArsenal.asset`, 11
+    racks: one per class, greatswords and shields split in two to fit the
+    20-slot panel), `WeaponRack` (IInteractable + IItemContainer, shows its
+    first weapon on a wooden stand, `Prefabs/Dev/WeaponRack`),
+    `WeaponArsenalSpawner` (object "WeaponArsenal (TEMP)" in WorldGenTest)
+    places the racks in a half ring 7 m around the world spawn point once
+    the world is generated. E on a rack opens the container panel; drag
+    weapons into the inventory (Move All won't fit a full rack). Racks are
+    not saved - re-spawned full on every load; taken weapons save normally.
+-   Verified in Play Mode: 11 racks spawned around the spawn; rack panel
+    opens titled "Spears" with 9 slots; took Spear 4 and Shield 3b into
+    the inventory; shield equips in the left hand (HoldingLeftItem) and
+    plays Shield Bash; spear equips in the right hand and plays Polearm
+    Thrust; 155 icons rendered; no console errors.
+
+### v0.1 --- 2026-10-18 (Weapon stances, foot IK on terrain)
+
+Developer request: the character should hold the equipped weapon in a
+stance (it looked stiff with locomotion arms), and the animation should
+adapt to the ground ("walks on air, horizontally" on slopes).
+
+-   **Weapon stances.** `PlayerCombatAnimatorSetup` (NAV > Animation > Setup
+    Player Combat Layers) now gives the "Upper Body" layer rest poses picked
+    by the new `HoldStyle` int (= held weapon's WeaponAttackStyle, 0 = none;
+    only for items with a held model) and `IsSprinting`:
+    -   Stance 1H (Kevin CombatIdle1H01) - swords, daggers, maces, shields;
+        dropped while sprinting (natural arm swing).
+    -   Stance 2H (CombatIdle2H01) - greatswords, axes, battle axes,
+        warhammers; Carry 2H (masked WeaponHold2H01) while sprinting.
+    -   Stance Polearm (CombatIdlePolearm01) - spears; Carry Polearm
+        (WeaponHoldPolearm01) while sprinting. Kevin's guard holds the
+        spear ~65 degrees across the body, so its AttackTwist bake gets
+        +45 degrees: body side-on, point at the enemy (measured -11
+        degrees from facing, 25 up).
+    Stance clips are baked like the attacks (`Animations/Player/Combat/
+    Stance*.anim`, `Carry*.anim` with AttackTwist). Every rest pose has
+    transitions to every other by condition sets (exactly one matches);
+    attacks start from Any State and exit straight into the fitting rest
+    pose. `PlayerAnimator` sets HoldStyle on equipment change.
+-   **Foot IK** - new `Presentation/Animation/FootGrounding.cs` on the
+    character model (Base Layer IK Pass turned on by the setup menu): per
+    foot a ray from 0.5 m above the animated foot finds the ground (own
+    colliders/triggers ignored); the foot goal goes to hit + sole height +
+    the animation's own step lift, the sole turns to the surface normal
+    (max 40 degrees, fading out as the foot lifts), the pelvis drops by
+    the lower foot's need (max 0.45 m); smoothed, fades out while airborne
+    (PlayerMotor.IsGrounded). Also removes the 3 cm hover from the
+    CharacterController skin width.
+-   Verified in Play Mode: on a 20-degree slope both ankles sit exactly at
+    sole height (0.128 m) above the ground; Stance 1H / 2H / Polearm render
+    correctly; with W+Shift queued through the Input System the upper body
+    went Stance Polearm -> Carry Polearm while sprinting and back after
+    release, the planted foot staying on the ground every frame; no
+    console errors.
+-   Not done: no stance for unarmed/tools; the full-body combat idle
+    (stance legs) is not used - legs always come from locomotion.
+
+### v0.1 --- 2026-10-18 (Full-body stance when standing, attack combos)
+
+Developer request: standing still with a weapon -> full stance (without a
+weapon: normal idle); more than one attack animation per weapon type.
+
+-   **Animation inventory.** Kevin's Human Melee Animations FREE has
+    exactly 5 attacks (1H R/L, 2H, polearm, shield) - all were already
+    used. Imported **Brawler Animations - Free** (SainDeveloper, humanoid)
+    to `Assets/Brawler Animations Sample/`: punches Atk_P_1 (left jab),
+    Atk_P_2 (left hook), kicks, Fight/Guard idles, hits. Not used yet:
+    kicks (need the legs - attacks are upper-body), Guard_Idle (could be
+    the block pose), Hit/Guard_Hit reactions. The cached **Free Sample
+    Animation Set** (VanillaLoopStudio) has a 2H pickaxe mining loop -
+    not imported, candidate for gathering later.
+-   **Combos** (`Presentation/Animation/AttackCombo.cs` = variant count per
+    style; PlayerAnimator steps AttackVariant on each attack of the same
+    style within 1.2 s, else restarts at 0):
+    -   Unarmed: left jab -> right jab (mirrored) -> left hook (Brawler)
+    -   One-handed: slash right -> slash left -> overhead (Kevin 2H chop)
+    -   Two-handed: chop -> chop from the other side (mirrored)
+    -   Polearm: thrust -> thrust other side (mirrored) -> overhead slam
+    -   Shield: shield bash -> right punch (mirrored jab)
+    Mirrored variants are the state's Mirror flag on the same clip (both
+    hands on the weapon, so a mirrored swing still holds it).
+-   **Per-attack strike timing.** Every baked clip now carries `HitActive`
+    (1 around the striking point's speed peak: weapon tip 0.8 m along the
+    prop, or the faster fist; >= 25% of peak, 3 frames lead-in) besides
+    AttackTwist. `HeldItemView.IsStriking` reads it; `PlayerCombat` sweeps
+    only while striking and ends the swing after it (fallback: the
+    weapon's Hit Window Start/End, now documented as fallback). The hitbox
+    source returns several capsules (`MeleeCapsule`): the weapon's
+    MeleeHitbox plus every free fist (both with empty hands, the right
+    one next to a shield). Capsules are tracked every frame of the swing,
+    so a 1-2 frame strike still sweeps its whole arc.
+-   **Full Stance layer** (new, between Base and Upper Body, full body,
+    weight from PlayerAnimator: fades to 1 at 4/s only while HoldStyle != 0,
+    no move input and grounded): Kevin's full-body combat idle per style
+    (1H/shield, 2H, polearm), baked with a `FullStanceTwist` curve that
+    PlayerAnimator subtracts from AttackTwist (the hips already come from
+    the clip there).
+-   Pose/attack transitions are interruptible (Destination), so a combo's
+    next attack cuts into the previous one's return-to-stance blend
+    (measured: next state the same frame, was +0.27 s).
+-   `PlayerCombatAnimatorSetup` rewritten around an attack table (style,
+    variant, clip, mirror, strike point) validated against AttackCombo;
+    baked clips renamed after their source (`Attack2H01`,
+    `Attack2H01_Mirror`, `Atk_P_1_Mirror`, ...); the five superseded bakes
+    from 2026-10-17 were moved to the OS trash. `AttackMirror` parameter
+    removed (AttackVariant replaces it).
+-   Verified in Play Mode (attacks fired on a timer from the game loop):
+    full stance weight 1.00 standing with a sword (twists cancel to -3
+    degrees), wide-legged guard pose; sword combo Slash Right -> Slash
+    Left -> Overhead each with its STRIKE window; unarmed Jab Left -> Jab
+    Right; greatsword Chop -> Chop Other Side, both arcs end in front
+    (0 degrees); spear Thrust (+15) -> Thrust Other Side (-5) -> Slam; no
+    console errors. Not tested in play: shield combo, maces/daggers (same
+    one-handed states).
+
+### v0.1 --- 2026-10-18 (Hammer model; building only with the hammer)
+
+Developer request: use their Blender hammer model; building only with the
+hammer - hold it and RMB enters/leaves build mode (B must not open it any
+more), LMB builds, with a hammer-strike animation; the hammer is crafted
+from 4 wood + 2 stone without a workbench.
+
+-   **Hammer model** `Art/Models/Tools/Hammer.fbx` (developer's Blender
+    export): came in 6.4 m tall (x100 export scale) - importer Scale
+    Factor set to 0.0703 (= 0.45 m long, head 0.26 m), animation import
+    off. Orientation was already right (handle up, origin at the handle
+    bottom). Both Blender materials have the same orange colour.
+    -   `Prefabs/Item/Held/WoodHammer_held` (grip 9 cm up the handle,
+        MeleeHitbox across the head), `WoodHammer_item` rebuilt in place
+        (model lying flat, box collider fitted), icon rendered to
+        `Art/Icons/Rendered/Icon_WoodHammer.png`; `WoodHammer` item got the
+        Held Prefab.
+-   **Recipe** `WoodHammerRecipe`: 4 Wood + 2 Rock, workbench tier 0
+    (hand crafting; was 5 Wood).
+-   **Building needs the hammer** (`PlayerBuilding`): new required
+    `Equipment` field; build mode only while a Hammer tool is in the main
+    hand; toggled by the new `PlayerInputHandler.SecondaryPerformed` (RMB
+    press, the Block action; suppressed while a menu is open) - the
+    `ToggleBuild` (B) event is no longer subscribed (the action/binding
+    still exists in the input asset, unused); leaves build mode when the
+    hammer is put away (Equipment.Changed) or the component is disabled
+    (death); `PiecePlaced` event + 0.6 s placement cooldown;
+    `HoldsHammer` / `UsesSecondaryAction` queries.
+-   `PlayerCombat` doesn't block while RMB belongs to building (hammer
+    held or build mode on).
+-   **Hammer strike**: animator setup adds a `BuildStrike` trigger and a
+    "Build Strike" state on Upper Body (Kevin overhead 2H blow, x1.8);
+    `PlayerAnimator` (new optional `Building` ref) fires it on
+    PiecePlaced. Purely visual - no combat swing.
+-   Scene `WorldGenTest`: PlayerBuilding.Equipment and PlayerAnimator.Building
+    wired.
+-   Verified in Play Mode with queued real input: RMB without the hammer
+    and B both left build mode off; with the hammer RMB turned it on; a
+    Wood Foundation was built. The developer was playing in the editor at
+    the same time, so the rest of the scripted scenario (strike animation,
+    RMB to exit, leaving on unequip) was not observed - to be checked by
+    hand. No console errors.
+
+### v0.1 --- 2026-10-18 (Build menu, hammer demolish with refund)
+
+Developer request: demolish what you built with the hammer; in build mode
+the inventory key opens an inventory-like grid of building pieces (walls,
+floor, roof, ...) with a Demolish choice - Valheim-style.
+
+-   **Build menu** - new `UI/BuildMenuUIController.cs` +
+    `BuildMenuPanel.uxml/.uss` (same look as the inventory, same screen
+    spot), scene object "BuildMenuUI" (UIDocument with NAV_PanelSettings).
+    While build mode is on, the inventory key (I) opens it instead of the
+    inventory (`InventoryUIController` got an optional `Building` field and
+    ignores the key then). Slot 1 = Demolish (hammer icon, reddish slot),
+    then every known piece with its icon; selection framed in gold,
+    unaffordable pieces dimmed; hovering shows "name - cost (have)", red
+    when short. Click selects and closes the menu; it also closes when build
+    mode ends.
+-   **PlayerBuilding**: `KnownPieces`, `SelectedIndex`, `SelectPiece(i)`,
+    `SelectDemolish()`, `IsDemolishSelected`, `DemolishTarget`,
+    `StateChanged` and `PieceDemolished` events. Demolish tool: no ghost;
+    the placed piece under the crosshair (within 8 m of the player) is
+    tinted red via MaterialPropertyBlock; LMB destroys it and refunds its
+    full cost into the inventory (overflow dropped as pickups at the piece),
+    same 0.6 s cooldown as placing. Mouse wheel steps through pieces and
+    leaves Demolish. Rotate does nothing with Demolish.
+-   **BuildingPiece is no longer an IInteractable** - E doesn't demolish
+    any more (hammer only), and E now reaches a piece's own interactables
+    (workbench, campfire) without a "Demolish" prompt in the way.
+-   HUD crosshair with Demolish: red while a piece is targeted, neutral
+    otherwise. `PlayerAnimator` plays the hammer strike on demolish too.
+-   Verified in Play Mode (queued real input + menu selection through the
+    same API the click uses): hammer + RMB -> build mode; I -> build menu
+    open, inventory stayed shut (screenshot: Demolish + 7 pieces,
+    Foundation selected, "Wood Foundation - 3 Wood (30), 2 Rock (10)");
+    LMB placed a foundation (wood 30->27, rock 10->8, strike animation);
+    Demolish targeted it (red tint + red crosshair, screenshot) and LMB
+    removed it with full refund (wood 27->30, rock 8->10) and the strike
+    animation. No console errors. Not covered: the actual mouse click on a
+    slot (selection called directly), overflow drop when the inventory is
+    full.
+
+### v0.1 --- 2026-10-18 (Workbench build area, workbench needs a roof)
+
+Developer request (Valheim rules): pieces can only be built after placing a
+workbench and only within N metres of it; the workbench itself is only
+usable indoors (under a roof).
+
+-   `WorkbenchDefinition`: `Build Radius` (20 m) and `Requires Roof` (on).
+-   `Workbench`: static `AllWorkbenches` (real benches only - a build ghost
+    never registers), `IsInBuildArea` / `AnyBuildAreaContains`. Shelter: 5
+    rays straight up from 1.4 m above the bench (centre + 4 at 0.45 m);
+    the first solid hit of each must be a placed BuildingPiece other than
+    the bench's own (terrain, trees, sky, characters don't count); >= 4 of 5
+    covered = sheltered. Re-checked every 0.5 s; on change it calls
+    `PlayerCrafting.NotifyWorkbenchChanged` for players in range.
+    `UsableTier` = Tier when sheltered, else 0.
+-   `PlayerCrafting.NearbyWorkbenchTier` now uses UsableTier; new
+    `NearbyUnshelteredWorkbenchTier`. Crafting panel requirement line says
+    "... - the workbench needs a roof" when a bench of the right tier is in
+    range but uncovered; it refreshes by itself when a roof is built or
+    removed.
+-   `BuildingPieceDefinition.Requires Workbench` (default on; off for
+    Workbench and Campfire). `PlayerBuilding.CanPlace` also needs
+    `IsInBuildArea`; new `PlacementHint` ("Aim at the ground" / "Needs a
+    workbench nearby" / "Not enough materials") shown under the crosshair
+    in build mode (HUD prompt line, no [E]). Build menu info adds "Needs a
+    workbench nearby" for such pieces.
+-   **Bug fixed - build ghosts ran their scripts:** the ghost is a full
+    prefab copy, and its BuildingPiece registered as a placed piece (the
+    prefabs carry their Definition), so a workbench ghost opened a build
+    area and a ghost could snap to its own points. `SpawnGhost` now
+    disables every MonoBehaviour on the ghost except BuildingSnapPoint.
+-   Verified in Play Mode: no bench -> foundation can't be placed, HUD
+    "Needs a workbench nearby"; workbench ghost selected -> 0 benches / 0
+    pieces registered; workbench placed -> foundation placeable; bench
+    without roof -> craft tier 0, panel "... the workbench needs a roof";
+    a roof piece placed 2.5 m above -> sheltered, tier 1, requirement met;
+    roof removed -> back to "needs a roof" automatically. No console errors.
+-   Not done: walls aren't required, only a roof overhead. (The build
+    radius circle was added right after - see next entry.)
+-   **Build radius shown (developer follow-up, same day):** new
+    `Presentation/Building/WorkbenchAreaIndicator.cs` (scene object
+    "WorkbenchAreaIndicator", refs PlayerBuilding + URP Unlit shader so it
+    ships in builds). While build mode is on it draws a dashed yellow circle
+    at BuildRadius around every placed workbench: one closed LineRenderer
+    per bench, 128 points each dropped onto the ground below (characters
+    ignored) + 0.12 m, dashes from a generated 2-texel alpha-clipped texture
+    tiled every 1.2 m; rebuilt when the bench count changes and once a
+    second; hidden outside build mode. Verified: screenshot from above shows
+    the 20 m dashed ring following the terrain; 1 line in build mode, 0
+    after leaving it; no console errors.
+
+### v0.1 --- 2026-10-18 (Demolish drops materials in the world)
+
+Developer request: a demolished piece's materials must drop into the world,
+not appear in the player's inventory.
+
+-   `PlayerBuilding.DropCost` (was RefundCost): the piece's full cost is
+    spawned as ItemPickups, one stack per ingredient, thrown out from the
+    piece's collider centre (random offset within its footprint, max
+    1.2 m, outward + upward impulse - new `Drop Scatter Force` 1.5 /
+    `Drop Upward Force` 2, same feel as ResourceNode drops). The piece is
+    deactivated before the drops spawn (Destroy is end-of-frame; the drops
+    would otherwise be pushed out of the still-solid collider). Nothing is
+    added to the inventory. Build menu Demolish text updated.
+-   Verified in Play Mode: foundation placed (wood 40->37, rock 20->18),
+    demolished -> inventory unchanged (37/18), pickups "Wood x3" and
+    "Rock x2" on the ground where it stood (screenshot); no console errors.
+
+### v0.1 --- 2026-10-18 (Production order: slice -> creatures -> tiers -> bosses)
+
+Developer asked for a plan review and when creatures, bosses and visuals
+will be worked on. Agreed order recorded (no code changes):
+
+-   `DEVELOPMENT_ROADMAP_v0.1.md`: new section "Production Order from here"
+    before Phase 12 - Stage A (close the Vertical Slice), Stage B (creatures,
+    with early visuals in parallel), Stage C (resources and tiers 1--2),
+    Stage D (bosses: framework on one placeholder boss first), Final Visuals
+    after Stage C (asset strategy decision first).
+-   "Current Next Step" now opens with the 2026-10-18 status and this order.

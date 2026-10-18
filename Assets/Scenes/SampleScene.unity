@@ -1539,6 +1539,10 @@ PrefabInstance:
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4522755119702896260, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e5b47fc8a767e4447893ba2099647dd4, type: 2}
     - target: {fileID: 7135790475038435720, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1797,6 +1801,10 @@ MonoBehaviour:
   _interactor: {fileID: 1082341851}
   _combat: {fileID: 1082341856}
   _building: {fileID: 1082341854}
+  _food: {fileID: 1082341858}
+  _worldClock: {fileID: 0}
+  _weather: {fileID: 0}
+  _equipment: {fileID: 1082341859}
 --- !u!114 &805039155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2128,6 +2136,8 @@ GameObject:
   - component: {fileID: 1082341855}
   - component: {fileID: 1082341856}
   - component: {fileID: 1082341857}
+  - component: {fileID: 1082341858}
+  - component: {fileID: 1082341859}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2325,6 +2335,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 657c908c18bcef281e9154ad3d8ccb8c, type: 2}
   - {fileID: 11400000, guid: c4a95659f0c8e0587fb57b7a9e08c119, type: 2}
   - {fileID: 11400000, guid: dabec712b1d925652c4a438c880e1bd1, type: 2}
+  - {fileID: 11400000, guid: cedf55cc5dbc728499439cdfca080d63, type: 2}
 --- !u!114 &1082341854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2346,6 +2357,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: bf2b9736309913341beeaa0d58f8b3b0, type: 2}
   - {fileID: 11400000, guid: 4210893fc7e43d34c8422a07d1759333, type: 2}
   - {fileID: 11400000, guid: 659ff3e635719de4fa3985cdd9dfe013, type: 2}
+  - {fileID: 11400000, guid: 826deb7d88f7ac248864107ce096af9a, type: 2}
+  - {fileID: 11400000, guid: 48bb8abc4f7c6514aad9f88da542a958, type: 2}
   _maxPlacementDistance: 15
   _rotationStepDegrees: 45
   _placementLayers:
@@ -2384,7 +2397,8 @@ MonoBehaviour:
   _health: {fileID: 1082341855}
   _stamina: {fileID: 1082341850}
   _cameraTransform: {fileID: 330585546}
-  _equippedWeapon: {fileID: 11400000, guid: ea9ade5f385089d6e7605da55dc96af2, type: 2}
+  _equipment: {fileID: 1082341859}
+  _unarmedWeapon: {fileID: 11400000, guid: 342614e1a2a4b7044ae7622f9244488f, type: 2}
   _hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -2409,6 +2423,38 @@ MonoBehaviour:
   _inventory: {fileID: 1082341852}
   _gravestonePrefab: {fileID: 5340976678533722809, guid: 91cc70a9fc8de854f805ee1f8ad83f10, type: 3}
   _building: {fileID: 1082341854}
+--- !u!114 &1082341858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082341843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26726ee72bd1dc8469e5efb5097fc925, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Survival.PlayerFood
+  _playerInventory: {fileID: 1082341852}
+  _health: {fileID: 1082341855}
+  _stamina: {fileID: 1082341850}
+  _maxActiveFoods: 3
+  _refreshThreshold: 0.25
+--- !u!114 &1082341859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082341843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 077da506684844e40ac75cc712da3c22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.PlayerEquipment
+  _playerInventory: {fileID: 1082341852}
+  _inputHandler: {fileID: 1082341846}
+  _hotbarSlotCount: 6
 --- !u!1001 &1089374822
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2932,6 +2978,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.UI.InventoryUIController
   _playerInventory: {fileID: 1082341852}
   _inputHandler: {fileID: 1082341846}
+  _playerFood: {fileID: 1082341858}
+  _playerEquipment: {fileID: 1082341859}
 --- !u!114 &1482588597
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,0 +1,120 @@
+/* Same look as InventoryPanel.uss (it takes the inventory's place while building). */
+
+.build-root {
+    position: absolute;
+    left: 24px;
+    top: 0;
+    bottom: 0;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.build-panel {
+    background-color: rgb(43, 33, 24);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    padding: 16px;
+    min-width: 420px;
+}
+
+.build-title {
+    color: rgb(230, 210, 160);
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+    -unity-text-align: middle-center;
+}
+
+.build-hint {
+    color: rgb(190, 175, 150);
+    font-size: 12px;
+    margin-bottom: 10px;
+    -unity-text-align: middle-center;
+}
+
+.build-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 400px;
+}
+
+.build-slot {
+    width: 56px;
+    height: 56px;
+    margin: 4px;
+    background-color: rgb(61, 48, 35);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(90, 70, 50);
+    border-right-color: rgb(90, 70, 50);
+    border-top-color: rgb(90, 70, 50);
+    border-bottom-color: rgb(90, 70, 50);
+    align-items: center;
+    justify-content: center;
+}
+
+.build-slot:hover {
+    background-color: rgb(80, 63, 45);
+}
+
+.build-slot__icon {
+    width: 40px;
+    height: 40px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.build-slot__name {
+    color: rgb(230, 210, 160);
+    font-size: 9px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+/* The Demolish (hammer) tool - first slot, reddish so it reads as "remove". */
+.build-slot--demolish {
+    background-color: rgb(92, 40, 32);
+}
+
+.build-slot--demolish:hover {
+    background-color: rgb(115, 50, 40);
+}
+
+.build-slot--unaffordable .build-slot__icon {
+    opacity: 0.35;
+}
+
+.build-slot--selected {
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(230, 180, 60);
+    border-right-color: rgb(230, 180, 60);
+    border-top-color: rgb(230, 180, 60);
+    border-bottom-color: rgb(230, 180, 60);
+}
+
+.build-info {
+    color: rgb(230, 210, 160);
+    font-size: 13px;
+    margin-top: 10px;
+    min-height: 34px;
+    white-space: normal;
+    max-width: 400px;
+}
+
+.build-info--short {
+    color: rgb(220, 120, 100);
+}

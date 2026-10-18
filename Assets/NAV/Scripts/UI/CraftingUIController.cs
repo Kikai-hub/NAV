@@ -295,7 +295,11 @@ namespace NAV.UI
             }
 
             bool hasWorkbench = _playerCrafting.NearbyWorkbenchTier >= _selectedRecipe.RequiredWorkbenchTier;
-            _detailRequirement.text = $"Requires Workbench (Tier {_selectedRecipe.RequiredWorkbenchTier})";
+            // A workbench of the right tier is near but has no roof - say so (Valheim-style).
+            bool needsRoof = !hasWorkbench && _playerCrafting.NearbyUnshelteredWorkbenchTier >= _selectedRecipe.RequiredWorkbenchTier;
+            _detailRequirement.text = needsRoof
+                ? $"Requires Workbench (Tier {_selectedRecipe.RequiredWorkbenchTier}) - the workbench needs a roof"
+                : $"Requires Workbench (Tier {_selectedRecipe.RequiredWorkbenchTier})";
             _detailRequirement.EnableInClassList("recipe-detail__requirement--missing", !hasWorkbench);
             _detailRequirement.style.display = DisplayStyle.Flex;
         }

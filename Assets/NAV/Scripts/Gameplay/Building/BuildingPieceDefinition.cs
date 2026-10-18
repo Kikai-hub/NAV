@@ -24,6 +24,10 @@ namespace NAV.Gameplay.Building
         [Header("World")]
         [SerializeField] private GameObject _prefab;
 
+        [Header("Rules")]
+        [Tooltip("Can only be placed inside a placed workbench's build radius (Valheim-style). Off for the workbench itself and the campfire, which can go anywhere.")]
+        [SerializeField] private bool _requiresWorkbench = true;
+
         /// <summary>Stable identifier used by SaveManager/BuildingPieceDatabase to reference this
         /// definition from a save file (JSON can't hold a direct asset reference) - same pattern
         /// as ItemDefinition.Id. Auto-fills from the asset name if left blank.</summary>
@@ -35,6 +39,9 @@ namespace NAV.Gameplay.Building
         /// <summary>Prefab instantiated both for the placement ghost and the real built piece
         /// (must carry a BuildingPiece component - see PlayerBuilding).</summary>
         public GameObject Prefab => _prefab;
+
+        /// <summary>Must be placed within a placed workbench's build radius.</summary>
+        public bool RequiresWorkbench => _requiresWorkbench;
 
         // Fully qualified, not "using NAV.Gameplay.Inventory" + bare "Inventory": same
         // CS0118 namespace-vs-class collision RecipeDefinition already documents - this file

@@ -1,4 +1,6 @@
 using UnityEngine;
+using NAV.Gameplay.Combat;
+using NAV.Gameplay.Equipment;
 using NAV.Gameplay.Interaction;
 
 namespace NAV.Gameplay.Items
@@ -11,12 +13,17 @@ namespace NAV.Gameplay.Items
     /// its Definition.Drops into the world as physical ItemPickup objects the player then walks
     /// over/interacts with to actually collect - not auto-added to inventory (matches the
     /// developer's request: a chopped tree should drop its yield on the ground, not silently
-    /// fill the inventory per swing). No tool requirement and no respawn/persistence yet
-    /// (Gathering roadmap items "Axe/tool interaction", "Mining interaction" and "Resource
-    /// persistence" are explicitly future work; see PROJECT_STATE.md).
+    /// fill the inventory per swing). Definition.RequiredTool must be held in the main hand
+    /// (PlayerEquipment) for a hit to count - trees need an Axe, stone/ore a Pickaxe; the
+    /// prompt says what's missing (IContextualPrompt). Depletion persistence is handled by
+    /// WorldGenerator/SaveManager (spawn-index ids), not here.
+    ///
+    /// A melee swing whose weapon physically touches the node (PlayerCombat contact hit,
+    /// IMeleeHitReceiver) counts as the same gather-hit, with the same tool requirement - so
+    /// chopping a tree with the axe works by swinging at it, Valheim-style, as well as by E.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public class ResourceNode : MonoBehaviour, IInteractable
+    public class ResourceNode : MonoBehaviour, IInteractable, IContextualPrompt, IMeleeHitReceiver
     {
         [SerializeField] private ResourceNodeDefinition _definition;
 
@@ -31,6 +38,16 @@ namespace NAV.Gameplay.Items
         public string InteractionPrompt => _definition != null
             ? $"Gather {_definition.DisplayName} ({_remainingHits} left)"
             : "Gather";
+
+        public string GetPrompt(GameObject interactor)
+        {
+            if (_definition != null && !HasRequiredTool(interactor))
+            {
+                return $"Gather {_definition.DisplayName} (needs {_definition.RequiredTool})";
+            }
+
+            return InteractionPrompt;
+        }
 
         private void Awake()
         {
@@ -52,6 +69,18 @@ namespace NAV.Gameplay.Items
 
         public void Interact(GameObject interactor)
         {
+            // Already depleted (Destroy only happens at the end of the frame).
+            if (_remainingHits <= 0)
+            {
+                return;
+            }
+
+            if (!HasRequiredTool(interactor))
+            {
+                Debug.Log($"{interactor.name} needs a {_definition.RequiredTool} (tier {_definition.MinToolTier}+) to gather {_definition.DisplayName}.", this);
+                return;
+            }
+
             _remainingHits--;
 
             if (_remainingHits > 0)
@@ -63,6 +92,11 @@ namespace NAV.Gameplay.Items
             Debug.Log($"{name} was depleted by {interactor.name} and scattered its yield.", this);
             SpawnDrops();
             Destroy(gameObject);
+        }
+
+        public void ReceiveMeleeHit(GameObject attacker, WeaponDefinition weapon)
+        {
+            Interact(attacker);
         }
 
         /// <summary>
@@ -88,6 +122,17 @@ namespace NAV.Gameplay.Items
 
                 ItemPickup.SpawnInWorld(drop.Item, drop.Amount, spawnPosition, Quaternion.identity, impulse);
             }
+        }
+
+        private bool HasRequiredTool(GameObject interactor)
+        {
+            if (_definition.RequiredTool == ToolType.None)
+            {
+                return true;
+            }
+
+            var equipment = interactor != null ? interactor.GetComponent<PlayerEquipment>() : null;
+            return equipment != null && equipment.HasTool(_definition.RequiredTool, _definition.MinToolTier);
         }
 
         private void ApplyDepletionFeedback()

@@ -21,12 +21,19 @@ namespace NAV.Gameplay.Items
         [SerializeField] private List<ResourceNodeDrop> _drops = new();
         [SerializeField] private int _hitsToDeplete = 3;
 
+        [Header("Tool Requirement")]
+        [Tooltip("Tool that must be held (PlayerEquipment) to hit this node. None = bare hands work.")]
+        [SerializeField] private ToolType _requiredTool;
+        [SerializeField, Min(1)] private int _minToolTier = 1;
+
         public string DisplayName => string.IsNullOrWhiteSpace(_displayName) && _drops.Count > 0 && _drops[0].Item != null
             ? _drops[0].Item.DisplayName
             : _displayName;
 
         public IReadOnlyList<ResourceNodeDrop> Drops => _drops;
         public int HitsToDeplete => _hitsToDeplete;
+        public ToolType RequiredTool => _requiredTool;
+        public int MinToolTier => _minToolTier;
 
         private void OnValidate()
         {

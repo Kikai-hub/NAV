@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_axe2H2
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_axe2H2
+  _displayName: Battle Axe 2
+  _description: Battle Axe from the LowPoly Weapons Pack. Placeholder stats - no
+    materials, tier or recipe yet.
+  _icon: {fileID: 21300000, guid: 531e909aa25699440869f8e4be6f1f27, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 8
+  _worldPrefab: {fileID: 4049773300318945439, guid: 96596e9f7283ec548866f0f71e8b0c75, type: 3}
+  _food: {fileID: 0}
+  _toolType: 1
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 213e663505877e548875e10247e05a51, type: 2}
+  _heldPrefab: {fileID: 7679790370227372659, guid: 70ef81ea2f92192408adaf9253090488, type: 3}
+  _heldInLeftHand: 0

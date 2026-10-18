@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
   m_Name: WoodWallPiece
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: WoodWallPiece
   _displayName: Wood Wall
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: a4bbdb4b0a71d8d43985074be78a21b7, type: 3}
   _cost:
   - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
     _amount: 5
   _prefab: {fileID: 4281628130594906562, guid: 06b11de64e455d149827d132cd7a41e3, type: 3}
+  _requiresWorkbench: 1

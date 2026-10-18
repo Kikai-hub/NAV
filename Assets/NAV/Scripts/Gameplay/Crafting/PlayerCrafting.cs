@@ -24,7 +24,8 @@ namespace NAV.Gameplay.Crafting
 
         public IReadOnlyList<RecipeDefinition> KnownRecipes => _knownRecipes;
 
-        /// <summary>Highest tier among all currently-overlapping Workbenches, 0 if none.</summary>
+        /// <summary>Highest usable tier among all currently-overlapping Workbenches (a bench
+        /// that needs a roof and has none counts as 0), 0 if none.</summary>
         public int NearbyWorkbenchTier
         {
             get
@@ -32,7 +33,26 @@ namespace NAV.Gameplay.Crafting
                 int highest = 0;
                 foreach (Workbench workbench in _nearbyWorkbenches)
                 {
-                    if (workbench != null && workbench.Tier > highest)
+                    if (workbench != null && workbench.UsableTier > highest)
+                    {
+                        highest = workbench.UsableTier;
+                    }
+                }
+
+                return highest;
+            }
+        }
+
+        /// <summary>Highest tier among nearby workbenches that can't be used because they have
+        /// no roof - for the crafting panel's "needs a roof" hint. 0 if none.</summary>
+        public int NearbyUnshelteredWorkbenchTier
+        {
+            get
+            {
+                int highest = 0;
+                foreach (Workbench workbench in _nearbyWorkbenches)
+                {
+                    if (workbench != null && !workbench.IsSheltered && workbench.Tier > highest)
                     {
                         highest = workbench.Tier;
                     }
@@ -43,6 +63,12 @@ namespace NAV.Gameplay.Crafting
         }
 
         public event Action NearbyWorkbenchChanged;
+
+        /// <summary>A nearby workbench's state changed (e.g. it gained or lost its roof).</summary>
+        public void NotifyWorkbenchChanged()
+        {
+            NearbyWorkbenchChanged?.Invoke();
+        }
 
         private void Awake()
         {

@@ -14,8 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: StoneAxe
   _displayName: Stone Axe
-  _description:
-  _icon: {fileID: 0}
+  _description: 
+  _icon: {fileID: 21300000, guid: e043f7cb82929d642b8f69faa2f489b2, type: 3}
   _category: 1
   _maxStackSize: 1
   _weight: 3
+  _worldPrefab: {fileID: 6210331663189670149, guid: 76cc209e33a8a724fb4989cd43e49706, type: 3}
+  _food: {fileID: 0}
+  _toolType: 1
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 66143572c75767f45b24566dd47af2ef, type: 2}
+  _heldPrefab: {fileID: 8088293729096923871, guid: 667bb48fec8fbad43b298044a7578f7f, type: 3}

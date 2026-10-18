@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: StoneSwordItem
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: StoneSword
+  _displayName: Stone Sword
+  _description: A crude blade of knapped flint on a wooden grip. Hits harder than
+    any tool.
+  _icon: {fileID: 21300000, guid: cf87104b793db134590f066d9f330987, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 3
+  _worldPrefab: {fileID: 4911464327124256783, guid: 5073a430c6e037a488dfe3111c713c97, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: ea9ade5f385089d6e7605da55dc96af2, type: 2}
+  _heldPrefab: {fileID: 255198999379210477, guid: 75d0dbadc31fefc4ca2243241132b5bc, type: 3}

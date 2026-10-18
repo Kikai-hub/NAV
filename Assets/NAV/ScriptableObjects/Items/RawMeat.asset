@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: RawMeat
   _displayName: Raw Meat
-  _description:
-  _icon: {fileID: 0}
+  _description: Raw meat from a hunted animal. Cook it on a campfire before eating.
+  _icon: {fileID: 21300000, guid: d2e9f1ef9e37f6344894e2b33679cb04, type: 3}
   _category: 4
   _maxStackSize: 10
   _weight: 1
-  _worldPrefab: {fileID: 0}
+  _worldPrefab: {fileID: 6016196955646940093, guid: f7bc3ad311d0d0d4ea9e83f1b7c385a2, type: 3}
+  _food: {fileID: 0}

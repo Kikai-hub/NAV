@@ -3,10 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using NAV.Gameplay.Building;
+using NAV.Gameplay.Equipment;
 using NAV.Gameplay.Inventory;
 using NAV.Gameplay.Items;
 using NAV.Gameplay.Player;
+using NAV.Gameplay.Survival;
 using NAV.World.Generation;
+using NAV.World.TimeOfDay;
+using NAV.World.Weather;
 
 namespace NAV.Core.Save
 {
@@ -34,7 +38,17 @@ namespace NAV.Core.Save
         [SerializeField] private WorldGenerator _worldGenerator;
         [SerializeField] private PlayerMotor _playerMotor;
         [SerializeField] private PlayerHealth _playerHealth;
+        [Tooltip("Optional - when assigned, respawning after death returns the player to the world's generated spawn point.")]
+        [SerializeField] private PlayerDeath _playerDeath;
         [SerializeField] private PlayerInventory _playerInventory;
+        [Tooltip("Optional - when assigned, active food and its remaining time are saved/restored.")]
+        [SerializeField] private PlayerFood _playerFood;
+        [Tooltip("Optional - when assigned, the held (main hand) item is saved/restored.")]
+        [SerializeField] private PlayerEquipment _playerEquipment;
+        [Tooltip("Optional - when assigned, the in-game day and time of day are saved/restored.")]
+        [SerializeField] private WorldClock _worldClock;
+        [Tooltip("Optional - when assigned, the current weather and its remaining time are saved/restored.")]
+        [SerializeField] private WeatherSystem _weatherSystem;
         [SerializeField] private ItemDatabase _itemDatabase;
         [SerializeField] private BuildingPieceDatabase _buildingPieceDatabase;
         [Tooltip("How often this world autosaves into its own save slot (overwriting the previous autosave, never creating a second file).")]
@@ -90,6 +104,13 @@ namespace NAV.Core.Save
 
             _worldGenerator.Generate(seed);
 
+            if (_worldGenerator.HasSpawnPoint)
+            {
+                _playerMotor.Teleport(_worldGenerator.SpawnPoint, _playerMotor.transform.rotation);
+            }
+
+            ApplyRespawnPoint();
+
             SaveSystem.CurrentSaveId = Guid.NewGuid().ToString();
             SaveSystem.CurrentSeed = seed;
             SaveSystem.CurrentWorldName = name;
@@ -107,11 +128,27 @@ namespace NAV.Core.Save
                 return;
             }
 
-            _worldGenerator.Generate(data.WorldSeed);
+            _worldGenerator.Generate(data.WorldSeed, data.DepletedResourceIds != null ? new HashSet<int>(data.DepletedResourceIds) : null);
+            ApplyRespawnPoint();
+
+            if (_worldClock != null && data.Day > 0)
+            {
+                _worldClock.SetTime(data.Day, data.Hour);
+            }
+
+            if (_weatherSystem != null && !string.IsNullOrEmpty(data.WeatherId))
+            {
+                _weatherSystem.Restore(data.WeatherId, data.WeatherRemainingSeconds);
+            }
 
             _playerMotor.Teleport(data.Player.Position, data.Player.Rotation);
+            ApplyFoods(data.Player.ActiveFoods);
             _playerHealth.SetHealth(data.Player.CurrentHealth);
             ApplyInventory(data.Player.InventorySlots);
+            if (_playerEquipment != null && !string.IsNullOrEmpty(data.Player.MainHandItemId))
+            {
+                _playerEquipment.Restore(_itemDatabase.Get(data.Player.MainHandItemId));
+            }
             ApplyBuildings(data.Buildings);
 
             SaveSystem.CurrentSaveId = data.SaveId;
@@ -135,6 +172,30 @@ namespace NAV.Core.Save
                 {
                     _playerInventory.Inventory.SetSlot(slot.SlotIndex, definition, slot.Quantity);
                 }
+            }
+        }
+
+        /// <summary>Respawn after death goes to the world's spawn point (deterministic per seed,
+        /// so it's recomputed rather than saved) instead of the scene's start position.</summary>
+        private void ApplyRespawnPoint()
+        {
+            if (_playerDeath != null && _worldGenerator.HasSpawnPoint)
+            {
+                _playerDeath.SetRespawnPoint(_worldGenerator.SpawnPoint, _playerMotor.transform.rotation);
+            }
+        }
+
+        private void ApplyFoods(List<ActiveFoodSaveData> foods)
+        {
+            // Null for saves made before food existed - nothing to restore.
+            if (_playerFood == null || foods == null)
+            {
+                return;
+            }
+
+            foreach (ActiveFoodSaveData food in foods)
+            {
+                _playerFood.RestoreFood(_itemDatabase.Get(food.ItemId), food.RemainingSeconds);
             }
         }
 
@@ -189,8 +250,13 @@ namespace NAV.Core.Save
                 WorldName = SaveSystem.CurrentWorldName,
                 SavedAtUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 WorldSeed = SaveSystem.CurrentSeed,
+                Day = _worldClock != null ? _worldClock.Day : 0,
+                Hour = _worldClock != null ? _worldClock.Hour : 0f,
+                WeatherId = _weatherSystem != null && _weatherSystem.Current != null ? _weatherSystem.Current.Id : null,
+                WeatherRemainingSeconds = _weatherSystem != null ? _weatherSystem.RemainingSeconds : 0f,
                 Player = BuildPlayerData(),
-                Buildings = BuildBuildingsData()
+                Buildings = BuildBuildingsData(),
+                DepletedResourceIds = _worldGenerator.GetDepletedResourceIds()
             };
 
             SaveSystem.Save(data);
@@ -216,6 +282,23 @@ namespace NAV.Core.Save
                         SlotIndex = i,
                         ItemId = slots[i].Definition.Id,
                         Quantity = slots[i].Quantity
+                    });
+                }
+            }
+
+            if (_playerEquipment != null && _playerEquipment.MainHand != null)
+            {
+                player.MainHandItemId = _playerEquipment.MainHand.Id;
+            }
+
+            if (_playerFood != null)
+            {
+                foreach (PlayerFood.ActiveFood food in _playerFood.ActiveFoods)
+                {
+                    player.ActiveFoods.Add(new ActiveFoodSaveData
+                    {
+                        ItemId = food.Item.Id,
+                        RemainingSeconds = food.Remaining
                     });
                 }
             }

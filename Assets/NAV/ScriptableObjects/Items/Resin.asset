@@ -16,8 +16,9 @@ MonoBehaviour:
   _displayName: Resin
   _description: Sticky tree sap, gathered from trees. Placeholder Tier 1 resource
     - not final content.
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: a3ae8687738dba04996604f8f77e0fc7, type: 3}
   _category: 0
   _maxStackSize: 30
   _weight: 0.2
   _worldPrefab: {fileID: 8054773575934704476, guid: 450fd85a90ca6dd429ee41662efb390e, type: 3}
+  _food: {fileID: 0}

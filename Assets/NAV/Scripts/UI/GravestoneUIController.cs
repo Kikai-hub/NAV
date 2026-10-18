@@ -9,8 +9,9 @@ using NAV.Gameplay.Player;
 namespace NAV.UI
 {
     /// <summary>
-    /// Opens whenever the player interacts with a Gravestone (PlayerInteractor.Interacted),
-    /// rendering that gravestone's Contents with the same slot-grid look as
+    /// Opens whenever the player interacts with an IItemContainer - a Gravestone, or the dev
+    /// WeaponRack (PlayerInteractor.Interacted) - titled with its ContainerTitle and
+    /// rendering that container's Contents with the same slot-grid look as
     /// InventoryUIController - a distinct "gravestone-slot" class, though, since both panels
     /// share one PanelSettings/runtime panel and therefore one hit-test space (see the drag
     /// code below). Opening always force-shows the player's Inventory panel alongside it (the
@@ -44,7 +45,8 @@ namespace NAV.UI
         private readonly List<VisualElement> _slotElements = new();
         private bool _visible;
 
-        private Gravestone _current;
+        private IItemContainer _current;
+        private Label _title;
 
         private VisualElement _dragGhost;
         private int _dragSourceIndex = -1;
@@ -73,6 +75,7 @@ namespace NAV.UI
             _root = documentRoot.Q<VisualElement>("gravestone-root");
             _slotContainer = documentRoot.Q<VisualElement>("slot-container");
             _moveAllButton = documentRoot.Q<Button>("move-all-button");
+            _title = documentRoot.Q<Label>("container-title");
 
             if (_root == null || _slotContainer == null || _moveAllButton == null)
             {
@@ -120,9 +123,9 @@ namespace NAV.UI
             // panel always forces Inventory (hence MenuOpen) open - so once open, E can no
             // longer reach here at all. Closing goes through the Inventory toggle key (I)
             // instead, propagated by HandleInventoryVisibilityChanged below.
-            if (interactable is Gravestone gravestone)
+            if (interactable is IItemContainer container)
             {
-                OpenGravestone(gravestone);
+                OpenContainer(container);
             }
         }
 
@@ -134,10 +137,15 @@ namespace NAV.UI
             }
         }
 
-        private void OpenGravestone(Gravestone gravestone)
+        private void OpenContainer(IItemContainer container)
         {
             UnsubscribeCurrent();
-            _current = gravestone;
+            _current = container;
+            if (_title != null)
+            {
+                _title.text = container.ContainerTitle;
+            }
+
             _current.Contents.Changed += RefreshSlots;
 
             BuildSlots();

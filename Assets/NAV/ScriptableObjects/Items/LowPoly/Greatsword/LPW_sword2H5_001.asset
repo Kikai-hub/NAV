@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_sword2H5_001
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_sword2H5_001
+  _displayName: Greatsword 5b
+  _description: Greatsword from the LowPoly Weapons Pack. Placeholder stats - no
+    materials, tier or recipe yet.
+  _icon: {fileID: 21300000, guid: 10d3538bd6b92c84ab8e338d96dafe19, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 7
+  _worldPrefab: {fileID: 3015113988908148346, guid: 6ce82c97eec99bb468543296c548e223, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 659633b2f7573b64da457b493485e0b9, type: 2}
+  _heldPrefab: {fileID: 3158594447793629552, guid: 9025cc7ab7ffa1841a5a783b60acbff3, type: 3}
+  _heldInLeftHand: 0

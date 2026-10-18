@@ -15,8 +15,10 @@ namespace NAV.Gameplay.Player
     /// Contents is fully emptied, however that happened.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public class Gravestone : MonoBehaviour, IInteractable
+    public class Gravestone : MonoBehaviour, IInteractable, NAV.Gameplay.Inventory.IItemContainer
     {
+        public string ContainerTitle => "Gravestone";
+
         // Fully-qualified everywhere in this file (rather than "using NAV.Gameplay.Inventory;"):
         // this namespace, NAV.Gameplay.Player, is a sibling of NAV.Gameplay.Inventory under the
         // shared NAV.Gameplay parent, so the bare name "Inventory" resolves to that sibling

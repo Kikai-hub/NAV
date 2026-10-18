@@ -32,13 +32,32 @@ namespace NAV.World.Biomes
     }
 
     /// <summary>
+    /// One entry in a biome's creature spawn list: which creature prefab (a ready-to-place
+    /// NavMeshAgent + Creature instance) appears in this biome and how many of it per world.
+    /// Unlike resources, creatures are placed by count rather than by a density grid - a
+    /// handful of animals per biome is the target, not hundreds.
+    /// </summary>
+    [Serializable]
+    public class BiomeCreatureSpawn
+    {
+        [SerializeField] private GameObject _prefab;
+        [SerializeField, Min(0)] private int _count = 3;
+
+        public GameObject Prefab => _prefab;
+
+        /// <summary>How many of this creature WorldGenerator tries to place in this biome per
+        /// generated world (fewer if not enough valid NavMesh points are found).</summary>
+        public int Count => _count;
+    }
+
+    /// <summary>
     /// Static data for one biome: which ground texture paints it onto the Terrain, whether it
     /// counts as water, how much the terrain's detail noise is allowed to move height around
     /// within this biome (HeightVariation - see WorldGenerator, this is what keeps Plains flat
     /// while Forest gets rolling hills instead of one uniform mountain range everywhere), and
-    /// which resource-node/vegetation prefabs can spawn in it (ResourceSpawns). Full biome
-    /// content (ambient audio, wildlife - see ARCHITECTURE_v0.1.md's World Generation pipeline)
-    /// is later pipeline-stage work.
+    /// which resource-node/vegetation prefabs (ResourceSpawns) and creatures (CreatureSpawns)
+    /// can spawn in it. Further biome content (ambient audio - see ARCHITECTURE_v0.1.md's World
+    /// Generation pipeline) is later pipeline-stage work.
     /// </summary>
     [CreateAssetMenu(fileName = "BiomeDefinition", menuName = "NAV/World/Biome Definition")]
     public class BiomeDefinition : ScriptableObject
@@ -55,11 +74,15 @@ namespace NAV.World.Biomes
         [Header("Resources")]
         [SerializeField] private List<BiomeResourceSpawn> _resourceSpawns = new();
 
+        [Header("Creatures")]
+        [SerializeField] private List<BiomeCreatureSpawn> _creatureSpawns = new();
+
         public string DisplayName => _displayName;
         public TerrainLayer TerrainLayer => _terrainLayer;
         public bool IsWater => _isWater;
         public float HeightVariation => _heightVariation;
         public IReadOnlyList<BiomeResourceSpawn> ResourceSpawns => _resourceSpawns;
+        public IReadOnlyList<BiomeCreatureSpawn> CreatureSpawns => _creatureSpawns;
 
         private void OnValidate()
         {

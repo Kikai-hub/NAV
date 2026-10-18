@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using NAV.Gameplay.Equipment;
 using NAV.Gameplay.Inventory;
 using NAV.Gameplay.Items;
 using NAV.Gameplay.Player;
+using NAV.Gameplay.Survival;
 
 namespace NAV.UI
 {
@@ -14,7 +16,8 @@ namespace NAV.UI
     /// without covering the player. Owns no gameplay state - purely a view over Inventory
     /// (see ARCHITECTURE_v0.1.md's "UI observes gameplay state" rule), except for the LMB
     /// drag gesture itself, which only ever calls into Inventory/PlayerInventory's own
-    /// public methods (MoveSlot, DropItem) rather than mutating state directly.
+    /// public methods (MoveSlot, DropItem) rather than mutating state directly, and RMB, which
+    /// uses the clicked item (PlayerFood eats food, PlayerEquipment equips tools/weapons).
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class InventoryUIController : MonoBehaviour
@@ -23,6 +26,15 @@ namespace NAV.UI
 
         [SerializeField] private PlayerInventory _playerInventory;
         [SerializeField] private PlayerInputHandler _inputHandler;
+
+        [Tooltip("Optional. When assigned, right-clicking an edible item's slot eats one.")]
+        [SerializeField] private PlayerFood _playerFood;
+
+        [Tooltip("Optional. When assigned, right-clicking a tool/weapon equips or unequips it, and the held item's slot is highlighted.")]
+        [SerializeField] private PlayerEquipment _playerEquipment;
+
+        [Tooltip("Optional. While build mode is on, the inventory key opens the build menu (BuildMenuUIController) instead of this panel.")]
+        [SerializeField] private NAV.Gameplay.Building.PlayerBuilding _building;
 
         private UIDocument _document;
         private VisualElement _root;
@@ -77,6 +89,10 @@ namespace NAV.UI
             }
 
             _playerInventory.Inventory.Changed += RefreshSlots;
+            if (_playerEquipment != null)
+            {
+                _playerEquipment.Changed += RefreshSlots;
+            }
 
             BuildSlots();
             SetVisible(false);
@@ -104,10 +120,20 @@ namespace NAV.UI
             {
                 _playerInventory.Inventory.Changed -= RefreshSlots;
             }
+
+            if (_playerEquipment != null)
+            {
+                _playerEquipment.Changed -= RefreshSlots;
+            }
         }
 
         private void HandleToggleInventoryPerformed()
         {
+            if (!_visible && _building != null && _building.IsBuildModeActive)
+            {
+                return;
+            }
+
             SetVisible(!_visible);
         }
 
@@ -178,10 +204,12 @@ namespace NAV.UI
         private void RefreshSlots()
         {
             IReadOnlyList<ItemStack> slots = _playerInventory.Inventory.Slots;
+            int equippedIndex = _playerEquipment != null ? _playerEquipment.FindEquippedSlotIndex() : -1;
 
             for (int i = 0; i < _slotElements.Count && i < slots.Count; i++)
             {
                 VisualElement slotElement = _slotElements[i];
+                slotElement.EnableInClassList("inventory-slot--equipped", i == equippedIndex);
                 VisualElement icon = slotElement.Q<VisualElement>(className: "inventory-slot__icon");
                 Label quantity = slotElement.Q<Label>(className: "inventory-slot__quantity");
 
@@ -218,7 +246,25 @@ namespace NAV.UI
 
         private void OnSlotPointerDown(PointerDownEvent evt)
         {
-            if (evt.button != 0 || evt.currentTarget is not VisualElement slot)
+            if (evt.currentTarget is not VisualElement slot)
+            {
+                return;
+            }
+
+            // RMB: use the item - eat food (PlayerFood decides whether it's allowed) or
+            // equip/unequip a tool/weapon (PlayerEquipment). Slots refresh off the Changed events.
+            if (evt.button == 1)
+            {
+                if (_dragSourceIndex < 0)
+                {
+                    UseSlot((int)slot.userData);
+                }
+
+                evt.StopPropagation();
+                return;
+            }
+
+            if (evt.button != 0)
             {
                 return;
             }
@@ -293,6 +339,25 @@ namespace NAV.UI
                 }
             }
             // Else: released inside the panel but not on a slot (title/padding) - cancel.
+        }
+
+        private void UseSlot(int index)
+        {
+            IReadOnlyList<ItemStack> slots = _playerInventory.Inventory.Slots;
+            if (index < 0 || index >= slots.Count || slots[index].IsEmpty)
+            {
+                return;
+            }
+
+            ItemDefinition item = slots[index].Definition;
+            if (item.IsEdible && _playerFood != null)
+            {
+                _playerFood.TryEatFromSlot(index);
+            }
+            else if (item.IsEquippable && _playerEquipment != null)
+            {
+                _playerEquipment.ToggleFromSlot(index);
+            }
         }
 
         private void CancelDrag()

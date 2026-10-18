@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
+  m_Name: LPW_spear8_Weapon
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
+  _displayName: Spear 8
+  _icon: {fileID: 21300000, guid: e724aecd4eeea01449fcb2bc5c113e8b, type: 3}
+  _weaponClass: 9
+  _damage: 18
+  _range: 3.2
+  _attackCooldown: 0.85
+  _attackStaminaCost: 12
+  _attackStyle: 3
+  _attackAnimationSpeed: 1.5
+  _hitWindowStart: 0.14
+  _hitWindowEnd: 0.38
+  _blockDamageReduction: 0.35
+  _blockStaminaCostPerHit: 12
+  _parryWindowSeconds: 0.2

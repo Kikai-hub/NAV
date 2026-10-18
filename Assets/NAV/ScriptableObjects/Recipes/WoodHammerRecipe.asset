@@ -15,7 +15,9 @@ MonoBehaviour:
   _displayName: Wood Hammer
   _ingredients:
   - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
-    _amount: 5
+    _amount: 4
+  - _item: {fileID: 11400000, guid: f2d88055de27ac542a3af0c4f14ee684, type: 2}
+    _amount: 2
   _outputItem: {fileID: 11400000, guid: 5a75972a571f0837a6b23e2d6bff5e7b, type: 2}
   _outputAmount: 1
   _requiredWorkbenchTier: 0

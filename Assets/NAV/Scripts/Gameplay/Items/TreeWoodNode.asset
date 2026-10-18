@@ -21,3 +21,5 @@ MonoBehaviour:
     _amount: 1
     _chance: 0.25
   _hitsToDeplete: 3
+  _requiredTool: 1
+  _minToolTier: 1

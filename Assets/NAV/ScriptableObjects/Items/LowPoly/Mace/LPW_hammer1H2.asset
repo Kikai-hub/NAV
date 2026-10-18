@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_hammer1H2
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_hammer1H2
+  _displayName: Mace 2
+  _description: Mace from the LowPoly Weapons Pack. Placeholder stats - no materials,
+    tier or recipe yet.
+  _icon: {fileID: 21300000, guid: 5a3a302f37ab12d4fb13cb62d2585500, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 4
+  _worldPrefab: {fileID: 2493119744199849456, guid: e2877fb3b0f3b29408cf33a50b4dbe97, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: d0ecfb6ef8cfc2a4a91c1cad6d6db99c, type: 2}
+  _heldPrefab: {fileID: 7032800177425068559, guid: 364c7a0e36ef3794d8307a98a952afae, type: 3}
+  _heldInLeftHand: 0

@@ -7,6 +7,12 @@
             <ui:VisualElement name="health-bar-fill" class="health-bar__fill" />
         </ui:VisualElement>
 
+        <ui:VisualElement name="food-container" class="food-container" picking-mode="Ignore" />
+
+        <ui:Label name="clock-label" class="clock-label" picking-mode="Ignore" />
+
+        <ui:Label name="interact-prompt" class="interact-prompt" picking-mode="Ignore" />
+
         <ui:VisualElement name="stamina-bar" class="stamina-bar">
             <ui:VisualElement name="stamina-bar-fill" class="stamina-bar__fill" />
         </ui:VisualElement>

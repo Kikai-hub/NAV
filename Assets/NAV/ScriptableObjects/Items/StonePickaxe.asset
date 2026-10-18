@@ -16,7 +16,12 @@ MonoBehaviour:
   _displayName: Stone Pickaxe
   _description: A crude stone pickaxe, the Tier 1 ore-mining tool. Placeholder Tier
     1 content - not final.
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 5d7af49b2c9da8f4bb26400b4890fdce, type: 3}
   _category: 1
   _maxStackSize: 1
   _weight: 3
+  _worldPrefab: {fileID: 5841127046712746839, guid: c9e550b8b09742f49bf0fa76fb82e1aa, type: 3}
+  _food: {fileID: 0}
+  _toolType: 2
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 5838d488b86c8254b805aed2b43a2373, type: 2}

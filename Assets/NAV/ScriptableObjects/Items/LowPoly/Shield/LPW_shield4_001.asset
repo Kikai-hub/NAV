@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_shield4_001
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_shield4_001
+  _displayName: Shield 4b
+  _description: Shield from the LowPoly Weapons Pack. Placeholder stats - no materials,
+    tier or recipe yet.
+  _icon: {fileID: 21300000, guid: faa761bccf28da4438e7056582066445, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 6
+  _worldPrefab: {fileID: 3690583438823729175, guid: 4b7bd63932dc7ae4d9d764aa05cdf960, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 85c8dfb8cf5c01f4db900a9cfc6ca69f, type: 2}
+  _heldPrefab: {fileID: 5482020003029072965, guid: 7ae85fdb3e67245458941c7ac7d2c5e5, type: 3}
+  _heldInLeftHand: 1

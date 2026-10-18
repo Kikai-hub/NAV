@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_dagger4
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_dagger4
+  _displayName: Dagger 4
+  _description: Dagger from the LowPoly Weapons Pack. Placeholder stats - no materials,
+    tier or recipe yet.
+  _icon: {fileID: 21300000, guid: dff3097266c53384eb4e5b798dc34744, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 1
+  _worldPrefab: {fileID: 786399094463878394, guid: 9c8d68134ba882a42be2ffaa4f55ca20, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 29870565758ef0146a40b91ff3377190, type: 2}
+  _heldPrefab: {fileID: 6015221396659629076, guid: 77d6549bc97d326428e66b8d589904b4, type: 3}
+  _heldInLeftHand: 0

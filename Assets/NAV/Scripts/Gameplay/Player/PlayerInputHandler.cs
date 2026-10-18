@@ -63,10 +63,23 @@ namespace NAV.Gameplay.Player
         /// itself checks PlayerBuilding.IsBuildModeActive to stay out of the way while
         /// building.</summary>
         public event Action AttackPerformed;
+
+        /// <summary>Secondary-click (RMB, the Block action) pressed - the one-shot counterpart of
+        /// BlockHeld. PlayerBuilding uses it to enter/leave build mode while the hammer is held
+        /// (PlayerCombat doesn't block then). Suppressed while a menu is open.</summary>
+        public event Action SecondaryPerformed;
+
+        /// <summary>The old B-key build toggle. No longer used - build mode is entered with the
+        /// hammer (RMB), see PlayerBuilding. Kept only because the action still exists.</summary>
         public event Action ToggleBuildPerformed;
         public event Action RotatePiecePerformed;
         public event Action CycleNextPerformed;
         public event Action CyclePreviousPerformed;
+
+        /// <summary>Hotbar key pressed (keys 1-6), with a 0-based slot index - PlayerEquipment
+        /// equips/unequips the item in that inventory slot. Fires even with a panel open (the
+        /// keys aren't used by any UI).</summary>
+        public event Action<int> HotbarSlotPerformed;
 
         private InputAction _moveAction;
         private InputAction _lookAction;
@@ -82,6 +95,7 @@ namespace NAV.Gameplay.Player
         private InputAction _nextAction;
         private InputAction _previousAction;
         private InputAction _blockAction;
+        private InputAction _hotbarSlotAction;
 
         private void Awake()
         {
@@ -107,9 +121,10 @@ namespace NAV.Gameplay.Player
             _nextAction = playerInput.actions["Player/Next"];
             _previousAction = playerInput.actions["Player/Previous"];
             _blockAction = playerInput.actions["Player/Block"];
+            _hotbarSlotAction = playerInput.actions["Player/HotbarSlot"];
 
             if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null || _toggleInventoryAction == null || _toggleCraftingAction == null
-                || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null || _pauseAction == null || _blockAction == null)
+                || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null || _pauseAction == null || _blockAction == null || _hotbarSlotAction == null)
             {
                 Debug.LogError($"{nameof(PlayerInputHandler)} on '{name}' could not find one or more required actions (Move/Look/Sprint/Jump/Interact/ToggleInventory/ToggleCrafting/Attack/ToggleBuild/RotatePiece/Next/Previous/Pause/Block) in the 'Player' action map.", this);
                 enabled = false;
@@ -148,6 +163,11 @@ namespace NAV.Gameplay.Player
                 _attackAction.performed += HandleAttackPerformed;
             }
 
+            if (_blockAction != null)
+            {
+                _blockAction.performed += HandleSecondaryPerformed;
+            }
+
             if (_toggleBuildAction != null)
             {
                 _toggleBuildAction.performed += HandleToggleBuildPerformed;
@@ -166,6 +186,11 @@ namespace NAV.Gameplay.Player
             if (_previousAction != null)
             {
                 _previousAction.performed += HandleCyclePreviousPerformed;
+            }
+
+            if (_hotbarSlotAction != null)
+            {
+                _hotbarSlotAction.performed += HandleHotbarSlotPerformed;
             }
         }
 
@@ -201,6 +226,11 @@ namespace NAV.Gameplay.Player
                 _attackAction.performed -= HandleAttackPerformed;
             }
 
+            if (_blockAction != null)
+            {
+                _blockAction.performed -= HandleSecondaryPerformed;
+            }
+
             if (_toggleBuildAction != null)
             {
                 _toggleBuildAction.performed -= HandleToggleBuildPerformed;
@@ -219,6 +249,11 @@ namespace NAV.Gameplay.Player
             if (_previousAction != null)
             {
                 _previousAction.performed -= HandleCyclePreviousPerformed;
+            }
+
+            if (_hotbarSlotAction != null)
+            {
+                _hotbarSlotAction.performed -= HandleHotbarSlotPerformed;
             }
         }
 
@@ -275,6 +310,16 @@ namespace NAV.Gameplay.Player
             AttackPerformed?.Invoke();
         }
 
+        private void HandleSecondaryPerformed(InputAction.CallbackContext context)
+        {
+            if (MenuOpen)
+            {
+                return;
+            }
+
+            SecondaryPerformed?.Invoke();
+        }
+
         private void HandleToggleBuildPerformed(InputAction.CallbackContext context)
         {
             ToggleBuildPerformed?.Invoke();
@@ -308,6 +353,15 @@ namespace NAV.Gameplay.Player
             }
 
             CyclePreviousPerformed?.Invoke();
+        }
+
+        private void HandleHotbarSlotPerformed(InputAction.CallbackContext context)
+        {
+            // Bound to the digit keys 1-6: the control's name is the digit itself.
+            if (int.TryParse(context.control.name, out int digit) && digit >= 1)
+            {
+                HotbarSlotPerformed?.Invoke(digit - 1);
+            }
         }
     }
 }

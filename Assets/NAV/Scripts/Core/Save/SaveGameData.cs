@@ -8,10 +8,9 @@ namespace NAV.Core.Save
     /// Everything one save slot holds. Deliberately NOT the whole world (per the developer's own
     /// scope call, see PROJECT_STATE.md) - the terrain itself is regenerated deterministically
     /// from WorldSeed on load (see WorldGenerator.Generate(int)); only the state that generation
-    /// can't reproduce on its own is stored here. Increment 1: player + placed buildings. NOT
-    /// saved: which resource nodes were already gathered/depleted (they respawn fresh every
-    /// load) - a known, deliberate limitation, same category as WorldGenTest's other deferred
-    /// items.
+    /// can't reproduce on its own is stored here: player, placed buildings, time, weather and
+    /// which resource nodes are already gathered (as spawn-index ids). Still NOT saved: partly
+    /// hit (not yet depleted) nodes, items lying on the ground, creatures.
     /// </summary>
     [Serializable]
     public class SaveGameData
@@ -20,8 +19,24 @@ namespace NAV.Core.Save
         public string WorldName;
         public long SavedAtUnixSeconds;
         public int WorldSeed;
+
+        /// <summary>WorldClock day (1+) and hour (0..24). Day 0 = a save made before the
+        /// day/night cycle existed - the clock keeps its new-game start time.</summary>
+        public int Day;
+        public float Hour;
+
+        /// <summary>WeatherDefinition.Id and seconds left before the next weather roll. Empty
+        /// for saves from before weather existed - the initial weather is kept.</summary>
+        public string WeatherId;
+        public float WeatherRemainingSeconds;
+
         public PlayerSaveData Player = new();
         public List<BuildingSaveData> Buildings = new();
+
+        /// <summary>Spawn-index ids of resource nodes gathered until depleted (see
+        /// WorldGenerator.GetDepletedResourceIds) - skipped when the world is regenerated on
+        /// load. Like the terrain itself, only valid while generation settings are unchanged.</summary>
+        public List<int> DepletedResourceIds = new();
     }
 
     [Serializable]
@@ -31,6 +46,20 @@ namespace NAV.Core.Save
         public Quaternion Rotation;
         public float CurrentHealth;
         public List<InventorySlotSaveData> InventorySlots = new();
+        public List<ActiveFoodSaveData> ActiveFoods = new();
+
+        /// <summary>ItemDefinition.Id held in the main hand (PlayerEquipment), or empty. Restored
+        /// after the inventory, and only if that item is actually in it.</summary>
+        public string MainHandItemId;
+    }
+
+    /// <summary>One active food (PlayerFood) and its remaining seconds. Restored before
+    /// CurrentHealth so the food's max-health bonus exists when health is clamped on load.</summary>
+    [Serializable]
+    public class ActiveFoodSaveData
+    {
+        public string ItemId;
+        public float RemainingSeconds;
     }
 
     /// <summary>One occupied inventory slot. ItemId (ItemDefinition.Id), not a direct asset

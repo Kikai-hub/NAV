@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 429324f8fe52a1b4db066f5cc13051e5, type: 3}
+  m_Name: ClearWeather
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Weather.WeatherDefinition
+  _id: Clear
+  _displayName: Clear
+  _minDurationSeconds: 240
+  _maxDurationSeconds: 480
+  _transitions:
+  - _target: {fileID: 11400000}
+    _weight: 0.45
+  - _target: {fileID: 11400000, guid: 06bc896831938814a91d08e969ffa0a1, type: 2}
+    _weight: 0.55
+  _rainRate: 0
+  _sunMultiplier: 1
+  _ambientMultiplier: 1
+  _skyExposureMultiplier: 1
+  _overcast: 0
+  _fogDensity: 0
+  _hasLightning: 0
+  _minLightningInterval: 6
+  _maxLightningInterval: 16

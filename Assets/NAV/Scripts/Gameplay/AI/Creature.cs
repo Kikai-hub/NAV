@@ -107,7 +107,10 @@ namespace NAV.Gameplay.AI
         private void OnTriggerEnter(Collider other)
         {
             IDamageable damageable = other.GetComponentInParent<IDamageable>();
-            if (damageable == null || ReferenceEquals(damageable, this))
+
+            // Other creatures are ignored entirely: with several spawned per biome, a wolf's
+            // detection radius would otherwise pull it into fights with every wolf/boar nearby.
+            if (damageable == null || damageable is Creature)
             {
                 return;
             }

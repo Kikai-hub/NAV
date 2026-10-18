@@ -15,8 +15,9 @@ MonoBehaviour:
   _id: Rock
   _displayName: Rock
   _description: 
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: a4f9a0eeb203e7a4a92fed06a37edb5f, type: 3}
   _category: 0
   _maxStackSize: 20
   _weight: 5
   _worldPrefab: {fileID: 7000480892539141789, guid: 461566f687c5f714aaaad9f44c835859, type: 3}
+  _food: {fileID: 0}

@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using NAV.Gameplay.Equipment;
 using NAV.Gameplay.Inventory;
+using NAV.Gameplay.Items;
 using NAV.Gameplay.Player;
 
 namespace NAV.Gameplay.Building
@@ -14,15 +17,36 @@ namespace NAV.Gameplay.Building
     /// validation (overlap/support checks) is its own separate Building-phase roadmap item and
     /// is NOT implemented here; validity in this increment is just "the aim ray hit something
     /// within range".
+    ///
+    /// Building needs the hammer (2026-10-18): build mode is only available while a Hammer
+    /// tool is held in the main hand (PlayerEquipment). RMB (PlayerInputHandler.Secondary)
+    /// toggles it on and off - the old B toggle is no longer listened to - and putting the
+    /// hammer away (switching items, dropping it) leaves build mode. In build mode LMB places
+    /// the piece (PiecePlaced fires - PlayerAnimator plays a hammer strike) with a short
+    /// cooldown matching that strike.
+    ///
+    /// Build menu (BuildMenuUIController, opened with the inventory key in build mode) picks
+    /// either a piece (SelectPiece) or the Demolish tool (SelectDemolish). With Demolish the
+    /// ghost is hidden, the placed piece under the crosshair is tinted red (DemolishTarget) and
+    /// LMB removes it and drops its full cost as pickups where it stood (not straight into the
+    /// inventory) - Valheim-style. PieceDemolished fires for the same hammer strike.
+    ///
+    /// Build area (2026-10-18): a piece whose definition RequiresWorkbench can only be placed
+    /// inside a placed workbench's BuildRadius (Workbench.AnyBuildAreaContains) - the ghost goes
+    /// red and PlacementHint explains why. The workbench and campfire themselves can go anywhere.
     /// </summary>
     public class PlayerBuilding : MonoBehaviour
     {
         [SerializeField] private PlayerInputHandler _inputHandler;
         [SerializeField] private PlayerInventory _playerInventory;
         [SerializeField] private Transform _cameraTransform;
+        [Tooltip("The held item - build mode needs a Hammer tool in the main hand.")]
+        [SerializeField] private PlayerEquipment _equipment;
         [SerializeField] private List<BuildingPieceDefinition> _knownPieces = new();
 
         [Header("Placement")]
+        [Tooltip("Seconds between two placements - about the length of the hammer strike animation.")]
+        [SerializeField, Min(0f)] private float _placeCooldown = 0.6f;
         [SerializeField] private float _maxPlacementDistance = 15f;
         [SerializeField] private float _rotationStepDegrees = 45f;
         [SerializeField] private LayerMask _placementLayers = ~0;
@@ -35,6 +59,16 @@ namespace NAV.Gameplay.Building
         [SerializeField] private Material _validGhostMaterial;
         [SerializeField] private Material _invalidGhostMaterial;
 
+        [Header("Demolish")]
+        [Tooltip("How far from the player (not the camera) a piece can be demolished.")]
+        [SerializeField, Min(0.5f)] private float _demolishRange = 8f;
+        [Tooltip("Tint applied to the piece that LMB would demolish.")]
+        [SerializeField] private Color _demolishTint = new(1f, 0.35f, 0.3f, 1f);
+        [Tooltip("Sideways push on the materials dropped by a demolished piece.")]
+        [SerializeField, Min(0f)] private float _dropScatterForce = 1.5f;
+        [Tooltip("Upward push on the materials dropped by a demolished piece.")]
+        [SerializeField, Min(0f)] private float _dropUpwardForce = 2f;
+
         private int _selectedIndex;
         private GameObject _ghostInstance;
         private readonly List<BuildingSnapPoint> _ghostSnapPoints = new();
@@ -42,51 +76,125 @@ namespace NAV.Gameplay.Building
         private float _pieceHalfHeight;
         private bool _hasValidHit;
         private bool? _ghostAppliedValid;
+        private float _nextPlaceTime;
+        private bool _demolishSelected;
+        private BuildingPiece _demolishTarget;
+        private MaterialPropertyBlock _tintBlock;
+
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int LegacyColorId = Shader.PropertyToID("_Color");
+
+        /// <summary>Fires after a piece is built - for the hammer strike animation/sound.</summary>
+        public event Action<BuildingPieceDefinition> PiecePlaced;
+
+        /// <summary>Fires after a piece is demolished with the hammer.</summary>
+        public event Action<BuildingPieceDefinition> PieceDemolished;
+
+        /// <summary>Build mode turned on/off, or the selection (piece / Demolish) changed - for
+        /// the build menu.</summary>
+        public event Action StateChanged;
 
         public bool IsBuildModeActive { get; private set; }
+
+        public IReadOnlyList<BuildingPieceDefinition> KnownPieces => _knownPieces;
+        public int SelectedIndex => _selectedIndex;
+
+        /// <summary>The Demolish tool is selected instead of a piece.</summary>
+        public bool IsDemolishSelected => _demolishSelected;
+
+        /// <summary>The placed piece LMB would demolish right now, or null.</summary>
+        public BuildingPiece DemolishTarget => _demolishTarget;
+
+        /// <summary>A Hammer tool is in the main hand - build mode can be used.</summary>
+        public bool HoldsHammer => _equipment != null && _equipment.HasTool(ToolType.Hammer);
+
+        /// <summary>RMB belongs to building (toggling build mode) right now, not to blocking -
+        /// PlayerCombat checks this.</summary>
+        public bool UsesSecondaryAction => HoldsHammer || IsBuildModeActive;
         public BuildingPieceDefinition SelectedPiece => _knownPieces.Count > 0 ? _knownPieces[_selectedIndex] : null;
         public bool IsPlacementValid => _hasValidHit;
         public bool IsSnapped { get; private set; }
         public bool CanAffordSelected => SelectedPiece != null && SelectedPiece.CanAfford(_playerInventory.Inventory);
-        public bool CanPlace => IsBuildModeActive && _hasValidHit && CanAffordSelected;
+        public bool CanPlace => IsBuildModeActive && !_demolishSelected && _hasValidHit && CanAffordSelected && IsInBuildArea;
+
+        /// <summary>The ghost stands where the selected piece may go: anywhere for pieces that
+        /// don't need a workbench, else inside some placed workbench's build radius.</summary>
+        public bool IsInBuildArea => SelectedPiece == null || !SelectedPiece.RequiresWorkbench
+            || (_ghostInstance != null && NAV.Gameplay.Crafting.Workbench.AnyBuildAreaContains(_ghostInstance.transform.position));
+
+        /// <summary>Why the selected piece can't be placed right now (for the HUD), or null
+        /// when it can (or build mode is off / Demolish is selected).</summary>
+        public string PlacementHint
+        {
+            get
+            {
+                if (!IsBuildModeActive || _demolishSelected || SelectedPiece == null)
+                {
+                    return null;
+                }
+
+                if (!_hasValidHit)
+                {
+                    return "Aim at the ground";
+                }
+
+                if (!IsInBuildArea)
+                {
+                    return "Needs a workbench nearby";
+                }
+
+                return CanAffordSelected ? null : "Not enough materials";
+            }
+        }
 
         private void Awake()
         {
-            if (_inputHandler == null || _playerInventory == null || _cameraTransform == null)
+            if (_inputHandler == null || _playerInventory == null || _cameraTransform == null || _equipment == null)
             {
-                Debug.LogError($"{nameof(PlayerBuilding)} on '{name}' is missing a required reference (InputHandler/PlayerInventory/CameraTransform).", this);
+                Debug.LogError($"{nameof(PlayerBuilding)} on '{name}' is missing a required reference (InputHandler/PlayerInventory/CameraTransform/Equipment).", this);
                 enabled = false;
             }
         }
 
         private void OnEnable()
         {
-            if (_inputHandler == null)
+            if (_inputHandler == null || _equipment == null)
             {
                 return;
             }
 
-            _inputHandler.ToggleBuildPerformed += HandleToggleBuild;
+            _inputHandler.SecondaryPerformed += HandleToggleBuild;
             _inputHandler.AttackPerformed += HandlePlace;
             _inputHandler.RotatePiecePerformed += HandleRotate;
             _inputHandler.CycleNextPerformed += HandleCycleNext;
             _inputHandler.CyclePreviousPerformed += HandleCyclePrevious;
+            _equipment.Changed += HandleEquipmentChanged;
         }
 
         private void OnDisable()
         {
-            if (_inputHandler == null)
+            if (_inputHandler == null || _equipment == null)
             {
                 return;
             }
 
-            _inputHandler.ToggleBuildPerformed -= HandleToggleBuild;
+            _inputHandler.SecondaryPerformed -= HandleToggleBuild;
             _inputHandler.AttackPerformed -= HandlePlace;
             _inputHandler.RotatePiecePerformed -= HandleRotate;
             _inputHandler.CycleNextPerformed -= HandleCycleNext;
             _inputHandler.CyclePreviousPerformed -= HandleCyclePrevious;
+            _equipment.Changed -= HandleEquipmentChanged;
 
-            DestroyGhost();
+            // Disabled (e.g. on death) - leave build mode entirely, not just hide the ghost.
+            ExitBuildMode();
+        }
+
+        private void HandleEquipmentChanged()
+        {
+            if (IsBuildModeActive && !HoldsHammer)
+            {
+                ExitBuildMode();
+            }
         }
 
         private void Update()
@@ -96,7 +204,41 @@ namespace NAV.Gameplay.Building
                 return;
             }
 
-            UpdateGhost();
+            if (_demolishSelected)
+            {
+                UpdateDemolishTarget();
+            }
+            else
+            {
+                UpdateGhost();
+            }
+        }
+
+        /// <summary>Build menu: switch to placing this piece.</summary>
+        public void SelectPiece(int index)
+        {
+            if (index < 0 || index >= _knownPieces.Count)
+            {
+                return;
+            }
+
+            _demolishSelected = false;
+            SetDemolishTarget(null);
+            _selectedIndex = index;
+            if (IsBuildModeActive)
+            {
+                SpawnGhost();
+            }
+
+            StateChanged?.Invoke();
+        }
+
+        /// <summary>Build menu: switch to the Demolish tool.</summary>
+        public void SelectDemolish()
+        {
+            _demolishSelected = true;
+            DestroyGhost();
+            StateChanged?.Invoke();
         }
 
         private void HandleToggleBuild()
@@ -105,7 +247,7 @@ namespace NAV.Gameplay.Building
             {
                 ExitBuildMode();
             }
-            else
+            else if (HoldsHammer)
             {
                 EnterBuildMode();
             }
@@ -113,6 +255,11 @@ namespace NAV.Gameplay.Building
 
         private void EnterBuildMode()
         {
+            if (!HoldsHammer)
+            {
+                return;
+            }
+
             if (_knownPieces.Count == 0)
             {
                 Debug.LogWarning($"{nameof(PlayerBuilding)} on '{name}' has no known building pieces to place.", this);
@@ -121,15 +268,27 @@ namespace NAV.Gameplay.Building
 
             IsBuildModeActive = true;
             _ghostYawOffset = 0f;
-            SpawnGhost();
+            if (!_demolishSelected)
+            {
+                SpawnGhost();
+            }
+
+            StateChanged?.Invoke();
         }
 
         private void ExitBuildMode()
         {
+            bool wasActive = IsBuildModeActive;
             IsBuildModeActive = false;
             DestroyGhost();
+            SetDemolishTarget(null);
+            if (wasActive)
+            {
+                StateChanged?.Invoke();
+            }
         }
 
+        // The wheel steps through the pieces (and leaves the Demolish tool).
         private void HandleCycleNext()
         {
             if (!IsBuildModeActive || _knownPieces.Count == 0)
@@ -137,8 +296,7 @@ namespace NAV.Gameplay.Building
                 return;
             }
 
-            _selectedIndex = (_selectedIndex + 1) % _knownPieces.Count;
-            SpawnGhost();
+            SelectPiece(_demolishSelected ? _selectedIndex : (_selectedIndex + 1) % _knownPieces.Count);
         }
 
         private void HandleCyclePrevious()
@@ -148,13 +306,12 @@ namespace NAV.Gameplay.Building
                 return;
             }
 
-            _selectedIndex = (_selectedIndex - 1 + _knownPieces.Count) % _knownPieces.Count;
-            SpawnGhost();
+            SelectPiece(_demolishSelected ? _selectedIndex : (_selectedIndex - 1 + _knownPieces.Count) % _knownPieces.Count);
         }
 
         private void HandleRotate()
         {
-            if (!IsBuildModeActive)
+            if (!IsBuildModeActive || _demolishSelected)
             {
                 return;
             }
@@ -164,11 +321,18 @@ namespace NAV.Gameplay.Building
 
         private void HandlePlace()
         {
-            if (!CanPlace)
+            if (IsBuildModeActive && _demolishSelected)
+            {
+                TryDemolishTarget();
+                return;
+            }
+
+            if (!CanPlace || Time.time < _nextPlaceTime)
             {
                 return;
             }
 
+            _nextPlaceTime = Time.time + _placeCooldown;
             BuildingPieceDefinition piece = SelectedPiece;
             piece.PayCost(_playerInventory.Inventory);
 
@@ -183,6 +347,102 @@ namespace NAV.Gameplay.Building
             }
 
             Debug.Log($"{name} built {piece.DisplayName}.", this);
+            PiecePlaced?.Invoke(piece);
+        }
+
+        // --- Demolish ---
+
+        private void UpdateDemolishTarget()
+        {
+            BuildingPiece target = null;
+            if (Physics.Raycast(_cameraTransform.position, _cameraTransform.forward, out RaycastHit hit, _maxPlacementDistance, _placementLayers, QueryTriggerInteraction.Ignore)
+                && Vector3.Distance(transform.position, hit.point) <= _demolishRange)
+            {
+                BuildingPiece piece = hit.collider.GetComponentInParent<BuildingPiece>();
+                if (piece != null && piece.IsPlaced)
+                {
+                    target = piece;
+                }
+            }
+
+            SetDemolishTarget(target);
+        }
+
+        private void TryDemolishTarget()
+        {
+            if (_demolishTarget == null || Time.time < _nextPlaceTime)
+            {
+                return;
+            }
+
+            _nextPlaceTime = Time.time + _placeCooldown;
+            BuildingPiece piece = _demolishTarget;
+            BuildingPieceDefinition definition = piece.Definition;
+            SetDemolishTarget(null);
+
+            Collider pieceCollider = piece.GetComponentInChildren<Collider>();
+            Bounds bounds = pieceCollider != null ? pieceCollider.bounds : new Bounds(piece.transform.position, Vector3.one);
+            // Deactivate first: Destroy only happens at the end of the frame, and the drops
+            // spawned inside the still-solid piece would be shoved out by depenetration.
+            piece.gameObject.SetActive(false);
+            Destroy(piece.gameObject);
+            DropCost(definition, bounds);
+            Debug.Log($"{name} demolished {definition.DisplayName} (materials dropped).", this);
+            PieceDemolished?.Invoke(definition);
+        }
+
+        /// <summary>Drops the piece's whole cost into the world as pickups (one stack per
+        /// ingredient), thrown out from where the piece stood - the player picks them up like any
+        /// other drop (same as a felled tree's yield, ResourceNode.SpawnDrops), nothing goes
+        /// straight into the inventory.</summary>
+        private void DropCost(BuildingPieceDefinition definition, Bounds pieceBounds)
+        {
+            float scatter = Mathf.Clamp(Mathf.Min(pieceBounds.extents.x, pieceBounds.extents.z), 0.3f, 1.2f);
+            foreach (NAV.Gameplay.Crafting.RecipeIngredient ingredient in definition.Cost)
+            {
+                if (ingredient.Item == null || ingredient.Amount <= 0)
+                {
+                    continue;
+                }
+
+                Vector2 offset = UnityEngine.Random.insideUnitCircle * scatter;
+                Vector3 outward = new Vector3(offset.x, 0f, offset.y);
+                Vector3 position = pieceBounds.center + outward;
+                Vector3 impulse = (outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.forward) * _dropScatterForce
+                    + Vector3.up * _dropUpwardForce;
+                ItemPickup.SpawnInWorld(ingredient.Item, ingredient.Amount, position, Quaternion.identity, impulse);
+            }
+        }
+
+        private void SetDemolishTarget(BuildingPiece target)
+        {
+            if (target == _demolishTarget)
+            {
+                return;
+            }
+
+            if (_demolishTarget != null)
+            {
+                foreach (Renderer renderer in _demolishTarget.GetComponentsInChildren<Renderer>())
+                {
+                    renderer.SetPropertyBlock(null);
+                }
+            }
+
+            _demolishTarget = target;
+            if (_demolishTarget == null)
+            {
+                return;
+            }
+
+            _tintBlock ??= new MaterialPropertyBlock();
+            foreach (Renderer renderer in _demolishTarget.GetComponentsInChildren<Renderer>())
+            {
+                renderer.GetPropertyBlock(_tintBlock);
+                _tintBlock.SetColor(BaseColorId, _demolishTint);
+                _tintBlock.SetColor(LegacyColorId, _demolishTint);
+                renderer.SetPropertyBlock(_tintBlock);
+            }
         }
 
         private void SpawnGhost()
@@ -219,6 +479,19 @@ namespace NAV.Gameplay.Building
                 rb.isKinematic = true;
             }
 
+            // The ghost is a visual only: switch off every behaviour on it except the snap
+            // points (data the snap search reads). Otherwise the copy's own scripts run - its
+            // BuildingPiece registered as a placed piece (the prefab carries its Definition) and
+            // a workbench ghost counted as a real workbench, opening a build area wherever the
+            // player merely aimed it.
+            foreach (MonoBehaviour behaviour in _ghostInstance.GetComponentsInChildren<MonoBehaviour>())
+            {
+                if (behaviour is not BuildingSnapPoint)
+                {
+                    behaviour.enabled = false;
+                }
+            }
+
             _ghostSnapPoints.Clear();
             _ghostSnapPoints.AddRange(_ghostInstance.GetComponentsInChildren<BuildingSnapPoint>());
 
@@ -243,7 +516,17 @@ namespace NAV.Gameplay.Building
         {
             if (_ghostInstance != null)
             {
-                Destroy(_ghostInstance);
+                // OnDisable can run while Play Mode is shutting down (edit mode), where Destroy
+                // is not allowed.
+                if (Application.isPlaying)
+                {
+                    Destroy(_ghostInstance);
+                }
+                else
+                {
+                    DestroyImmediate(_ghostInstance);
+                }
+
                 _ghostInstance = null;
             }
 

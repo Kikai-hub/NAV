@@ -6,8 +6,10 @@ namespace NAV.Gameplay.Player
     {
         [SerializeField] private PlayerStaminaStats _stats;
 
+        private float _bonusMaxStamina;
+
         public float CurrentStamina { get; private set; }
-        public float MaxStamina => _stats.MaxStamina;
+        public float MaxStamina => _stats.MaxStamina + _bonusMaxStamina;
         public bool CanSprint { get; private set; }
 
         /// <summary>True on any frame stamina is actually being spent (sprinting or the
@@ -70,7 +72,7 @@ namespace NAV.Gameplay.Player
             }
             else
             {
-                CurrentStamina = Mathf.Min(_stats.MaxStamina, CurrentStamina + _stats.RegenPerSecond * deltaTime);
+                CurrentStamina = Mathf.Min(MaxStamina, CurrentStamina + _stats.RegenPerSecond * deltaTime);
 
                 if (!CanSprint && CurrentStamina >= _stats.MinStaminaToResumeSprint)
                 {
@@ -79,6 +81,15 @@ namespace NAV.Gameplay.Player
             }
 
             return sprinting;
+        }
+
+        /// <summary>Extra max stamina on top of Stats.MaxStamina (food - see PlayerFood). Current
+        /// stamina is clamped down when the bonus shrinks and regenerates into new headroom when
+        /// it grows - same rule as PlayerHealth.SetBonusMaxHealth.</summary>
+        public void SetBonusMaxStamina(float bonus)
+        {
+            _bonusMaxStamina = Mathf.Max(0f, bonus);
+            CurrentStamina = Mathf.Min(CurrentStamina, MaxStamina);
         }
 
         /// <summary>

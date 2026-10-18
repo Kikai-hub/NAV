@@ -11,8 +11,8 @@ namespace NAV.Gameplay.Player
     /// Reacts to PlayerHealth.Died: freezes player control (movement/combat/interaction/
     /// building), spawns a Gravestone at the death location holding the player's whole
     /// Inventory (GDD_v0.1 section 9 "Death"), and raises Died for DeathUIController to show a
-    /// death screen from. Respawn teleports back to wherever the player started this scene
-    /// (captured once in Awake - no world/save system yet to pick a smarter point) and revives
+    /// death screen from. Respawn teleports to the respawn point - the scene start position
+    /// captured in Awake, unless SaveManager sets the world's spawn point via SetRespawnPoint - and revives
     /// PlayerHealth to full; the inventory itself is not restored on respawn - it stays in the
     /// gravestone until the player walks back and recovers it via GravestoneUIController's panel.
     /// </summary>
@@ -100,6 +100,14 @@ namespace NAV.Gameplay.Player
             }
 
             Gravestone.Spawn(_gravestonePrefab, transform.position, transform.rotation, gravestoneContents);
+        }
+
+        /// <summary>Overrides where Respawn puts the player (default: the scene start position
+        /// captured in Awake). SaveManager sets this to the world's generated spawn point.</summary>
+        public void SetRespawnPoint(Vector3 position, Quaternion rotation)
+        {
+            _respawnPosition = position;
+            _respawnRotation = rotation;
         }
 
         /// <summary>Called by DeathUIController's Respawn button.</summary>

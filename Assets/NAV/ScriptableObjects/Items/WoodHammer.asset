@@ -17,7 +17,14 @@ MonoBehaviour:
   _description: The basic building tool - Tier 1 of the hammer progression (Wood
     -> Bronze -> Iron -> Silver -> Bulat -> Skymetal). Placeholder Tier 1 content
     - not final.
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 041adf86674b22d46b3b382f5f616ded, type: 3}
   _category: 1
   _maxStackSize: 1
   _weight: 2
+  _worldPrefab: {fileID: 4850693485484416793, guid: bcb22572a176f934fbdf92ef6dbe31e0, type: 3}
+  _food: {fileID: 0}
+  _toolType: 3
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 7786472614721260300, guid: b0c8892f13d0037489076552841f87e1, type: 3}
+  _heldInLeftHand: 0

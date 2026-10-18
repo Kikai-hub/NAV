@@ -15,3 +15,5 @@ MonoBehaviour:
   _displayName: Workbench
   _tier: 1
   _range: 4
+  _buildRadius: 20
+  _requiresRoof: 1

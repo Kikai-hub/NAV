@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LPW_hammer2H5
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LPW_hammer2H5
+  _displayName: Warhammer 5
+  _description: Warhammer from the LowPoly Weapons Pack. Placeholder stats - no materials,
+    tier or recipe yet.
+  _icon: {fileID: 21300000, guid: 61f154baf52609f4c923a2fe6ac26ebd, type: 3}
+  _category: 2
+  _maxStackSize: 1
+  _weight: 9
+  _worldPrefab: {fileID: 2077929282540495140, guid: d5996faeea4dcfb40881b2191cad127f, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 11400000, guid: 8b51798835877954889bfa095fb2ca00, type: 2}
+  _heldPrefab: {fileID: 2997754956345961368, guid: 058edc97d600cd64c8447778f5863238, type: 3}
+  _heldInLeftHand: 0

@@ -90,3 +90,16 @@
     font-size: 11px;
     -unity-font-style: bold;
 }
+
+/* Held (equipped) item - PlayerEquipment.MainHand. */
+.inventory-slot--equipped {
+    border-left-color: rgb(230, 190, 80);
+    border-right-color: rgb(230, 190, 80);
+    border-top-color: rgb(230, 190, 80);
+    border-bottom-color: rgb(230, 190, 80);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    background-color: rgb(84, 66, 40);
+}

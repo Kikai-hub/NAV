@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: CookedMeat
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: CookedMeat
+  _displayName: Cooked Meat
+  _description: Meat roasted over a campfire. Raises max health and stamina and restores
+    health for a while.
+  _icon: {fileID: 21300000, guid: 24d76ceea012a01429541e498955f2d9, type: 3}
+  _category: 4
+  _maxStackSize: 10
+  _weight: 1
+  _worldPrefab: {fileID: 6016196955646940093, guid: 9fdaa59047f53cf4cb56c54eca41aac5, type: 3}
+  _food: {fileID: 11400000, guid: 3cd14692e56ae9149935184b65b1fa90, type: 2}

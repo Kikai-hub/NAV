@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 400d841d2275fe64e8748bd336469881, type: 3}
+  m_Name: FS003SkyboxSet
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Lighting.SkyboxSet
+  _night:
+    _texture: {fileID: 2800000, guid: 6185794ad33085a4a9f8446781cb8f15, type: 3}
+    _tint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    _exposure: 0.55
+    _cloudLit: {r: 0.3, g: 0.38, b: 0.52, a: 1}
+    _cloudShadow: {r: 0.13, g: 0.17, b: 0.27, a: 1}
+  _sunrise:
+    _texture: {fileID: 2800000, guid: c15e36d3819e8d14ab21ab119e3fd4a7, type: 3}
+    _tint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    _exposure: 0.95
+    _cloudLit: {r: 1, g: 0.94, b: 0.84, a: 1}
+    _cloudShadow: {r: 0.85, g: 0.74, b: 0.72, a: 1}
+  _day:
+    _texture: {fileID: 2800000, guid: 99b254ad4e7668d419be526ebb66b549, type: 3}
+    _tint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    _exposure: 1
+    _cloudLit: {r: 1, g: 1, b: 1, a: 1}
+    _cloudShadow: {r: 0.7, g: 0.78, b: 0.92, a: 1}
+  _sunset:
+    _texture: {fileID: 2800000, guid: 846cce7d90ad21b4b80fcb937193081e, type: 3}
+    _tint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    _exposure: 0.95
+    _cloudLit: {r: 1, g: 0.9, b: 0.75, a: 1}
+    _cloudShadow: {r: 0.86, g: 0.68, b: 0.66, a: 1}
+  _transitionHours: 1.5
+  _overcast: {fileID: 2800000, guid: ad211dc5ae928ef40b568736df2f62b0, type: 3}
+  _overcastDayExposure: 1.5
+  _overcastNightExposure: 0.2
+  _rotation: 0
+  _sunSize: 1.6
+  _sunIntensity: 6
+  _sunGlow: 0.6
+  _moonSize: 2.2
+  _moonColor: {r: 0.85, g: 0.9, b: 1, a: 1}
+  _moonIntensity: 1.2
+  _moonGlow: 0.25
+  _cloudOcclusion: 0.8
+  _cloudNoise: {fileID: 2800000, guid: c56ace8d14830fd4da9bb70098a83e4f, type: 3}
+  _cloudScale: 0.55
+  _clearCoverage: 0.45
+  _overcastCoverage: 0.85
+  _cloudSoftness: 0.08
+  _cloudOpacity: 0.95
+  _windDirection: 45
+  _windSpeed: 0.015
+  _stormWindSpeed: 0.05
+  _morphSpeed: 0.004
+  _silverLining: 0.6
