@@ -48,7 +48,7 @@ system.
 -   [x] Inventory UI
 -   [x] Item pickup
 -   [x] Item dropping (drag out of the Inventory panel -> PlayerInventory.DropItem)
--   [ ] Storage container
+-   [x] Storage container (2026-10-21: wooden chest building piece, 10 slots - StorageContainer)
 -   [x] Equipment slots (main hand only - weapon or tool; armor slots come with armor; 2026-10-15)
 
 ------------------------------------------------------------------------
@@ -62,7 +62,12 @@ system.
 -   [x] Drops (depletion scatters item pickups)
 -   [x] Pickup
 -   [x] Resource persistence (gathered nodes are saved and stay gone after load - 2026-10-15; no regrowth)
--   [x] Basic gathering feedback (node shrinks per hit)
+-   [x] Basic gathering feedback (node shrinks per hit - rocks only since 2026-10-21; gathering by tool hits only, no E - 2026-10-21)
+-   [x] Valheim-style tree felling (2026-10-21, spruce): tree doesn't shrink; felled ->
+    stump stays + bare trunk topples away from the player -> chopped into 2 logs ->
+    each log drops the wood. Built by menu NAV/World/Build Spruce Felling.
+    Later: falling trunk damaging creatures/player, saving fallen trunks/logs,
+    other tree types, Valheim-style downward chop animation for logs.
 
 ------------------------------------------------------------------------
 
@@ -193,10 +198,10 @@ system.
 -   [x] World seed save (world is regenerated from the saved seed on load, not stored as terrain data - see PROJECT_STATE.md's "known limitation" note on generation-settings changes invalidating old saves)
 -   [x] World changes (gathered/depleted resource nodes saved as spawn-index ids - 2026-10-15; partly hit nodes, items lying on the ground and killed creatures are still not saved)
 -   [x] Building save (placed pieces only - position/rotation/definition; no structural/snap state beyond that)
--   [ ] Container save (no storage containers/chests exist yet)
+-   [x] Container save (2026-10-21: chest contents saved with the building piece)
 -   [x] Time/weather save (day, time of day, current weather + its remaining time)
--   [ ] Save versioning (known gap - a WorldGenerationSettings change after a save was made silently desyncs old saves' terrain from their stored building/player coordinates; see PROJECT_STATE.md)
--   [ ] Backup/recovery
+-   [x] Save versioning (2026-10-21: FormatVersion + WorldGenerationVersion in every save, migration step, Load list warns about older-world saves; bump `SaveSystem.WorldGenerationVersion` on every generation change)
+-   [x] Backup/recovery (2026-10-21: temp-file write + atomic replace, previous save kept as `.bak`, load falls back to it)
 
 ------------------------------------------------------------------------
 
@@ -215,10 +220,14 @@ Final visuals run alongside content production (Phase 13) and polish
 
 -   [ ] Damage feedback (Phase 7): hit reaction/stagger on the target,
     hit particles on creatures/trees/rocks, placeholder hit sounds.
+    (Done 2026-10-21 - HitFeedback + Creature stagger, checked in Play Mode
+    by scripted swings; block/parry sounds and stone hits not seen yet. Tick
+    after the developer's playtest.)
     Needed before creature work - creatures can't be judged without it.
--   [ ] Storage chest + container save (Phase 2 / Phase 11)
--   [ ] Save versioning (Phase 11) - old saves must not silently break
-    when world generation changes
+-   [x] Storage chest + container save (Phase 2 / Phase 11) - done 2026-10-21
+-   [x] Save versioning (Phase 11) - old saves must not silently break
+    when world generation changes (done 2026-10-21, with crash-safe
+    write + backup)
 -   [ ] Full manual Phase 12 playthrough by the developer + fixes from it
 
 ### Stage B --- Creatures (right after the slice)
@@ -227,12 +236,22 @@ Combat (contact hits, 155 weapons) is ready; there is almost nothing to
 fight yet. Phase 8 is formally done with the minimum (Wild Boar, Forest
 Wolf).
 
--   [ ] Real models + animations for the boar and the wolf (currently
-    placeholders)
--   [ ] Line-of-sight perception; wolf packs; more dangerous night creatures
--   [ ] Creature spawning by biome and time of day
--   [ ] Creature loot: hide, bone, fangs - these are resources the pack
-    weapon recipes need (feeds Stage C)
+-   [ ] Real models + animations for the boar and the wolf (2026-10-21: the
+    boar is now a Deer and the wolf a Tiger stand-in from the ithappy Animals
+    pack - idle/walk/run clips, attack lunge and death roll procedural. Still
+    to do: a real wolf model, attack/hit/death animations, creature sounds)
+-   [x] Line-of-sight perception; wolf packs; more dangerous night creatures
+    (Done 2026-10-22 - field of view 220 deg + raycast, hears within 3 m,
+    wolves alert packmates within 15 m; NightCount per biome spawn entry.
+    Still to do: genuinely new night-only creatures)
+-   [x] Creature spawning by biome and time of day (Done 2026-10-22 -
+    CreaturePopulation: groups/packs, day/night counts, respawn every
+    RespawnSeconds 50-120 m from the player, extras removed far away)
+-   [x] Creature loot: hide, bone, fangs - these are resources the pack
+    weapon recipes need (feeds Stage C) (Done 2026-10-22 - Hide/Bone/Fang
+    items with placeholder primitive models; wolf: hide, bone 60%, 2 fangs
+    50%; deer: hide, bone 75%. Still to do: real models, recipes that use
+    them - Stage C)
 -   [ ] A couple of new creatures from the Slavic setting (Phase 13
     "Expand creatures")
 
@@ -240,8 +259,18 @@ Wolf).
 *feel like NAV*):
 
 -   [ ] Hit and gathering VFX (shared with Stage A damage feedback)
--   [ ] Baseline post-processing / colour grading
--   [ ] Trees and vegetation in the forest; Birch grove (Phase 9)
+-   [x] Baseline post-processing / colour grading (Done 2026-10-22 - Day
+    base look + Golden Hour / Night / Overcast volumes blended by
+    DayNightGrading, aerial haze in clear weather, sand on the shore, softer
+    meadow grass. Still to do: water material - flat saturated blue that
+    glows at night)
+-   [x] Trees and vegetation in the forest; Birch grove (Phase 9) (Done
+    2026-10-22 - Birch Grove sub-biome inside forests with placeholder
+    procedural birches; Nature Starter Kit 2 bushes, broadleaf trees and
+    waving grass; chamomile/cornflower flowers; mushrooms, stumps, logs,
+    pebbles as decor; olive forest floor; Hand Painted Nature Kit larches,
+    cedars, ferns, ceps, dandelions, plantain. Still to do: a real birch model,
+    birch-specific felled trunk, a grass density graphics setting)
 
 ### Stage C --- Resources and Progression Tiers 1--2
 
@@ -306,7 +335,7 @@ After the vertical slice is proven:
 -   [ ] Add boats
 -   [ ] Add atmospheric content
 -   [ ] Add VFX
--   [ ] Add final audio
+-   [ ] Add final audio (started 2026-10-21: weapon swing whooshes from the Whooshes SFX Pack; hits, footsteps, ambience, UI still placeholder or missing)
 -   [ ] Improve world generation
 
 ------------------------------------------------------------------------
@@ -352,15 +381,21 @@ Target: 1--4 player cooperative multiplayer.
 
 -   [ ] Optimization
 -   [ ] UI polish
--   [ ] Input rebinding
+-   [x] Input rebinding (2026-10-22: keyboard/mouse, Settings window; gamepad not yet)
 -   [ ] Accessibility
 -   [ ] Audio polish
 -   [ ] VFX polish
 -   [ ] Animation polish
 -   [ ] Tutorial/onboarding
--   [ ] Settings
--   [ ] Graphics settings
+-   [x] Settings (2026-10-22: Settings window in main menu + pause - audio, controls, graphics; settings.json)
+-   [x] Graphics settings (2026-10-22: preset, display mode, resolution, VSync, FPS limit, FOV, object distance, render scale, shadows, MSAA, textures)
 -   [ ] Save recovery
+-   [ ] Save the terrain heightmap in the save file (deferred by the developer
+    2026-10-21 until closer to game-ready): today only the seed is saved and the
+    terrain is regenerated, so a world-generation change still leaves old saves'
+    buildings under/above ground - versioning only warns about it. Plan: store
+    the 513x513 heights (~0.5-0.7 MB per save), keep resources from the seed;
+    also the base for terrain flattening under buildings
 -   [ ] Crash/error reporting
 -   [ ] Final balancing
 -   [ ] QA

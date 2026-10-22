@@ -18,6 +18,7 @@ namespace NAV.Gameplay.Player
     public class Gravestone : MonoBehaviour, IInteractable, NAV.Gameplay.Inventory.IItemContainer
     {
         public string ContainerTitle => "Gravestone";
+        public bool IsStorage => false;
 
         // Fully-qualified everywhere in this file (rather than "using NAV.Gameplay.Inventory;"):
         // this namespace, NAV.Gameplay.Player, is a sibling of NAV.Gameplay.Inventory under the

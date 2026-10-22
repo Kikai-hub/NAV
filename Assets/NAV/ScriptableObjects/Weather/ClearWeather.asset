@@ -26,7 +26,7 @@ MonoBehaviour:
   _ambientMultiplier: 1
   _skyExposureMultiplier: 1
   _overcast: 0
-  _fogDensity: 0
+  _fogDensity: 0.0028
   _hasLightning: 0
   _minLightningInterval: 6
   _maxLightningInterval: 16

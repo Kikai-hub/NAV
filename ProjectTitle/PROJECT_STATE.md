@@ -148,6 +148,15 @@ altar + ritual items; - bosses tied to progression.
 
 ## Technical Debt
 
+-   **Old saves vs. world-generation changes (deferred 2026-10-21, until closer
+    to game-ready):** saves hold only the seed; the terrain is regenerated on
+    load. Since 2026-10-21 a generation change is detected
+    (`SaveSystem.WorldGenerationVersion` - bump it on every generation change)
+    and the player gets a warning, is lifted above ground and gathered
+    resources reset - but buildings stay at their saved coordinates and can end
+    up under or above the new ground. Real fix (Roadmap Phase 16): save the
+    terrain heightmap with the world.
+
 -   **Building (Phase 5) is a basic/first-pass implementation, not a
     finished system.** It works end-to-end (placement, rotation,
     piece cycling, resource cost, demolish, ground-anchored
@@ -3891,3 +3900,681 @@ will be worked on. Agreed order recorded (no code changes):
     Stage D (bosses: framework on one placeholder boss first), Final Visuals
     after Stage C (asset strategy decision first).
 -   "Current Next Step" now opens with the 2026-10-18 status and this order.
+
+### v0.1 --- 2026-10-18 (First test build for players)
+
+-   Windows 64 release build (Mono, MainMenu + WorldGenTest) at
+    `Builds/NAV_Test_0.1.0/NAV.exe`, zipped as `Builds/NAV_Test_0.1.0.zip`
+    (~59 MB, without the `*_BurstDebugInformation_DoNotShip` folder).
+    `Builds/` is git-ignored.
+-   Build-only bug fixed: rain would render pink in a player build -
+    `WeatherEffects` got its URP particle shader via `Shader.Find`, which
+    doesn't pull the shader into a build. Now it copies a material asset
+    (`Materials/Weather/Rain.mat`, URP Particles/Unlit, transparent;
+    new field `Rain Material Template`). Same treatment for the workbench
+    radius circle (`Materials/Building/WorkbenchAreaDash.mat`, URP Unlit
+    alpha clip; new field `Dash Material Template`) so its alpha-clip
+    variant isn't stripped. Both assigned in WorldGenTest; `Shader.Find`
+    stays only as a fallback.
+-   Smoke test: the build starts, the main menu loads, a new world is
+    created, returning to the menu and quitting work, no errors in
+    Player.log. Rain in the rebuilt player not yet seen in person (weather
+    is random).
+-   Known: `PlayerSettings.productName` is "NAVъ" (typo) - shows in the
+    window title, and saves go to `%USERPROFILE%/AppData/LocalLow/DefaultCompany/NAVъ/`.
+    Fixing it moves the save folder (existing editor saves would no longer
+    be found unless copied over).
+
+### v0.1 --- 2026-10-21 (Save versioning, crash-safe write, backup)
+
+Stage A item from the status review: saves only stored the seed, so any
+generation change silently broke old saves, and a crash mid-write could
+destroy a save (direct `File.WriteAllText`).
+
+-   `SaveGameData`: `FormatVersion` (layout) and `WorldGenerationVersion`.
+    Old files read as 0 and `SaveSystem.Migrate` upgrades them (version 0 ->
+    1: same layout, generation version assumed 1).
+-   `SaveSystem.FormatVersion = 1`, `SaveSystem.WorldGenerationVersion = 1`.
+    **Rule: bump `WorldGenerationVersion` on any change that moves terrain or
+    resources for the same seed** (WorldGenerator code, WorldGenerationSettings
+    or BiomeDefinition values). Bump `FormatVersion` + add a Migrate step when
+    a save field is renamed/removed/changes meaning.
+-   Crash-safe write: `<id>.json.tmp` first, then `File.Replace` onto
+    `<id>.json` keeping the previous save as `<id>.json.bak` (copy+move
+    fallback if Replace isn't supported). `Load`/`ListSaves` fall back to
+    `.bak` when the main file is missing or unreadable (also a parsed file
+    with no SaveId counts as corrupt). `DeleteSave` removes .bak/.tmp too.
+-   Save from a newer build (FormatVersion > current): listed as "saved by a
+    newer version", can't be loaded.
+-   Save with an older world generation: listed as "older world version",
+    the load dialog warns (terrain may differ, buildings may be out of place,
+    resources grow back). On load `SaveManager` drops `DepletedResourceIds`
+    (they'd point at other nodes) and lifts the player onto the ground if
+    below it (new `WorldGenerator.LiftAboveGround`). Buildings stay where
+    they were. The next autosave stamps the current version.
+-   Verified via editor code against a throwaway save id: two saves -> .json
+    + .bak (old content), no .tmp; corrupted main -> Load returns the backup;
+    main deleted -> still listed through .bak; legacy file without versions
+    -> FormatVersion 1 / generation 1, not outdated; FormatVersion 99 ->
+    refused; DeleteSave removes both files. Existing 10 saves still list.
+    Compiles with no errors.
+-   Not verified: the outdated-world path in Play Mode (needs a version
+    bump) and the new Load-list labels/dialog text in the real menu.
+-   Changed files: Core/Save/SaveSystem.cs, SaveGameData.cs, SaveManager.cs,
+    World/Generation/WorldGenerator.cs, UI/MainMenuUIController.cs.
+
+### v0.1 --- 2026-10-21 (Damage feedback: stagger, hit particles, placeholder sounds)
+
+Stage A item: hits were only visible in the console/HUD, so creatures and
+combat couldn't be judged.
+
+-   Gameplay (Combat): `HitSurface` enum + `IHitSurface` (what a struck object
+    is made of), `IHitReactive.ReactToHit(direction)` (physical reaction to a
+    melee hit), `MeleeHitInfo` (collider, contact point, swing direction,
+    weapon, surface, counted, combatant, killed), `IncomingHitResult`
+    (Hit/Blocked/Parried).
+-   `PlayerCombat`: new events `HitLanded(MeleeHitInfo)` (every new contact,
+    once per target per swing) and `DamageReceived(result, amount)`. Contact
+    point = nearest point of the struck collider to the capsule step (bounds
+    for concave meshes/terrain); direction = the striking capsule's travel
+    this frame. After `TakeDamage` it calls `IHitReactive.ReactToHit`.
+-   `IMeleeHitReceiver.ReceiveMeleeHit` now returns bool (did the hit count).
+    `ResourceNode` returns false for the wrong tool and is an `IHitSurface`
+    (axe nodes = Wood, pickaxe nodes = Stone - derived, no asset change).
+-   `Creature`: `IHitSurface` (Flesh) + `IHitReactive`: stagger for
+    `StaggerSeconds` (agent stopped, no attack until it ends, path kept so
+    Chase/Flee resumes) and a knockback slide of `KnockbackDistance` along
+    the swing via `NavMeshAgent.Move`. New `CreatureDefinition` fields
+    (defaults 0.35 s / 0.5 m; existing assets get the defaults).
+-   Presentation: `Presentation/Combat/HitFeedback.cs` (one scene object):
+    particle burst at the contact point coloured by surface (blood sprays
+    along the blow, wood chips / stone shards + a few sparks bounce back), a
+    spatial sound per surface, a whoosh per swing; wrong-tool hits get a few
+    grey chips and a dull clunk. Target reaction: creature flashes white
+    (MaterialPropertyBlock `_BaseColor`) and squashes; killed creature tips
+    over away from the blow and sinks onto the ground until it despawns;
+    tree/rock sways ~2.5° for 0.35 s. Player: hurt / block / parry sound and
+    burst on incoming hits. One runtime ParticleSystem (world space, gravity,
+    world collision, shrink over lifetime) and a pool of 10 AudioSources.
+-   `Presentation/Combat/PlaceholderCombatAudio.cs`: procedural clips (3
+    variations each) - flesh, wood, stone, dull, swing, hurt, block, parry.
+    Same approach as PlaceholderWeatherAudio; swap for real clips later.
+-   Editor: menu **NAV/Setup/Add Hit Feedback To Scene** - creates
+    `Materials/Combat/HitParticle.mat` (copy of Rain.mat, white base colour)
+    and a `HitFeedback` object wired to the scene's PlayerCombat. Re-running
+    re-wires instead of duplicating.
+-   Verified: Unity MCP was disconnected, so the runtime and editor assemblies
+    were compiled outside Unity with dotnet against the generated csproj
+    (temporary copies with the new files) - both build with no errors.
+-   Known limits: creatures are capsules, so the "fall" is a capsule tipping
+    over; no hit-stop or camera shake; creature attacks have no wind-up, so
+    stagger only delays the next bite.
+-   **Play Mode check (same day, Unity MCP back; driven through the bridge
+    with scripted swings via PlayerCombat.HandleAttack and per-frame probes):**
+    menu run, scene saved with HitFeedback. Boar punch: hit 7 frames after
+    the swing, 40->36 HP, stagger 0.36 s, pushed 0.52 m away, squash, flash
+    (screenshot +3 frames: white, +12: back to brown), flee afterwards. Wolf
+    with 3 HP: killed by the punch, fell away from the player (dot 0.95),
+    lay flat, lowered 0.42 m, loot dropped; it had bitten the player first ->
+    DamageReceived(Hit, 12). Fists on a tree: counted=false (no axe). Axe:
+    18 wood particles, sway +-2 deg with damping. No console errors.
+-   **Fixed during the check:** knockback used the weapon's travel at contact
+    - a fist hook moves back toward the player, so the boar was pulled in.
+    New `MeleeHitInfo.Away` (flat, attacker -> target) drives knockback, the
+    death fall, the sway axis and the burst directions; `Direction` stays the
+    swing travel. HitFeedback got `[DefaultExecutionOrder(100)]` so a hit's
+    reaction shows in the same frame. Particles 0.07 -> 0.12 m, counts 16/18
+    (serialized in WorldGenTest).
+-   Not seen yet: block / parry sounds (needs real RMB input), pickaxe on
+    stone (the scripted placement kept missing the big rock).
+-   Gotcha found: after Unity loses focus the game's pause menu may open
+    (timeScale 0) - frames still render but nothing advances.
+
+### v0.1 --- 2026-10-21 (Valheim-style tree felling)
+
+Developer request: a tree must not shrink when hit; when felled the trunk
+falls physically, the player chops it into 2 smaller logs, and the logs
+drop the items. Follow-ups the same day: use the added Wood Pack's log
+models, make the stump bigger, and replace the tree with the bare trunk
+the moment it's felled (not after it lands).
+
+-   `ResourceNodeDefinition`: `Shrink On Hit` (rocks keep it, tree stages
+    off), `Becomes Prefab` (next stage spawned on depletion), `Leaves Behind
+    Prefab` (stump), `Fall Impulse` (pushed into the top of a Rigidbody next
+    stage, away from the interactor).
+-   `ResourceNode`: `Becomes Spawn Points` (one next-stage instance per
+    point, e.g. 2 log positions along the trunk; empty = own pose); spawned
+    stages inherit the node's layer/parent and its Rigidbody motion; 0.4 s
+    spawn grace so the felling swing doesn't also hit the new trunk;
+    `Definition` getter. Drops still work as before (rocks unchanged).
+-   `WorldGenerator`: a node depleted in a save leaves its `Leaves Behind
+    Prefab` (the stump) when the world is regenerated on load.
+-   New `Gameplay/Items/FallingTree.cs` on the trunk: detects landing (upper
+    trunk touching down past 55 deg tilt, or 88 deg, or 6 s), then raises
+    damping so it settles; static `AnyFelled` / `AnyLanded` for effects.
+-   `PlayerCombat`: gathering aim assist - at the strike, an IMeleeHitReceiver
+    under the crosshair within weapon Range is struck too (a chest-high swing
+    passed over a log on the ground). Never for IDamageable - combat stays
+    contact-only.
+-   `HitFeedback`: no scripted sway on Rigidbody nodes; felling = cloud of
+    needles over the tree's height (hides the crown vanishing) + crack;
+    landing = chips/needles along the trunk + new placeholder `Tree Fall`
+    thud. `Burst` takes size/speed scale.
+-   Editor menu **NAV/World/Build Spruce Felling** (`TreeFellingSetup.cs`)
+    builds `Prefabs/World/Felling/`: `SpruceStump` (Ultimate Nature
+    UNS_Stump at 1.4x, sunk 0.35 m so its roots go into the ground - 1.6 m
+    wide, 0.86 m above ground, per developer feedback), `SpruceFallen` (Wood Pack `Log_1` stretched
+    to a 10 m x 0.64 m trunk standing on the cut at 0.9 m, box collider,
+    400 kg, FallingTree, 2 log points), `SpruceLog` (Log_1 at 4.6 m x 0.6 m,
+    box collider, 80 kg), `LogFriction.asset` (friction 1, Maximum combine);
+    definitions `ScriptableObjects/World/Felling/SpruceFallenNode` (3 hits ->
+    2 logs) and `SpruceLogNode` (2 hits, the tree's old drops: 3 wood + 25%
+    resin, so 6 wood per tree now); `TreeWoodNode` re-pointed (3 hits, no
+    drops, becomes SpruceFallen, leaves SpruceStump, impulse 300). Re-running
+    overwrites in place.
+-   Box colliders, not capsules: first try with capsules - the trunk and
+    logs rolled ~30 m downhill into the lake.
+-   Verified in Play Mode (scripted axe swings): 3 hits fell the tree, stump
+    stays, the bare trunk topples away from the player (~2.5 s, slow start),
+    lands at ~68 deg on contact and stops (moved 1.3 m); 3 hits split it into
+    2 logs next to it; 2 hits on a log drop the wood. Screenshots checked.
+    No console errors. Test worlds deleted.
+-   Not done / later: the falling trunk doesn't hurt creatures or the player;
+    fallen trunks and logs aren't saved (gone after reload, like dropped
+    items); only the spruce has the chain; the Wood Pack Log_1 has pointed
+    ends - another variant may suit better; a downward chop animation would
+    be nicer than the aim assist.
+
+### v0.1 --- 2026-10-21 (Real swing whooshes per weapon class)
+
+Developer added "Whooshes SFX Pack LITE Edition Unity" (24 clips: Extra
+Fast / Short / Medium / Long x Standard / Heavy(Light for Extra Fast), 3
+each) and asked to match them to the weapon types. First real audio assets
+in the project.
+
+-   Measured the clips (editor code over their samples): audible whoosh
+    ~0.1 s (Extra Fast), ~0.15 s (Short), ~0.3 s (Medium), ~0.7 s (Long),
+    peak 0.05-0.10 / 0.11-0.17 / 0.23 / 0.51-0.70 s after the clip start;
+    Heavy = darker (lower zero-crossing rate), same envelopes.
+-   Measured the swings in Play Mode (strike start = HitActive curve):
+    every two-handed class strikes at a fixed 0.445 s at animation speed 1
+    (0.25-0.34 s with the weapons' speeds); one-handed combos and the spear
+    strike at different moments per variant (sword 0.06 / 0.14 / 0.30 s).
+-   New `Presentation/Combat/SwingSoundSet.cs` (ScriptableObject): per
+    WeaponClass clips + volume + base pitch; per AttackStyle fixed strike
+    time; strike lead 0.04 s; pitch jitter 0.06.
+-   `PlayerCombat`: new event `StrikeStarted(weapon)` - first striking frame
+    of each swing, hit or miss.
+-   `HitFeedback` (`Swing Sounds` field): the whoosh's loudest moment is put
+    on the strike - TwoHanded starts it at attack start (delayed, or started
+    part-way into the clip) so the build-up plays over the backswing; other
+    styles play on StrikeStarted, skipping the clip's pre-peak part. Clip
+    peaks are computed from the samples (10 ms RMS) once in Awake. No set /
+    no clips for a class = the old procedural whoosh at swing start.
+-   Mapping (editor menu **NAV/Setup/Build Swing Sounds**, `SwingSoundSetup.cs`,
+    asset `ScriptableObjects/Audio/SwingSoundSet.asset`, assigned in
+    WorldGenTest): Fists - Extra Fast Light (pitch 1.05); Dagger - Extra
+    Fast Light (1.12, brightest); Spear - Extra Fast (0.95, sharp thrust);
+    Sword - Short (1.0); Mace - Short Heavy (0.95); Shield - Short Heavy
+    (0.85); Hand Axe incl. Stone Axe - Medium (1.0); Tool (pickaxe) - Medium
+    Heavy; Greatsword - Long; Battle Axe - Long Heavy; Warhammer - Long Heavy
+    at pitch 0.88 (heaviest). Volumes 0.45 (fists) .. 0.75 (warhammer).
+    The menu also sets the pack clips to Force To Mono + Decompress On Load
+    (3D sounds; samples readable for the peak).
+-   Verified in Play Mode, 3 swings per class: the whoosh peak is heard
+    0.025-0.07 s after the strike starts in every case (strike lasts
+    ~0.08-0.11 s), including each one-handed combo variant. No console
+    errors. Not judged by ear - volumes/pitches are a starting point.
+-   Swinging at nothing still whooshes (it's the swing, not the hit).
+
+### v0.1 --- 2026-10-21 (Storage chest + container save; test build 0.1.1)
+
+Stage A item "storage chest + container save" (last open Phase 2 item, one of
+Phase 11's).
+
+-   `IItemContainer.IsStorage` (Gravestone / WeaponRack: false). New
+    `Gameplay/Inventory/StorageContainer.cs`: IInteractable + IItemContainer,
+    title "Chest", 10 slots (Valheim's wooden chest), `IsOpen` /
+    `OpenChanged` (set by the container panel), `DropContents(...)`.
+-   Container panel (`GravestoneUIController`, name kept so scene references
+    stay): for storage it stays open when empty, stacks can be rearranged
+    inside it, and `TryReceiveFromPlayer` takes a stack dragged from the
+    player's Inventory panel - onto a chest slot, or into the first slot it
+    fits when released on the panel background. Opens/closes the chest's lid
+    via SetOpen. `InventoryUIController` got the optional `Container Panel`
+    reference (wired in WorldGenTest) and asks it first on a drop outside its
+    own grid.
+-   **Bug fixed on the way:** dragging a stack from the inventory onto the
+    gravestone panel used to throw it into the world (the inventory treated
+    anything outside its own panel as the world). Now a drop on a take-only
+    container panel is just ignored.
+-   `PlayerBuilding` demolish: a chest spills its contents as pickups next to
+    its refunded materials.
+-   Save: `BuildingSaveData.ContainerSlots` (new field, older saves read it as
+    empty - no FormatVersion bump); `SaveManager` writes/restores it for any
+    piece with a StorageContainer (shared `BuildSlotsData` / `ApplySlots`,
+    also used for the player inventory now).
+-   `Presentation/Building/ChestLidAnimator.cs`: lid swings to -100 deg while
+    open, 360 deg/s.
+-   Editor menu **NAV/Build/Build Wood Chest** (`ChestSetup.cs`): prefab
+    `Prefabs/Build/WoodChest` in the workbench's style (cubes with its wood
+    material + new `Materials/Building/ChestIron.mat` bands, hasp, lock; Lid
+    child pivots on the back hinge; BoxCollider 1 x 0.62 x 0.6, centre pivot),
+    definition `ScriptableObjects/Building/WoodChestPiece` (Chest, 10 wood,
+    needs a workbench nearby), icon `Art/Icons/Icon_WoodChest.png` (rendered;
+    `ItemIconRenderer.RenderIcon` got an optional pose), registered in
+    BuildingPieceDatabase and the scene's PlayerBuilding (8 pieces now).
+-   Verified in Play Mode (scripted): chest placed, opened through the
+    panel's own handler (panel visible, IsOpen, lid ~80-100 deg; screenshot:
+    "Chest" grid next to the inventory), wood/axe dropped onto chest slots,
+    flint onto the panel background -> first free slot, the equipped axe
+    unequipped when moved; closed -> lid 0; autosave -> JSON has the chest
+    with 2 slots; scene reloaded from that save -> chest at the same spot,
+    same items in the same slots, registered as a piece; demolished -> wood
+    (cost + contents) and the axe dropped as pickups. No console errors.
+    Test worlds deleted.
+-   Not covered: real mouse drags (the drop handlers were called with the
+    slot elements directly), placing the chest through the build menu (same
+    path as every other piece). Chest grid wraps 6 + 4 (panel width is the
+    gravestone's) - a 5 x 2 layout would look tidier.
+
+**Test build 0.1.1:** Windows 64, Mono, MainMenu + WorldGenTest, built from
+the editor (BuildPipeline) - succeeded, 0 errors / 0 warnings, 1:23 min,
+`Builds/NAV_Test_0.1.1/` + `Builds/NAV_Test_0.1.1.zip` (59.3 MB, without the
+Burst DoNotShip folder). Smoke test: started windowed, ran 20 s at the main
+menu, Player log clean (only the usual d3d12 info-queue notice). Gameplay in
+the build (new world, sounds, chest, felling) not clicked through - needs a
+person at the menu.
+
+### v0.1 --- 2026-10-21 (Animal models: Tiger as Forest Wolf, Deer instead of Wild Boar)
+
+Developer added the ithappy "Animals FREE" pack and asked for the tiger (as
+the wolf, for now) and the deer (replacing the boar). The pack has idle /
+walk / run only (tiger also a rare idle) - no attack, hit or death clips.
+
+-   Editor menu **NAV/Creatures/Apply Animal Models** (`CreatureModelSetup.cs`):
+    the pack prefab goes in as the "Model" child (its CharacterController /
+    CreatureMover / MovePlayerInput removed - the NavMeshAgent moves the
+    creature), the capsule mesh is gone, root at the feet (agent base offset
+    0). Tiger at 0.7 scale (~2.1 m long); deer at 1. The boar prefab and
+    definition were renamed to `Deer` / `DeerCreature` (same GUIDs, so the
+    Forest/Plains biome spawn lists still point at them), display name "Deer".
+-   Hit volume: a box from 0.15 m up to the withers (tiger 0.7 x 1.15 x 2.0,
+    deer 0.64 x 1.45 x 1.4) instead of the capsule - the torso capsule sat
+    under the player's chest-high punches.
+-   Speeds for the clips: wolf walks 1.8 on patrol, chase x3.5 (~6.3 m/s as
+    before); deer walks 1.2, flees x5 (6 m/s). Agent acceleration 20,
+    stopping distance 0.9 x attack range; tiger attack range 1.7 (2.6 bit
+    from out of sword reach, 2.0 left the muzzle out of fist reach).
+-   `Creature`: `AttackPerformed` / `Died` events, `Definition` getter;
+    `EnterAttack` zeroes the agent velocity (it used to coast ~1 m into the
+    target out of a 6 m/s chase).
+-   New `Presentation/Animation/CreatureAnimator.cs`: Vert/State from the
+    agent's real speed, playback speed scaled so feet match the ground
+    (walk/run clip speeds 0.7/2.8 tiger, 1/4 deer; range 0.6-2.4); attack =
+    procedural lunge of the model (0.4 m, 0.35 s, head-down pitch); death =
+    the model rolls onto its side about its feet and the Animator freezes.
+    `HitFeedback` leaves the death fall of such creatures to it; flash colour
+    is now a red tint (white doesn't show on the pack's white-based texture).
+-   Verified in Play Mode: deer patrols with the walk clip at playback 1.0
+    (1.2 m/s); wolf notices the player, walk -> run (playback ~2.2), stops at
+    its attack range, lunges every ~1.2 s, idles between bites; killed by
+    fists in 6 swings (9 contacts), rolls onto its side (model up axis
+    horizontal), Animator stopped. No console errors.
+-   Gotcha: Unity silently left the new `Presentation/Creatures/` script out
+    of compilation while my shell's working directory was inside that new
+    folder; moving the file to `Presentation/Animation/` fixed it.
+-   Not done: real attack/hit/death animations (pack has none), creature
+    sounds, the tiger stays a stand-in for a wolf model.
+
+### v0.1 --- 2026-10-21 (Valheim-style facing, head look, aimed swings)
+
+Developer request: swings only ever hit at one fixed height, so ore or a
+creature below that plane couldn't be hit even when looked at; and the body
+always turned with the camera. Wanted: the swing goes where the player looks
+(only in front of the body), the body stands as it is while the camera moves,
+the head turns toward the view within limits - like Valheim.
+
+-   `PlayerMotor`: body yaw no longer copies the camera. Moving turns it toward
+    the move direction; standing still leaves it; `FaceAim(seconds)` snaps it to
+    the camera's yaw (0.05 s smooth) - `PlayerCombat` calls it on every attack
+    (max(0.6 s, cooldown)) and every frame a block is held. New
+    `MoveDirection` / `IsFacingAim`.
+-   `PlayerAnimator`: MoveX/MoveY = the move direction in the body's own space
+    (forward run while running where it faces; strafe while facing the aim).
+    Head look via `OnAnimatorIK` (look-at weight 1, body 0.15, head 0.85, clamp
+    0.6 ~ about 90 deg). Aim bend: while facing the aim, the spine
+    (Spine/Chest/UpperChest 40/35/25%) bends about the body's right axis by
+    the angle from the chest to the crosshair's hit point (or 0.6 x camera
+    pitch), x1.35 gain, clamped -30..+80 deg; applied in LateUpdate before
+    PlayerCombat sweeps the weapon, so hits stay physical contact.
+-   Verified in Play Mode: standing, camera turned 100 deg -> body yaw
+    unchanged, head turned 81 deg; attack -> body faced the camera within
+    0.25 s; lowest point of the strike above the feet - fists 1.04 m level ->
+    0.33 m looking down; sword 0.54 m -> -0.20 / -0.47 m (into the ground) at
+    55 / 70 deg camera pitch. Screenshots checked. No console errors.
+-   Not covered: real keyboard movement (turning toward the move direction is
+    only code-reviewed - scripted tests can't press WASD), how the bow-down
+    looks to the eye at every angle; building placement still uses the
+    camera's yaw (unchanged).
+
+### v0.1 --- 2026-10-21 (No gathering on E)
+
+Developer request: now that gathering is done with tools, E must only pick
+things up, open (chests, doors) and use things - no gather-by-E and no gather
+prompt.
+
+-   `ResourceNode` is no longer an `IInteractable` / `IContextualPrompt`:
+    `InteractionPrompt`, `GetPrompt`, `CanInteract`, `Interact` removed. A
+    node is gathered only by a weapon/tool contact (`IMeleeHitReceiver`, with
+    the tool requirement and the crosshair aim assist as before). The fallen
+    trunk and the logs are ResourceNodes too, so the same applies to them.
+-   Verified in Play Mode: crosshair on a rock -> no current interactable, no
+    prompt; on an item pickup -> "Pick up Wood" as before. No console errors.
+-   Side effect: E aimed through a tree/rock doesn't reach an item behind it
+    (the ray stops at the node's collider) - same as any other solid object.
+
+### v0.1 --- 2026-10-21/22 (Settings window: audio, controls, graphics)
+
+Developer request: a full Settings window in the main menu and the pause
+menu - sound, controls, graphics.
+
+-   `Core/Settings/GameSettingsData.cs` + `GameSettings.cs` (static, like
+    SaveSystem): loaded from `persistentDataPath/settings.json` before the first
+    scene (RuntimeInitializeOnLoadMethod), applied to the engine, `Changed`
+    event for everything else; `Apply()` live, `Save()` when the window closes;
+    presets and per-tab resets. In the editor the URP asset / QualitySettings
+    values it touches are remembered and restored when Play Mode ends.
+-   Audio: Master (AudioListener.volume), Effects (HitFeedback - hits,
+    whooshes), Ambience (WeatherEffects - rain, thunder), Music (stored only,
+    no music yet).
+-   Controls: mouse sensitivity multiplier 0.2-3x and invert Y
+    (ThirdPersonCameraController); rebinding of the keyboard/mouse bindings of
+    Move (WASD parts), Jump, Sprint, Attack, Block, Interact, Inventory,
+    Crafting, RotatePiece and Hotbar 1-6 via Input System interactive
+    rebinding (Esc cancels, Esc itself not rebindable, a key already used by
+    another listed action is swapped onto it). Overrides saved as JSON in the
+    settings and applied by `PlayerInputHandler` (now and on Changed). Key
+    names come from the binding path (W/A/S/D), not the OS layout.
+    `PlayerInputHandler`: hotbar slot = index of the binding that fired (was
+    parsed from the key's digit - would break once rebound).
+-   Graphics: preset Low/Medium/High/Ultra/Custom; display mode, resolution
+    (build only), VSync, frame limit, field of view 50-90; object draw
+    distance 80-400 m/Max (camera `layerCullDistances` for the WorldResource
+    layer, spherical - trees/rocks/ore only, terrain and sky stay); render
+    scale 50-100%; shadows Off/Low/Medium/High (URP shadow distance 0/30/50/90,
+    map 1024/2048/4096, cascades); MSAA off/2/4/8; texture quality
+    full/half/quarter (globalTextureMipmapLimit). The old
+    `RenderDistanceController` (fog + far clip, never placed in a scene) was
+    left as it was - its linear fog would fight the weather fog and its
+    50-150 m far clip would cut the terrain.
+-   UI: `UI/SettingsPanel.uxml/.uss` (pause-menu palette; tabs; rows built in
+    code) + `UI/SettingsUIController.cs` (Open(onClosed)/Close, Esc closes
+    unless a rebind is listening). Settings buttons in MainMenuPanel and
+    PausePanel; `PauseUIController` ignores Esc while Settings is open and
+    hides its panel underneath. Editor menu **NAV/Setup/Add Settings UI To
+    Scene** (`SettingsUISetup.cs`) - run and saved in MainMenu and
+    WorldGenTest (sorting order 30).
+-   Verified in Play Mode: opened from pause (pause panel hidden, game stays
+    paused) and from the main menu; all three tabs rendered (screenshots);
+    master 50% -> AudioListener 0.5; effects 25% -> category volume 0.25; FOV
+    80 -> camera 80; shadows Off -> URP shadow distance 0 (preset -> Custom);
+    preset Low -> render scale 0.75, shadows Low, objects 150 m; object
+    distance 150 -> WorldResource cull 150, spherical; invert Y on; Jump
+    rebound by a simulated J press -> player's Jump = <Keyboard>/j, saved;
+    Jump -> W swapped Move Forward to J; simulated Esc closed Settings back to
+    the pause menu and wrote settings.json. Test settings.json deleted after.
+    No console errors.
+-   Not done: gamepad rebinding, music (none exists), brightness/gamma, a
+    "graphics changed - restart" flow (none needed so far).
+
+Note (2026-10-22): the editor's `Saves` folder was found empty (last changed
+2026-10-21 20:07:50) - the developer confirmed they deleted those saves
+themselves through the Load list. Not a bug; autosave on leaving Play Mode
+re-checked anyway - works.
+
+### v0.1 --- 2026-10-22 (Creatures: sight, packs, spawning by biome and time of day)
+
+-   `CreatureDefinition`: new Perception fields - View Angle (220 deg), Always
+    Notice Distance (3 m, "hears"), Eye Height (0.8), Pack Alert Radius
+    (Forest Wolf: 15 m).
+-   `Creature`: a hostile creature no longer chases the moment something
+    enters its trigger - it becomes a *candidate*, checked every 0.2 s by
+    `CanSee` (inside the view angle and a raycast from its eyes to the
+    target's chest with nothing solid in between; within 3 m always).
+    Noticing alerts living creatures of the same Definition within Pack
+    Alert Radius (`Alert`). Being hit while not engaged also notices the
+    attacker and alerts the pack. Static `Creature.All`, `SpawnSource`,
+    `IsEngaged` for the population manager.
+-   `BiomeCreatureSpawn`: Night Count (-1 = same as Count), Group Size
+    (min/max - packs), Respawn Seconds.
+-   `WorldGenerator`: keeps the biome map; spawns in groups (members ~3 m
+    apart on the NavMesh), tags each with its spawn entry; new
+    `Biomes`, `HasCreatureWorld`, `TryFindCreaturePointNear`,
+    `SpawnCreatureGroup`, event `CreaturesSpawned`.
+-   New `World/Generation/CreaturePopulation.cs` (on the WorldGenerator object
+    in WorldGenTest, Clock + Player assigned): every 5 s per entry - below
+    the target (Count by day, Night Count at night) and the entry's respawn
+    time passed -> one group 50-120 m from the player in the right biome;
+    above it (night ended) -> removes extras that are 80+ m away and not
+    fighting. Not saved - every load spawns from the seed as before.
+-   Tuning: Forest - wolves 4 by day / 7 at night, packs of 2-3, 120 s;
+    deer 3 / 1, groups 1-2, 150 s. Plains - deer 6 / 2, groups 1-3;
+    wolves 2 / 4, pairs.
+-   Verified in Play Mode: 15 creatures spawned with spawn entries; sight on
+    an inactive wolf copy - 7 m facing: sees, back turned: no, 90 deg to the
+    side: yes, behind a wall: no, 2.5 m back turned: hears. Two wolves 9 m
+    to the side of an attacking one (outside their 8 m trigger) joined the
+    chase. After two wolves died a pack of 2 new ones appeared 64-68 m away
+    exactly at the 120 s respawn time. The night count switch itself was
+    not exercised in Play Mode (the developer was playing at the time) - it
+    is a single `GetCount(IsNight)` call. No console errors.
+-   Not done: night-only creature types; creature loot (hide/bone/fangs).
+
+### v0.1 --- 2026-10-22 (Creature loot: Hide, Bone, Fang)
+
+-   New resource items `ScriptableObjects/Items/Hide`, `Bone`, `Fang`
+    (category Resource; stacks 40/40/50; weight 0.5/0.3/0.1), registered in
+    DefaultItemDatabase, icons `Art/Icons/Icon_Hide/Bone/Fang.png`.
+-   Pickups `Prefabs/Item/Hide_item`, `Bone_item`, `Fang_item` - placeholder
+    models from Unity primitives (no such models in the project): rolled hide
+    with two straps and a loose flap; bone shaft with double knuckles; fang
+    = procedural curved cone `Art/Models/FangMesh.asset`. Materials in
+    `Materials/Items`. Rigidbody uses ContinuousDynamic collision (small and
+    thrown on drop).
+-   Loot tables (meat kept as it was): Forest Wolf - Hide 1 (100%), Bone 1
+    (60%), Fang 2 (50%); Deer - Hide 1 (100%), Bone 1 (75%).
+-   Editor menu **NAV/Items/Build Creature Loot (Hide, Bone, Fang)**
+    (`Editor/CreatureLootSetup.cs`) builds/rebuilds all of the above.
+-   Fix in `Creature.SpawnLoot`: a drop's start point is lifted to 0.3 m
+    above the terrain - on slopes the scattered point could be inside the
+    hill and a fang fell through the world (seen in the first test).
+-   Verified in Play Mode: 15 creatures killed -> Hide 15, Bone 9-11, Fang
+    2-4, meat as before; after the fix none ended up under the terrain;
+    Hide/Bone/Fang picked up into the inventory ("Pick up Fang", counts
+    correct). No console errors. Test world saves from this run deleted.
+-   Not done: real models; recipes using these (Stage C).
+
+### v0.1 --- 2026-10-22 (Early visuals: colour grading by time of day and weather)
+
+-   Volume profiles in `Assets/NAV/Settings/PostProcess`:
+    -   `NAV_Day` - the base look on the scene's Global Volume: Neutral
+        tonemapping, exposure +0.1, contrast +12, saturation -4, white
+        balance +8, blue-ish shadows / warm highlights, soft bloom, vignette
+        0.22. ACES was tried first and dropped: it crushed the night to black
+        and turned saturated reds orange at sunset.
+    -   `NAV_GoldenHour` - warmer, a little more saturated, more bloom.
+    -   `NAV_Night` - cool moonlit blue: exposure +0.75, saturation -30,
+        blue colour filter, lifted blue shadows, darker blue vignette.
+    -   `NAV_Overcast` - greyer, flatter, cooler.
+-   New `Presentation/Lighting/DayNightGrading.cs` on the Global Volume:
+    golden-hour weight peaks at sunrise/sunset (±1.4 h), night fades in
+    over 1.2 h after sunset and out before sunrise, overcast follows the
+    weather's Overcast (reduced at night). Three child volumes
+    (Volume_GoldenHour/Night/Overcast, priorities 1-3) in WorldGenTest;
+    MainMenu gets only NAV_Day.
+-   URP asset (PC_RPAsset): colour grading mode switched to HDR.
+-   ClearWeather fog density 0 -> 0.0028 - a light aerial haze, so distant
+    hills fade into the horizon colour instead of looking flat.
+-   Terrain layers: OceanLayer (shore/seabed) had the ground9 *normal map*
+    as its colour texture - that was the pink sand; now ADG ground2 sand
+    (diffuse + normal 0.6, tile 4 m). PlainsLayer tinted down (remap max
+    0.8/0.85/0.68) - the grass was neon green.
+-   Editor menu **NAV/Setup/Build Post Processing** (`Editor/PostProcessSetup.cs`)
+    rebuilds the profiles, URP HDR grading, clear-weather haze and the open
+    scene's volumes (save the scene after). Run and saved in WorldGenTest
+    and MainMenu.
+-   Verified in Play Mode with before/after renders at 12:00, ~19:00 and
+    23:30: weights 0/0.42/1 for golden hour/night as expected, no console
+    errors. Test world saves deleted.
+-   Not done: water material (flat saturated blue, glows at night), forest
+    floor is bare dirt (vegetation step), depth of field/other effects.
+
+### v0.1 --- 2026-10-22 (Forest vegetation, grass and flowers, Birch Grove)
+
+-   **Birch Grove** - new `ScriptableObjects/Biomes/BirchGroveBiome` chosen
+    inside forests by a separate grove noise (`WorldGenerationSettings`:
+    Grove Biome, Grove Noise Scale 110, Grove Threshold 0.62; never at the
+    forest's very edge). Own terrain layer `Art/Terrain/GroveLayer` (sunny
+    grass), birches + a few spruces + loose branches, decor, more grass and
+    flowers, deer (3 by day / 1 at night).
+-   **Birch** - placeholder generated by the editor tool (no birch model in
+    the project): `Prefabs/World/Vegetation/Birch_A/B/C_WoodNode` - bent white
+    trunk with a procedural bark texture (black lenticels, dark base),
+    branches with drooping faceted leaf clumps; gatherable with definition
+    `ScriptableObjects/World/BirchWoodNode` (copy of the spruce's
+    TreeWoodNode, so it fells into the spruce trunk/logs for now).
+    Fixed after the developer's report: trunk and crown faces were wound
+    inwards (culled from outside - "hollow" birch); now every face points
+    outward (checked: 0 inward triangles in all three meshes).
+-   **Nature Starter Kit 2** (added by the developer): its Tree Creator
+    materials don't render in URP, so `VegetationSetup` rebuilds bush02-06
+    and tree01-04 with URP Lit (opaque bark, alpha-clipped double-sided
+    leaves) as `NSK_bush0X` (decor) and `NSK_tree0X_WoodNode` (gatherable,
+    TreeWoodNode). bush01 skipped - its leaves vanish under alpha clipping.
+    Its obsolete `Editor/ImageEffects/ColorCorrectionLookupEditor.cs` broke
+    compilation (TextureImporterFormat.AutomaticTruecolor) - two lines
+    switched to textureCompression.
+-   **Grass and flowers** as terrain details (`WorldGenerator.PaintDetails`,
+    detail resolution 512, drawn within 70 m): waving grass from green copies
+    of the kit's grass01/02 masks (`Art/Models/Birch/Grass_grass0X.png` -
+    URP's grass barely applies the healthy/dry tint, the plain masks came out
+    straw-beige), up to 6 tufts per ~2 m cell by each biome's Grass Density
+    with patch noise; procedural chamomile and cornflower clumps (one
+    palette material - a detail prefab may have only one material; the
+    Ultimate Nature flower had three and silently stopped ALL details from
+    drawing). Gotchas fixed: Unity's default detail Coverage mode reads the
+    counts as 0-255 coverage (nothing drew) - set InstanceCountMode; the
+    default waving grass tint is brown - set white. Invalid prototypes are
+    now skipped with an error.
+-   **Decor** - new `BiomeDecorSpawn` list per biome (prefab, density,
+    spacing, scale range, keep colliders): bushes, Ultimate Nature
+    mushrooms, stumps and logs (colliders kept - NavMesh goes round them),
+    pebbles. Own RNG (seed + 5), not saved. Forest floor layer now the kit's
+    ground03 (olive, tinted) instead of bare dirt. Forest resources: spruce
+    0.3 + four kit broadleaf trees 0.03 each.
+-   `SaveSystem.WorldGenerationVersion` 1 -> 2 (resource ids changed).
+-   Editor menu **NAV/World/Build Vegetation and Birch Grove**
+    (`Editor/VegetationSetup.cs`) builds/rebuilds all of the above.
+-   Verified in Play Mode (main camera renders): grove, forest, plains and
+    the birch trunk seen from above; ~1950 resources + ~1100 decor + ~475k
+    grass tufts, frame ~7-8 ms in the editor. No console errors. Test world
+    saves deleted (kept 8:16 - the developer played in that session).
+-   Not done: a real birch model and birch logs; grass density / draw
+    distance in the graphics settings; capture-camera renders showed bare
+    spruce trunks far away - not seen with the main camera.
+-   Addendum (same day) - **Hand Painted Nature Kit Lite** (added by the
+    developer; already URP Lit with LOD billboards): Larch_Tree and
+    Cedar_Tree_03 wrapped as gatherable `HP_*_WoodNode` (scaled 0.7, trunk
+    capsule on the root, TreeWoodNode) in the forest (0.045 / 0.035); Fern
+    (forest floor, grove), Boletus_Edulis ceps (forest, more in the birch
+    grove), Dandelion_02 and Plantain (plains, grove), Stump (forest, scaled
+    0.5-0.7, blocks). Pine_Tree is NOT used - the Lite atlas is empty where
+    its needles map (paid-version content), it renders as a bare black pole.
+    Verified in Play Mode (larch, cedar, meadow, ceps); frame ~6-8 ms.
+
+### v0.1 --- 2026-10-22 (Console warnings; trees of different sizes)
+
+-   Console: "RuntimeNavMeshBuilder: Source mesh Stump does not allow read
+    access" (works in the editor, the stump would be missing from the NavMesh
+    in a build) - Read/Write enabled on the Hand Painted kit's `Stump.fbx`,
+    and also on `Wood Pack/Meshes/Broken log_1.fbx` (LooseBranch) and
+    `PolyOne/.../SM_Rocks_01.fbx` (LooseStone), the other spawned
+    collider meshes that weren't readable. Console now clean.
+-   `BiomeResourceSpawn` got a Scale range (min, max; default 1, 1);
+    `WorldGenerator` gives every placed resource a seeded uniform size (one
+    extra RNG draw per node, always taken, so ids don't depend on which
+    entries vary), also for the stump left by an already-gathered node.
+    `ResourceNode` passes its scale to the stump, the felled trunk and so to
+    the logs (InheritScale) - a big tree leaves a big trunk.
+-   Ranges (VegetationSetup): spruce 0.6-1.35 (forest) / 0.6-1.3 (grove),
+    birches, larch, cedar 0.65-1.3, kit broadleaf trees 0.7-1.3; branches,
+    stones, rocks 1.
+-   Verified in Play Mode: 1142 trees, scale 0.60..1.35, varied heights in
+    the forest render; a spruce at x1.26 felled by script left a x1.26 stump
+    and trunk. No console messages. Test world save deleted.
+
+### v0.1 --- 2026-10-22 (Water: own URP shader, SUIMONO textures)
+
+-   SUIMONO 2 (imported by the developer) supports only the built-in render
+    pipeline (surface shaders, OnRenderImage effects - its readme says SRP is
+    not supported), so in URP it would render pink. Agreed with the
+    developer: NAV's own URP water, reusing SUIMONO's textures.
+-   New `Assets/NAV/Shaders/NAVWater.shader` ("NAV/Water", hand-written URP
+    HLSL): colour by water depth (camera depth texture) - clear shallows show
+    the refracted ground (camera opaque texture), deep water teal-navy; two
+    world-space scrolling wave normal maps (SUIMONO tex_WaveCalm/WaveRoll,
+    re-imported as Normal Map); lit by the main light + ambient probe, so it
+    darkens at night instead of glowing (the old Lit plane did); sun/moon
+    highlight with shadow, fresnel sky reflection from the ambient probe;
+    shore foam band + sparse whitecaps from SUIMONO tex_foamMask (R/G,
+    re-imported linear); scene fog.
+-   Material `Materials/World/NAVWater.mat`; editor menu **NAV/World/Build
+    Water** (`Editor/WaterSetup.cs`) builds it and puts it on the scene's
+    WorldGenerator water plane (renamed "Water", no shadow casting). Old
+    placeholder material `Materials/New Material.mat` deleted (only the water
+    used it). The plane, its MeshCollider and PlaceWater are unchanged.
+-   Verified in Play Mode at a shore: noon (clear shallows, foam, waves),
+    sunset (sun glitter path), 23:30 (dark, no glow). No console messages.
+    Test world save deleted (kept 8:16 and 8:32 - not from my runs).
+-   Not done: underwater view/fog, swimming, vertex waves, rivers/waterfalls.
+
+### v0.1 --- 2026-10-22 (Water you can enter: wading, swimming, ripples, splashes)
+
+-   The water plane is no longer solid: MeshCollider removed (the player
+    used to run on the surface). New `Gameplay/Environment/WaterBody.cs` on
+    it - surface height + XZ extent, `TryGetSurface`/`GetDepth` for anyone.
+    `NavMeshModifier` (ignore from build) on the water - the bake uses render
+    meshes, the surface would have become walkable.
+-   Lake beds: new `WorldGenerator._underwaterNavBlock`
+    (NavMeshModifierVolume "Underwater NavMesh Block", Not Walkable) that
+    PlaceWater stretches over everything lower than 0.3 m under the surface,
+    so creatures don't walk along the bottom. Checked: no NavMesh on a lake
+    bed or on the surface.
+-   `PlayerMotor`: WaterDepth, IsSwimming. Wading slows up to 40%; feet
+    1.1 m under = swimming: no gravity, eased spring to floating height
+    (slight bob), 0.55x speed, Jump = push up out of the water (onto a
+    bank); a fall into deep water is braked hard (dips ~1 m, not to the
+    bottom). `PlayerAnimator` treats swimming as grounded (locomotion clips
+    tread water - no swim animation yet).
+-   `ThirdPersonCameraController`: the camera never goes below the water
+    surface (+0.25 m) - no underwater view yet.
+-   `NAV/Water` shader: up to 16 ripple sources (global
+    `_NAVWaterRipples`: x, z, start time, strength) - expanding rings that
+    bend the normals and add a light crest; light absorbed with depth, so a
+    swimmer's body reads as underwater.
+-   New `Presentation/Environment/WaterInteraction.cs` ("Water Interaction"
+    object): rings from the player while moving (more often the faster)
+    and gently while floating; entering water = droplet burst (URP particle,
+    HitParticle.mat) + SUIMONO splash sound, big splash when falling in
+    faster than 4 m/s; quiet sloshing while moving. Static `Emit(position,
+    strength)` for other systems.
+-   `WaterSetup` (NAV/World/Build Water) now also does all of the scene
+    wiring above. Scene saved; scene PlayerMotor Swim Depth set to 1.1.
+-   Verified in Play Mode: drop from 2 m into 4.5 m deep water -> dip to
+    feet -2.06 m, floats at -1.12 m (head +0.4 m), IsSwimming; wading
+    0.47-0.83 m deep with W held -> speed ~1.4 instead of walk, 5 live
+    ripples, rings visible around the player. No console messages. Test
+    world saves deleted.
+-   Not done: swim animation, stamina drain/drowning, underwater view,
+    splashes from creatures/falling logs, items floating.

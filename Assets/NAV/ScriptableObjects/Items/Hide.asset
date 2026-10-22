@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: Hide
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: Hide
+  _displayName: Hide
+  _description: A rolled animal hide. Tanned into leather for armour and grips.
+  _icon: {fileID: 21300000, guid: 5f9c3cd6194cc50439360eb84357c8df, type: 3}
+  _category: 0
+  _maxStackSize: 40
+  _weight: 0.5
+  _worldPrefab: {fileID: 7394970848899410628, guid: a7f0a51b41e73c64ba2ef3a18a2507eb, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0

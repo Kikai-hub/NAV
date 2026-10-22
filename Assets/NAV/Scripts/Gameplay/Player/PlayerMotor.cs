@@ -1,4 +1,5 @@
 using UnityEngine;
+using NAV.Gameplay.Environment;
 using NAV.Gameplay.Inventory;
 
 namespace NAV.Gameplay.Player
@@ -11,16 +12,52 @@ namespace NAV.Gameplay.Player
         [SerializeField] private PlayerStamina _stamina;
         [SerializeField] private Transform _cameraTransform;
         [SerializeField] private PlayerInventory _inventory;
+        [Tooltip("How quickly the body turns to the camera's direction for an attack/block (seconds) - much snappier than the movement turn, so the swing goes where the player looks.")]
+        [SerializeField, Min(0.01f)] private float _aimTurnSmoothTime = 0.05f;
+
+        [Header("Water")]
+        [Tooltip("Feet this deep under the surface (m) = swimming: the body floats with the head above water.")]
+        [SerializeField, Min(0.3f)] private float _swimDepth = 1.1f;
+        [SerializeField, Range(0.1f, 1f)] private float _swimSpeedMultiplier = 0.55f;
+        [Tooltip("Speed lost wading, at the deepest point before swimming (0.4 = 40% slower).")]
+        [SerializeField, Range(0f, 0.9f)] private float _wadeSlowdown = 0.4f;
+        [Tooltip("How hard the water pulls a swimmer back to floating height (1/s).")]
+        [SerializeField, Min(0.5f)] private float _buoyancy = 4f;
+        [Tooltip("Jump out of the water (m/s up) - to climb onto a bank.")]
+        [SerializeField, Min(0f)] private float _swimJumpSpeed = 3.5f;
 
         public bool IsGrounded { get; private set; }
+
+        /// <summary>Floating in deep water (see Swim Depth).</summary>
+        public bool IsSwimming { get; private set; }
+
+        /// <summary>How deep the feet are under the water surface (0 out of water).</summary>
+        public float WaterDepth { get; private set; }
+
+        // Leaving the swim takes a little shallower water than entering it, so standing right at
+        // the threshold doesn't flicker between wading and swimming.
+        private const float SwimExitHysteresis = 0.2f;
+        private const float FloatBobHeight = 0.04f;
+        // m/s² the water changes a swimmer's vertical speed by.
+        private const float WaterDrag = 15f;
+        private const float WaterEntryDrag = 40f;
         public float CurrentSpeed { get; private set; }
         public bool IsSprinting { get; private set; }
         public bool IsOverloaded { get; private set; }
+
+        /// <summary>World-space move direction this frame (camera-relative input, length 0..1) -
+        /// what the locomotion animation reads in the body's own space.</summary>
+        public Vector3 MoveDirection { get; private set; }
+
+        /// <summary>True while the body is held facing the camera's direction (FaceAim - an
+        /// attack or a raised block).</summary>
+        public bool IsFacingAim => Time.time < _faceAimUntil;
 
         private CharacterController _controller;
         private float _verticalVelocity;
         private float _rotationVelocity;
         private bool _jumpQueued;
+        private float _faceAimUntil;
 
         private void Awake()
         {
@@ -52,6 +89,13 @@ namespace NAV.Gameplay.Player
         private void HandleJumpRequested()
         {
             _jumpQueued = true;
+        }
+
+        /// <summary>Turns the body to the camera's direction and keeps it there for seconds (an
+        /// attack, a raised block). Calls extend, never shorten, the current hold.</summary>
+        public void FaceAim(float seconds)
+        {
+            _faceAimUntil = Mathf.Max(_faceAimUntil, Time.time + seconds);
         }
 
         /// <summary>Moves the player directly to a position/rotation (e.g. PlayerDeath's
@@ -96,31 +140,86 @@ namespace NAV.Gameplay.Player
                 speedMultiplier *= _stats.OverloadSpeedMultiplier;
             }
 
+            bool hasWater = WaterBody.TryGetSurface(transform.position, out float waterSurface);
+            WaterDepth = hasWater ? Mathf.Max(0f, waterSurface - transform.position.y) : 0f;
+            IsSwimming = WaterDepth >= (IsSwimming ? _swimDepth - SwimExitHysteresis : _swimDepth);
+
+            if (IsSwimming)
+            {
+                speedMultiplier *= _swimSpeedMultiplier;
+            }
+            else if (WaterDepth > 0f)
+            {
+                speedMultiplier *= 1f - _wadeSlowdown * Mathf.Clamp01(WaterDepth / _swimDepth);
+            }
+
             float targetSpeed = _stats.WalkSpeed * speedMultiplier;
 
-            // Body yaw always tracks the camera's yaw (never the raw move-input direction).
-            // The camera is independent of the player (mouse-controlled, follows position only),
-            // so this keeps the character's facing decoupled from movement: strafing moves
-            // sideways instead of snapping the body to face the strafe direction.
-            float targetYaw = _cameraTransform.eulerAngles.y;
-            float yaw = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetYaw, ref _rotationVelocity, _stats.RotationSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            MoveDirection = moveDirection;
 
-            if (IsGrounded && _verticalVelocity < 0f)
+            // Valheim-style facing: the camera orbits freely (mouse, follows position only) and
+            // the body doesn't follow it. Moving turns the body toward where it's going; standing
+            // still leaves it as it is (the head looks toward the camera - PlayerAnimator); an
+            // attack or a raised block (FaceAim) snaps it to the camera's direction so the swing
+            // goes where the player looks.
+            bool hasTarget = true;
+            float targetYaw = 0f;
+            float smoothTime = _stats.RotationSmoothTime;
+            if (IsFacingAim)
             {
-                _verticalVelocity = _stats.GroundedGravityValue;
+                targetYaw = _cameraTransform.eulerAngles.y;
+                smoothTime = _aimTurnSmoothTime;
+            }
+            else if (hasMoveInput)
+            {
+                targetYaw = Mathf.Atan2(moveDirection.x, moveDirection.z) * Mathf.Rad2Deg;
+            }
+            else
+            {
+                hasTarget = false;
+                _rotationVelocity = 0f;
             }
 
-            if (_jumpQueued)
+            if (hasTarget)
             {
-                if (IsGrounded)
+                float yaw = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetYaw, ref _rotationVelocity, smoothTime);
+                transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            }
+
+            if (IsSwimming)
+            {
+                // Float: spring back to the height where the head is above water, with a slight
+                // bob; a jump pushes up (onto a bank) and the water slows it again.
+                float floatHeight = waterSurface - _swimDepth + Mathf.Sin(Time.time * 1.6f) * FloatBobHeight;
+                float pull = Mathf.Clamp((floatHeight - transform.position.y) * _buoyancy, -3f, 2f);
+                // Eased, not snapped: a jump into deep water dips in (braked hard - about a metre,
+                // not to the bottom) and bobs back up.
+                float drag = _verticalVelocity < pull ? WaterEntryDrag : WaterDrag;
+                _verticalVelocity = Mathf.MoveTowards(_verticalVelocity, pull, drag * Time.deltaTime);
+                if (_jumpQueued)
                 {
-                    _verticalVelocity = Mathf.Sqrt(-2f * _stats.Gravity * _stats.JumpHeight);
+                    _verticalVelocity = _swimJumpSpeed;
+                    _jumpQueued = false;
                 }
-                _jumpQueued = false;
             }
+            else
+            {
+                if (IsGrounded && _verticalVelocity < 0f)
+                {
+                    _verticalVelocity = _stats.GroundedGravityValue;
+                }
 
-            _verticalVelocity += _stats.Gravity * Time.deltaTime;
+                if (_jumpQueued)
+                {
+                    if (IsGrounded)
+                    {
+                        _verticalVelocity = Mathf.Sqrt(-2f * _stats.Gravity * _stats.JumpHeight);
+                    }
+                    _jumpQueued = false;
+                }
+
+                _verticalVelocity += _stats.Gravity * Time.deltaTime;
+            }
 
             Vector3 velocity = moveDirection * targetSpeed;
             velocity.y = _verticalVelocity;

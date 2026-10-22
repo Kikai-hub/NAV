@@ -4,6 +4,7 @@
         <ui:VisualElement class="pause-panel">
             <ui:Label text="Paused" class="pause-title" />
             <ui:Button name="resume-button" text="Resume" class="pause-button" />
+            <ui:Button name="settings-button" text="Settings" class="pause-button" />
             <ui:Button name="main-menu-button" text="Leave to Main Menu" class="pause-button" />
         </ui:VisualElement>
     </ui:VisualElement>

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using NAV.Core.Settings;
 
 namespace NAV.Gameplay.Player
 {
@@ -96,6 +97,17 @@ namespace NAV.Gameplay.Player
         private InputAction _previousAction;
         private InputAction _blockAction;
         private InputAction _hotbarSlotAction;
+        private InputActionAsset _actions;
+
+        private void HandleSettingsChanged()
+        {
+            GameSettings.ApplyBindingOverrides(_actions);
+        }
+
+        private void OnDestroy()
+        {
+            GameSettings.Changed -= HandleSettingsChanged;
+        }
 
         private void Awake()
         {
@@ -122,6 +134,11 @@ namespace NAV.Gameplay.Player
             _previousAction = playerInput.actions["Player/Previous"];
             _blockAction = playerInput.actions["Player/Block"];
             _hotbarSlotAction = playerInput.actions["Player/HotbarSlot"];
+
+            // The player's rebound keys (Settings window), now and whenever they change.
+            _actions = playerInput.actions;
+            GameSettings.ApplyBindingOverrides(_actions);
+            GameSettings.Changed += HandleSettingsChanged;
 
             if (_moveAction == null || _lookAction == null || _sprintAction == null || _jumpAction == null || _interactAction == null || _toggleInventoryAction == null || _toggleCraftingAction == null
                 || _attackAction == null || _toggleBuildAction == null || _rotatePieceAction == null || _nextAction == null || _previousAction == null || _pauseAction == null || _blockAction == null || _hotbarSlotAction == null)
@@ -357,10 +374,12 @@ namespace NAV.Gameplay.Player
 
         private void HandleHotbarSlotPerformed(InputAction.CallbackContext context)
         {
-            // Bound to the digit keys 1-6: the control's name is the digit itself.
-            if (int.TryParse(context.control.name, out int digit) && digit >= 1)
+            // The action's bindings are the slots in order (1-6 by default) - read which binding
+            // fired rather than the key's name, so a rebound slot (say, Z) still maps right.
+            int bindingIndex = context.action.GetBindingIndexForControl(context.control);
+            if (bindingIndex >= 0)
             {
-                HotbarSlotPerformed?.Invoke(digit - 1);
+                HotbarSlotPerformed?.Invoke(bindingIndex);
             }
         }
     }

@@ -58,12 +58,18 @@ namespace NAV.Gameplay.Combat
         private float _blockStartTime = -1f;
 
         private IMeleeHitboxSource _hitbox;
+        private PlayerMotor _motor;
+
+        // How long an attack keeps the body facing the camera's direction (PlayerMotor.FaceAim)
+        // at least - covers the wind-up and the strike of every swing.
+        private const float AttackFaceAimSeconds = 0.6f;
 
         // The swing in flight. Its weapon is captured at the start, so switching weapons
         // mid-swing can't change the hit. Null = no swing.
         private WeaponDefinition _swingWeapon;
         private float _swingStartTime;
         private bool _swingHasStruck;
+        private bool _swingAimChecked;
         private bool _hasPreviousCapsules;
         private int _previousCount;
         private readonly MeleeCapsule[] _capsules = new MeleeCapsule[MaxCapsules];
@@ -74,6 +80,18 @@ namespace NAV.Gameplay.Combat
         /// <summary>Fires when an attack starts (input accepted, before anything is hit) with
         /// the weapon swung - for animation/audio.</summary>
         public event System.Action<WeaponDefinition> AttackStarted;
+
+        /// <summary>Fires once per swing, when it starts striking (the animation's strike
+        /// moment) - whether or not it touches anything. For the swing whoosh.</summary>
+        public event System.Action<WeaponDefinition> StrikeStarted;
+
+        /// <summary>Fires for every new contact a swing makes (once per target per swing) -
+        /// for hit particles, sounds and the target's flinch.</summary>
+        public event System.Action<MeleeHitInfo> HitLanded;
+
+        /// <summary>Fires for every incoming hit after block/parry was decided, with the damage
+        /// that actually reached PlayerHealth (0 for a parry).</summary>
+        public event System.Action<IncomingHitResult, float> DamageReceived;
 
         /// <summary>The weapon attacks/blocks currently use: the held item's weapon, else fists.</summary>
         public WeaponDefinition EquippedWeapon => _equipment != null && _equipment.MainHandWeapon != null
@@ -101,6 +119,8 @@ namespace NAV.Gameplay.Combat
             }
 
             _hitbox = _hitboxSource as IMeleeHitboxSource;
+            // Same GameObject - the body turns to the aim for attacks/blocks (optional).
+            _motor = GetComponent<PlayerMotor>();
             if (_hitboxSource != null && _hitbox == null)
             {
                 Debug.LogError($"{nameof(PlayerCombat)} on '{name}': Hitbox Source '{_hitboxSource.name}' does not implement {nameof(IMeleeHitboxSource)} - using the camera-ray fallback.", this);
@@ -140,6 +160,11 @@ namespace NAV.Gameplay.Combat
             }
 
             IsBlocking = wantsToBlock;
+            if (IsBlocking && _motor != null)
+            {
+                // A raised block faces where the player looks, like an attack.
+                _motor.FaceAim(0.1f);
+            }
 
             HasTargetInSight = !buildModeActive && FindTargetInSight() != null;
         }
@@ -183,6 +208,12 @@ namespace NAV.Gameplay.Combat
                 striking = elapsed >= _swingWeapon.HitWindowStart;
             }
 
+            // First striking frame of this swing (_swingHasStruck is only set further down).
+            if (striking && !_swingHasStruck)
+            {
+                StrikeStarted?.Invoke(_swingWeapon);
+            }
+
             if (_hitbox == null)
             {
                 if (striking)
@@ -212,6 +243,12 @@ namespace NAV.Gameplay.Combat
                 }
 
                 _previousCapsules[i] = _capsules[i];
+            }
+
+            if (striking && !_swingAimChecked)
+            {
+                _swingAimChecked = true;
+                StrikeReceiverAlongAimRay(_swingWeapon);
             }
 
             _previousCount = count;
@@ -259,12 +296,19 @@ namespace NAV.Gameplay.Combat
 
             _nextAttackTime = Time.time + weapon.AttackCooldown;
             _stamina.Spend(weapon.AttackStaminaCost);
+            if (_motor != null)
+            {
+                // The swing goes where the player looks (turn to the camera's direction) - and
+                // only ever in front of the body; PlayerAnimator tilts it to the aim's height.
+                _motor.FaceAim(Mathf.Max(AttackFaceAimSeconds, weapon.AttackCooldown));
+            }
 
             // A new swing replaces one still in flight; anything the old one already struck
             // stays struck, the new one can hit it again.
             _swingWeapon = weapon;
             _swingStartTime = Time.time;
             _swingHasStruck = false;
+            _swingAimChecked = false;
             _hasPreviousCapsules = false;
             _struckThisSwing.Clear();
 
@@ -287,6 +331,11 @@ namespace NAV.Gameplay.Combat
             float travel = Mathf.Max(Vector3.Distance(fromStart, start), Vector3.Distance(fromEnd, end));
             int steps = Mathf.Clamp(Mathf.CeilToInt(travel / Mathf.Max(radius, 0.01f)), 1, MaxSweepSteps);
 
+            // The striking part's travel this frame (a fresh capsule hasn't moved yet - then the
+            // player's facing stands in).
+            Vector3 motion = (start + end) * 0.5f - (fromStart + fromEnd) * 0.5f;
+            Vector3 direction = motion.sqrMagnitude > 0.0001f ? motion.normalized : transform.forward;
+
             for (int step = 1; step <= steps; step++)
             {
                 float t = (float)step / steps;
@@ -301,7 +350,7 @@ namespace NAV.Gameplay.Combat
                         continue;
                     }
 
-                    Strike(weapon, collider);
+                    Strike(weapon, collider, ContactPoint(collider, (a + b) * 0.5f), direction);
                 }
             }
         }
@@ -312,22 +361,65 @@ namespace NAV.Gameplay.Combat
                 && Vector3.Distance(transform.position, hit.point) <= weapon.Range
                 && !hit.collider.transform.IsChildOf(transform))
             {
-                Strike(weapon, hit.collider);
+                Strike(weapon, hit.collider, hit.point, _cameraTransform.forward);
             }
         }
 
-        /// <summary>Hits whatever the collider belongs to, once per swing: a live IDamageable
-        /// takes the weapon's damage, otherwise an IMeleeHitReceiver (tree, rock) takes a
-        /// gather-hit. Anything else (ground, walls) is ignored.</summary>
-        private void Strike(WeaponDefinition weapon, Collider collider)
+        /// <summary>
+        /// Gathering aim assist: at the start of the strike, whatever IMeleeHitReceiver (tree,
+        /// log, rock) the crosshair is on within the weapon's Range is struck as well - a swing
+        /// at chest height would otherwise pass over a log lying on the ground. Never applies to
+        /// combatants (IDamageable): fighting stays strictly by weapon contact. A receiver the
+        /// sweep already touched isn't struck twice (Strike's once-per-swing rule).
+        /// </summary>
+        private void StrikeReceiverAlongAimRay(WeaponDefinition weapon)
         {
+            if (!Physics.Raycast(_cameraTransform.position, _cameraTransform.forward, out RaycastHit hit, _maxAimDistance, _hitLayers, QueryTriggerInteraction.Ignore)
+                || hit.collider.transform.IsChildOf(transform)
+                || Vector3.Distance(transform.position, hit.point) > weapon.Range)
+            {
+                return;
+            }
+
+            if (hit.collider.GetComponentInParent<IMeleeHitReceiver>() != null && hit.collider.GetComponentInParent<IDamageable>() == null)
+            {
+                Strike(weapon, hit.collider, hit.point, _cameraTransform.forward);
+            }
+        }
+
+        /// <summary>Nearest point on the collider's surface to the probe. ClosestPoint only
+        /// supports primitive and convex colliders - others use their bounds instead (close
+        /// enough for where to put a particle burst).</summary>
+        private static Vector3 ContactPoint(Collider collider, Vector3 probe)
+        {
+            bool supported = !(collider is TerrainCollider) && !(collider is MeshCollider mesh && !mesh.convex);
+            return supported ? collider.ClosestPoint(probe) : collider.ClosestPointOnBounds(probe);
+        }
+
+        /// <summary>Hits whatever the collider belongs to, once per swing: a live IDamageable
+        /// takes the weapon's damage (and reacts, if IHitReactive), otherwise an
+        /// IMeleeHitReceiver (tree, rock) takes a gather-hit. Anything else (ground, walls) is
+        /// ignored. Each new contact raises HitLanded.</summary>
+        private void Strike(WeaponDefinition weapon, Collider collider, Vector3 point, Vector3 direction)
+        {
+            IHitSurface surfaceSource = collider.GetComponentInParent<IHitSurface>();
+            HitSurface surface = surfaceSource != null ? surfaceSource.Surface : HitSurface.Other;
+
+            // Knockback/fall go away from the player, whatever way the weapon happened to be
+            // moving at contact (a fist hook can be travelling back toward the player).
+            Vector3 away = point - transform.position;
+            away.y = 0f;
+            away = away.sqrMagnitude > 0.0001f ? away.normalized : transform.forward;
+
             IDamageable damageable = collider.GetComponentInParent<IDamageable>();
             if (damageable != null && !ReferenceEquals(damageable, this))
             {
                 if (damageable.IsAlive && _struckThisSwing.Add(damageable))
                 {
                     damageable.TakeDamage(weapon.Damage);
+                    (damageable as IHitReactive)?.ReactToHit(away);
                     Debug.Log($"{name} hit {collider.name} for {weapon.Damage} with {weapon.DisplayName}.", this);
+                    HitLanded?.Invoke(new MeleeHitInfo(collider, point, direction, away, weapon, surface, true, true, !damageable.IsAlive));
                 }
 
                 return;
@@ -336,8 +428,9 @@ namespace NAV.Gameplay.Combat
             IMeleeHitReceiver receiver = collider.GetComponentInParent<IMeleeHitReceiver>();
             if (receiver != null && _struckThisSwing.Add(receiver))
             {
-                receiver.ReceiveMeleeHit(gameObject, weapon);
+                bool counted = receiver.ReceiveMeleeHit(gameObject, weapon);
                 Debug.Log($"{name} struck {collider.name} with {weapon.DisplayName}.", this);
+                HitLanded?.Invoke(new MeleeHitInfo(collider, point, direction, away, weapon, surface, counted, false, false));
             }
         }
 
@@ -362,15 +455,20 @@ namespace NAV.Gameplay.Combat
                 if (isParry)
                 {
                     Debug.Log($"{name} parried an attack.", this);
+                    DamageReceived?.Invoke(IncomingHitResult.Parried, 0f);
                     return;
                 }
 
                 amount *= 1f - weapon.BlockDamageReduction;
                 _stamina.Spend(weapon.BlockStaminaCostPerHit);
                 Debug.Log($"{name} blocked, taking {amount:F1} reduced damage.", this);
+                _health.TakeDamage(amount);
+                DamageReceived?.Invoke(IncomingHitResult.Blocked, amount);
+                return;
             }
 
             _health.TakeDamage(amount);
+            DamageReceived?.Invoke(IncomingHitResult.Hit, amount);
         }
     }
 }

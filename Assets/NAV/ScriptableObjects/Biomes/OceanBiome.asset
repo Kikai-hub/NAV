@@ -17,3 +17,12 @@ MonoBehaviour:
   _isWater: 1
   _heightVariation: 0.15
   _resourceSpawns: []
+  _decorSpawns:
+  - _prefab: {fileID: 7726922578587425720, guid: 2e12139c0ee03c44f8538d5e505a0942, type: 3}
+    _density: 0.04
+    _minSpacing: 14
+    _scale: {x: 0.6, y: 1.5}
+    _keepColliders: 0
+  _grassDensity: 0
+  _flowerDensity: 0
+  _creatureSpawns: []

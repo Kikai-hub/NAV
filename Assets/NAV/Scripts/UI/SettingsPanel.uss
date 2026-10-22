@@ -1,0 +1,221 @@
+/* Same palette as the pause and main menu panels: dark wood with a gold trim. */
+
+.settings-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(10, 8, 6, 0.8);
+}
+
+.settings-panel {
+    width: 720px;
+    height: 600px;
+    max-width: 92%;
+    max-height: 92%;
+    background-color: rgb(43, 33, 24);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    padding: 20px 28px;
+}
+
+.settings-title {
+    color: rgb(230, 210, 160);
+    font-size: 30px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin-bottom: 12px;
+}
+
+.settings-tabs {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.settings-tab {
+    width: 150px;
+    height: 36px;
+    margin: 0 4px;
+    background-color: rgb(52, 41, 30);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(110, 84, 30);
+    border-right-color: rgb(110, 84, 30);
+    border-top-color: rgb(110, 84, 30);
+    border-bottom-color: rgb(110, 84, 30);
+    color: rgb(190, 170, 130);
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.settings-tab:hover {
+    background-color: rgb(70, 55, 40);
+}
+
+.settings-tab--active {
+    background-color: rgb(92, 70, 30);
+    border-left-color: rgb(200, 160, 60);
+    border-right-color: rgb(200, 160, 60);
+    border-top-color: rgb(200, 160, 60);
+    border-bottom-color: rgb(200, 160, 60);
+    color: rgb(240, 220, 170);
+}
+
+.settings-page {
+    flex-grow: 1;
+    background-color: rgb(34, 26, 19);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    padding: 8px 12px;
+}
+
+.settings-section {
+    color: rgb(200, 160, 60);
+    font-size: 14px;
+    -unity-font-style: bold;
+    margin: 10px 0 4px 0;
+}
+
+.settings-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 36px;
+    padding: 2px 4px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(52, 41, 30);
+}
+
+.settings-row__label {
+    width: 220px;
+    color: rgb(225, 205, 160);
+    font-size: 15px;
+}
+
+.settings-row__control {
+    flex-grow: 1;
+    margin: 0;
+}
+
+.settings-row__value {
+    width: 64px;
+    color: rgb(200, 180, 140);
+    font-size: 14px;
+    -unity-text-align: middle-right;
+}
+
+/* Built-in controls, recoloured to the panel. */
+.settings-row .unity-base-slider__tracker {
+    background-color: rgb(70, 55, 40);
+    border-left-color: rgb(110, 84, 30);
+    border-right-color: rgb(110, 84, 30);
+    border-top-color: rgb(110, 84, 30);
+    border-bottom-color: rgb(110, 84, 30);
+}
+
+.settings-row .unity-base-slider__dragger {
+    background-color: rgb(200, 160, 60);
+    border-left-color: rgb(240, 210, 130);
+    border-right-color: rgb(240, 210, 130);
+    border-top-color: rgb(240, 210, 130);
+    border-bottom-color: rgb(240, 210, 130);
+}
+
+.settings-row .unity-base-popup-field__input,
+.settings-row .unity-toggle__checkmark {
+    background-color: rgb(61, 48, 35);
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    color: rgb(230, 210, 160);
+}
+
+.settings-key-button {
+    width: 180px;
+    height: 30px;
+    margin: 0;
+    background-color: rgb(61, 48, 35);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    color: rgb(230, 210, 160);
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.settings-key-button:hover {
+    background-color: rgb(80, 63, 45);
+}
+
+.settings-key-button--listening {
+    background-color: rgb(110, 70, 25);
+    color: rgb(255, 230, 170);
+}
+
+.settings-hint {
+    color: rgb(150, 135, 105);
+    font-size: 12px;
+    margin: 6px 4px;
+    white-space: normal;
+}
+
+.settings-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.settings-button {
+    width: 200px;
+    height: 40px;
+    margin: 0;
+    background-color: rgb(61, 48, 35);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(139, 105, 20);
+    border-right-color: rgb(139, 105, 20);
+    border-top-color: rgb(139, 105, 20);
+    border-bottom-color: rgb(139, 105, 20);
+    color: rgb(230, 210, 160);
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.settings-button:hover {
+    background-color: rgb(80, 63, 45);
+}
+
+.settings-button--primary {
+    background-color: rgb(92, 70, 30);
+}
+
+/* The theme's dark tick was invisible on the dark box - tint it gold when checked. */
+.settings-row .unity-toggle__input:checked > .unity-toggle__checkmark {
+    -unity-background-image-tint-color: rgb(240, 210, 130);
+    background-color: rgb(92, 70, 30);
+}

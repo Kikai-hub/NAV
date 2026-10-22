@@ -22,8 +22,13 @@ namespace NAV.Gameplay.AI
     /// see UNITY_SETUP_NEXT_STEPS.md). Perception is trigger-based (a SphereCollider sized to
     /// DetectionRadius), same "physics event, not a per-frame scan" idiom Workbench/CombatDummy
     /// already use. Hostile creatures (CreatureDefinition.IsHostile) chase/attack anything
-    /// IDamageable that enters range; neutral creatures ignore detection entirely and only react
-    /// to TakeDamage by fleeing (GDD 17: "Neutral creatures may flee when threatened").
+    /// IDamageable they notice: in range is only a candidate until it is inside their field of
+    /// view with a clear line of sight (or close enough to be heard) - checked a few times a
+    /// second (TickPerception). Noticing (or being hit) alerts creatures of the same kind within
+    /// PackAlertRadius, so a pack attacks together. Neutral creatures ignore detection and only
+    /// react to TakeDamage by fleeing (GDD 17: "Neutral creatures may flee when threatened").
+    /// Respawning and night-time numbers are the population manager's job
+    /// (World CreaturePopulation), not this class's.
     ///
     /// IDamageable.TakeDamage carries no attacker reference, so a neutral creature's flee
     /// direction is read from whatever is currently sitting in its own detection trigger (the
@@ -31,14 +36,12 @@ namespace NAV.Gameplay.AI
     /// - correct for the only damage source that exists today (melee player combat, which
     /// requires standing within a few meters, well inside any reasonable DetectionRadius).
     ///
-    /// Explicitly out of scope for this increment (Roadmap Phase 8 marks these as later
-    /// refinements, same style as every other stage's first pass): no animations (no
-    /// Animator/rig for creatures yet), no ranged/pack behavior, no line-of-sight raycast (only
-    /// trigger-radius perception), no persistence/respawn (needs Save, Phase 11).
+    /// Still out of scope: ranged attacks, creatures saved with the world (they're regenerated
+    /// on load).
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(SphereCollider))]
-    public class Creature : MonoBehaviour, IDamageable
+    public class Creature : MonoBehaviour, IDamageable, IHitReactive, IHitSurface
     {
         [SerializeField] private CreatureDefinition _definition;
 
@@ -59,11 +62,45 @@ namespace NAV.Gameplay.AI
         private float _nextAttackTime;
         private float _stateTimer;
         private bool _hasDroppedLoot;
+        private float _staggerTimer;
+        private Vector3 _knockbackVelocity;
+
+        private const float SightCheckInterval = 0.2f;
+        private const float TargetChestHeight = 1.2f;
+        private const float LootGroundClearance = 0.3f;
+        private readonly RaycastHit[] _sightHits = new RaycastHit[8];
+
+        // Something damageable inside the detection trigger, not (yet) noticed - see TickPerception.
+        private IDamageable _candidate;
+        private Transform _candidateTransform;
+        private float _nextSightCheck;
+
+        /// <summary>Every living, enabled creature - pack alerts and the population manager.</summary>
+        public static readonly System.Collections.Generic.List<Creature> All = new();
+
+        /// <summary>Who spawned it (the population manager's bookkeeping - e.g. a biome spawn
+        /// entry). Opaque to the creature itself.</summary>
+        public object SpawnSource { get; set; }
+
+        /// <summary>Chasing or attacking something.</summary>
+        public bool IsEngaged => _state == CreatureState.Chase || _state == CreatureState.Attack;
 
         public float CurrentHealth { get; private set; }
+        public HitSurface Surface => HitSurface.Flesh;
+
+        /// <summary>True for a moment after a melee hit - the creature neither moves on its own
+        /// nor attacks (see ReactToHit).</summary>
+        public bool IsStaggered => _staggerTimer > 0f;
         public float MaxHealth => _definition != null ? _definition.MaxHealth : 0f;
         public bool IsAlive => CurrentHealth > 0f;
         public CreatureState State => _state;
+        public CreatureDefinition Definition => _definition;
+
+        /// <summary>Fires when an attack lands its damage - for the attack animation/sound.</summary>
+        public event System.Action AttackPerformed;
+
+        /// <summary>Fires once, the moment health reaches 0 - for the death animation.</summary>
+        public event System.Action Died;
 
         private void Awake()
         {
@@ -93,6 +130,14 @@ namespace NAV.Gameplay.AI
                 return;
             }
 
+            if (_staggerTimer > 0f)
+            {
+                TickStagger();
+                return;
+            }
+
+            TickPerception();
+
             switch (_state)
             {
                 case CreatureState.Patrol: TickPatrol(); break;
@@ -102,6 +147,16 @@ namespace NAV.Gameplay.AI
                 case CreatureState.Return: TickReturn(); break;
                 case CreatureState.Flee: TickFlee(); break;
             }
+        }
+
+        private void OnEnable()
+        {
+            All.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            All.Remove(this);
         }
 
         private void OnTriggerEnter(Collider other)
@@ -115,24 +170,119 @@ namespace NAV.Gameplay.AI
                 return;
             }
 
-            _target = damageable;
-            _targetTransform = other.transform;
-            _lastKnownTargetPosition = _targetTransform.position;
-
-            bool canStartChase = _state == CreatureState.Patrol || _state == CreatureState.Search || _state == CreatureState.Return;
-            if (_definition.IsHostile && canStartChase)
+            // In range is not yet noticed: a hostile creature still has to see it (CanSee, checked
+            // in Update). A neutral one only needs to know where the threat is, to flee from it.
+            _candidate = damageable;
+            _candidateTransform = other.transform;
+            if (!_definition.IsHostile)
             {
-                EnterChase();
+                _target = damageable;
+                _targetTransform = other.transform;
+                _lastKnownTargetPosition = _targetTransform.position;
             }
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (ReferenceEquals(other.GetComponentInParent<IDamageable>(), _target))
+            IDamageable damageable = other.GetComponentInParent<IDamageable>();
+            if (ReferenceEquals(damageable, _candidate))
+            {
+                _candidate = null;
+                _candidateTransform = null;
+            }
+
+            if (ReferenceEquals(damageable, _target))
             {
                 _target = null;
                 _targetTransform = null;
             }
+        }
+
+        // ---- Perception: line of sight + field of view, or close enough to hear. ----
+
+        private bool CanStartChase => _state == CreatureState.Patrol || _state == CreatureState.Search || _state == CreatureState.Return;
+
+        private void TickPerception()
+        {
+            if (!_definition.IsHostile || _candidate == null || _target != null || !CanStartChase || Time.time < _nextSightCheck)
+            {
+                return;
+            }
+
+            _nextSightCheck = Time.time + SightCheckInterval;
+            if (_candidateTransform != null && _candidate.IsAlive && CanSee(_candidateTransform))
+            {
+                Notice(_candidate, _candidateTransform, true);
+            }
+        }
+
+        /// <summary>Within AlwaysNoticeDistance: yes (heard). Otherwise the target must be inside
+        /// the field of view and nothing solid between the eyes and its chest.</summary>
+        private bool CanSee(Transform target)
+        {
+            Vector3 eye = transform.position + Vector3.up * _definition.EyeHeight;
+            Vector3 aim = target.position + Vector3.up * TargetChestHeight;
+            Vector3 toTarget = aim - eye;
+            float distance = toTarget.magnitude;
+            if (distance <= _definition.AlwaysNoticeDistance)
+            {
+                return true;
+            }
+
+            Vector3 flat = new Vector3(toTarget.x, 0f, toTarget.z);
+            if (flat.sqrMagnitude > 0.0001f && Vector3.Angle(transform.forward, flat) > _definition.ViewAngle * 0.5f)
+            {
+                return false;
+            }
+
+            // Anything solid in between (terrain, trees, rocks, walls) blocks the view; its own
+            // colliders and the target's don't count.
+            int hits = Physics.RaycastNonAlloc(eye, toTarget / distance, _sightHits, distance, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hits; i++)
+            {
+                Transform hit = _sightHits[i].transform;
+                if (!hit.IsChildOf(transform) && !hit.IsChildOf(target.root))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>Starts hunting a target. alertPack: tell creatures of the same kind nearby
+        /// (PackAlertRadius) - they join in without needing to see it themselves.</summary>
+        private void Notice(IDamageable target, Transform targetTransform, bool alertPack)
+        {
+            _target = target;
+            _targetTransform = targetTransform;
+            _lastKnownTargetPosition = targetTransform.position;
+            EnterChase();
+
+            if (!alertPack || _definition.PackAlertRadius <= 0f)
+            {
+                return;
+            }
+
+            foreach (Creature other in All)
+            {
+                if (other != this && other.IsAlive && other._definition == _definition
+                    && Vector3.Distance(other.transform.position, transform.position) <= _definition.PackAlertRadius)
+                {
+                    other.Alert(target, targetTransform);
+                }
+            }
+        }
+
+        /// <summary>A packmate spotted something: join the hunt if not busy already.</summary>
+        public void Alert(IDamageable target, Transform targetTransform)
+        {
+            if (!IsAlive || !_definition.IsHostile || !CanStartChase || target == null || !target.IsAlive)
+            {
+                return;
+            }
+
+            Notice(target, targetTransform, false);
         }
 
         // ---- Patrol: wander to a random point within PatrolRadius of spawn, wait, repeat. ----
@@ -201,6 +351,9 @@ namespace NAV.Gameplay.AI
         {
             _state = CreatureState.Attack;
             _agent.ResetPath();
+            // Stop on the spot: coasting from a 6 m/s chase would slide it a metre into the
+            // target. The attack lunge (CreatureAnimator) supplies the forward motion instead.
+            _agent.velocity = Vector3.zero;
         }
 
         private void TickAttack()
@@ -224,6 +377,7 @@ namespace NAV.Gameplay.AI
             {
                 _nextAttackTime = Time.time + _definition.AttackCooldown;
                 _target.TakeDamage(_definition.AttackDamage);
+                AttackPerformed?.Invoke();
                 Debug.Log($"{name} attacked for {_definition.AttackDamage}.", this);
             }
         }
@@ -347,7 +501,16 @@ namespace NAV.Gameplay.AI
             {
                 if (_state != CreatureState.Chase && _state != CreatureState.Attack)
                 {
-                    EnterChase();
+                    // Hit by something it hadn't noticed (from behind) - whatever is in its
+                    // detection range is the attacker; it turns on it and calls the pack.
+                    if (_candidate != null && _candidateTransform != null && _candidate.IsAlive)
+                    {
+                        Notice(_candidate, _candidateTransform, true);
+                    }
+                    else
+                    {
+                        EnterChase();
+                    }
                 }
             }
             else if (_state != CreatureState.Flee)
@@ -357,12 +520,48 @@ namespace NAV.Gameplay.AI
             }
         }
 
+        /// <summary>Stagger + knockback: the agent stops (its path is kept - TakeDamage has
+        /// already switched to Chase/Flee, which resumes when the stagger ends), the body slides
+        /// KnockbackDistance along the swing, and the next attack waits until it's over.</summary>
+        public void ReactToHit(Vector3 direction)
+        {
+            if (!IsAlive || _definition.StaggerSeconds <= 0f)
+            {
+                return;
+            }
+
+            direction.y = 0f;
+            _knockbackVelocity = direction.sqrMagnitude > 0.0001f
+                ? direction.normalized * (2f * _definition.KnockbackDistance / _definition.StaggerSeconds)
+                : Vector3.zero;
+            _staggerTimer = _definition.StaggerSeconds;
+            _nextAttackTime = Mathf.Max(_nextAttackTime, Time.time + _definition.StaggerSeconds);
+            _agent.isStopped = true;
+        }
+
+        private void TickStagger()
+        {
+            // Velocity falls linearly to 0 over the stagger, so the slide covers KnockbackDistance
+            // (that's what the 2x in ReactToHit is for). Agent.Move keeps the body on the NavMesh.
+            float fraction = _staggerTimer / _definition.StaggerSeconds;
+            _agent.Move(_knockbackVelocity * (fraction * Time.deltaTime));
+
+            _staggerTimer -= Time.deltaTime;
+            if (_staggerTimer <= 0f)
+            {
+                _staggerTimer = 0f;
+                _agent.isStopped = false;
+            }
+        }
+
         private void Die()
         {
+            _staggerTimer = 0f;
             _state = CreatureState.Dead;
             _agent.ResetPath();
             _agent.enabled = false;
             Debug.Log($"{name} defeated.", this);
+            Died?.Invoke();
 
             if (!_hasDroppedLoot)
             {
@@ -387,6 +586,16 @@ namespace NAV.Gameplay.AI
 
                 Vector2 offset = Random.insideUnitCircle * _lootScatterRadius;
                 Vector3 spawnPosition = transform.position + new Vector3(offset.x, 0.5f, offset.y);
+
+                // On a slope the scattered point can be inside the hill - small drops (fangs)
+                // would then fall through the terrain. Start them just above the ground there.
+                Terrain terrain = Terrain.activeTerrain;
+                if (terrain != null)
+                {
+                    float ground = terrain.transform.position.y + terrain.SampleHeight(spawnPosition) + LootGroundClearance;
+                    spawnPosition.y = Mathf.Max(spawnPosition.y, ground);
+                }
+
                 Vector3 outward = new Vector3(offset.x, 0f, offset.y);
                 Vector3 impulse = (outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.forward) * _lootScatterForce + Vector3.up * _lootUpwardForce;
 

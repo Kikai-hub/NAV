@@ -128,7 +128,16 @@ namespace NAV.Core.Save
                 return;
             }
 
-            _worldGenerator.Generate(data.WorldSeed, data.DepletedResourceIds != null ? new HashSet<int>(data.DepletedResourceIds) : null);
+            // Depleted ids are spawn indices of the generation they were recorded in - with a
+            // different generation they'd point at other trees/rocks, so they're dropped and every
+            // resource comes back instead.
+            bool outdatedWorld = SaveSystem.IsWorldGenerationOutdated(data);
+            if (outdatedWorld)
+            {
+                Debug.LogWarning($"{nameof(SaveManager)}: save '{data.WorldName}' was made with world generation v{data.WorldGenerationVersion}, current is v{SaveSystem.WorldGenerationVersion} - terrain may differ, gathered resources are reset.", this);
+            }
+
+            _worldGenerator.Generate(data.WorldSeed, !outdatedWorld && data.DepletedResourceIds != null ? new HashSet<int>(data.DepletedResourceIds) : null);
             ApplyRespawnPoint();
 
             if (_worldClock != null && data.Day > 0)
@@ -141,7 +150,13 @@ namespace NAV.Core.Save
                 _weatherSystem.Restore(data.WeatherId, data.WeatherRemainingSeconds);
             }
 
-            _playerMotor.Teleport(data.Player.Position, data.Player.Rotation);
+            Vector3 playerPosition = data.Player.Position;
+            if (outdatedWorld)
+            {
+                playerPosition = _worldGenerator.LiftAboveGround(playerPosition);
+            }
+
+            _playerMotor.Teleport(playerPosition, data.Player.Rotation);
             ApplyFoods(data.Player.ActiveFoods);
             _playerHealth.SetHealth(data.Player.CurrentHealth);
             ApplyInventory(data.Player.InventorySlots);
@@ -160,19 +175,45 @@ namespace NAV.Core.Save
 
         private void ApplyInventory(List<InventorySlotSaveData> slots)
         {
-            if (slots == null)
+            if (slots != null)
             {
-                return;
+                ApplySlots(_playerInventory.Inventory, slots);
             }
+        }
 
+        /// <summary>Restores saved slots into an inventory (the player's, or a chest's).
+        /// Unknown item ids and out-of-range slots are skipped.</summary>
+        private void ApplySlots(Inventory inventory, List<InventorySlotSaveData> slots)
+        {
             foreach (InventorySlotSaveData slot in slots)
             {
                 ItemDefinition definition = _itemDatabase.Get(slot.ItemId);
-                if (definition != null)
+                if (definition != null && slot.SlotIndex >= 0 && slot.SlotIndex < inventory.Capacity)
                 {
-                    _playerInventory.Inventory.SetSlot(slot.SlotIndex, definition, slot.Quantity);
+                    inventory.SetSlot(slot.SlotIndex, definition, slot.Quantity);
                 }
             }
+        }
+
+        /// <summary>The occupied slots of an inventory as save data.</summary>
+        private static List<InventorySlotSaveData> BuildSlotsData(Inventory inventory)
+        {
+            var result = new List<InventorySlotSaveData>();
+            IReadOnlyList<ItemStack> slots = inventory.Slots;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (!slots[i].IsEmpty)
+                {
+                    result.Add(new InventorySlotSaveData
+                    {
+                        SlotIndex = i,
+                        ItemId = slots[i].Definition.Id,
+                        Quantity = slots[i].Quantity
+                    });
+                }
+            }
+
+            return result;
         }
 
         /// <summary>Respawn after death goes to the world's spawn point (deterministic per seed,
@@ -219,6 +260,12 @@ namespace NAV.Core.Save
                 if (piece != null)
                 {
                     piece.Configure(definition);
+                }
+
+                var storage = instance.GetComponent<StorageContainer>();
+                if (storage != null && saved.ContainerSlots != null)
+                {
+                    ApplySlots(storage.Contents, saved.ContainerSlots);
                 }
             }
         }
@@ -272,19 +319,7 @@ namespace NAV.Core.Save
                 CurrentHealth = _playerHealth.CurrentHealth
             };
 
-            IReadOnlyList<ItemStack> slots = _playerInventory.Inventory.Slots;
-            for (int i = 0; i < slots.Count; i++)
-            {
-                if (!slots[i].IsEmpty)
-                {
-                    player.InventorySlots.Add(new InventorySlotSaveData
-                    {
-                        SlotIndex = i,
-                        ItemId = slots[i].Definition.Id,
-                        Quantity = slots[i].Quantity
-                    });
-                }
-            }
+            player.InventorySlots = BuildSlotsData(_playerInventory.Inventory);
 
             if (_playerEquipment != null && _playerEquipment.MainHand != null)
             {
@@ -316,11 +351,13 @@ namespace NAV.Core.Save
                     continue;
                 }
 
+                var storage = piece.GetComponent<StorageContainer>();
                 buildings.Add(new BuildingSaveData
                 {
                     PieceId = piece.Definition.Id,
                     Position = piece.transform.position,
-                    Rotation = piece.transform.rotation
+                    Rotation = piece.transform.rotation,
+                    ContainerSlots = storage != null ? BuildSlotsData(storage.Contents) : new List<InventorySlotSaveData>()
                 });
             }
 

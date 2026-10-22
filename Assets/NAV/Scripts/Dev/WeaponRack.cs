@@ -19,6 +19,7 @@ namespace NAV.Dev
 
         public NAV.Gameplay.Inventory.Inventory Contents { get; private set; }
         public string ContainerTitle { get; private set; } = "Weapon Rack";
+        public bool IsStorage => false;
 
         public string InteractionPrompt => $"Open {ContainerTitle} (temporary)";
 

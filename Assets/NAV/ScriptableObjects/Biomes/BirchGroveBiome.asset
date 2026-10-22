@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 361de9b037aa6154344c9279e01ee3a0, type: 3}
+  m_Name: BirchGroveBiome
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Biomes.BiomeDefinition
+  _displayName: Birch Grove
+  _terrainLayer: {fileID: 8574412962073106934, guid: b56436fb7a3e9cc44b518597819d1599, type: 2}
+  _isWater: 0
+  _heightVariation: 0.45
+  _resourceSpawns:
+  - _prefab: {fileID: 2853830331436078175, guid: d6059cbdf4e5cd94095fac209d22a962, type: 3}
+    _density: 0.16
+    _minSpacing: 8
+    _scale: {x: 0.65, y: 1.3}
+  - _prefab: {fileID: 3137309274800340295, guid: 47da67ea22c10a74e8662c4705052871, type: 3}
+    _density: 0.16
+    _minSpacing: 8
+    _scale: {x: 0.65, y: 1.3}
+  - _prefab: {fileID: 1422625811682923130, guid: 6ac34138037ff9f438787dec23aad58a, type: 3}
+    _density: 0.16
+    _minSpacing: 8
+    _scale: {x: 0.65, y: 1.3}
+  - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
+    _density: 0.05
+    _minSpacing: 18
+    _scale: {x: 0.6, y: 1.3}
+  - _prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
+    _density: 0.1
+    _minSpacing: 14
+    _scale: {x: 1, y: 1}
+  _decorSpawns:
+  - _prefab: {fileID: 7663410815729985492, guid: 10c433e5fed076d47abd0770632e3322, type: 3}
+    _density: 0.05
+    _minSpacing: 14
+    _scale: {x: 0.6, y: 1}
+    _keepColliders: 0
+  - _prefab: {fileID: 1253644793452233022, guid: 928e4678af0b6d44299026bc9fc976ab, type: 3}
+    _density: 0.05
+    _minSpacing: 14
+    _scale: {x: 0.6, y: 1}
+    _keepColliders: 0
+  - _prefab: {fileID: 1866796817763092657, guid: 5149bcbf3fd86e34a9d29fbb7daef8e9, type: 3}
+    _density: 0.12
+    _minSpacing: 9
+    _scale: {x: 0.8, y: 1.3}
+    _keepColliders: 0
+  - _prefab: {fileID: 747127095119613554, guid: 49f55265909fcf049bce72ef9a631632, type: 3}
+    _density: 0.1
+    _minSpacing: 8
+    _scale: {x: 0.9, y: 1.4}
+    _keepColliders: 0
+  - _prefab: {fileID: 3358133089628108832, guid: 02f888050ca31be47b87991cd54a0b10, type: 3}
+    _density: 0.06
+    _minSpacing: 10
+    _scale: {x: 0.9, y: 1.3}
+    _keepColliders: 0
+  - _prefab: {fileID: 7390660841207776048, guid: 3006b37c2f6a43142b48b677fae87675, type: 3}
+    _density: 0.1
+    _minSpacing: 10
+    _scale: {x: 0.8, y: 1.4}
+    _keepColliders: 0
+  - _prefab: {fileID: 6684935879519352256, guid: d0fa3c49b2c9cd84bb5a644c53ef025e, type: 3}
+    _density: 0.06
+    _minSpacing: 12
+    _scale: {x: 0.8, y: 1.2}
+    _keepColliders: 0
+  - _prefab: {fileID: 5157409133979067158, guid: 4b21e533c871dba4bb5c56ba22947be8, type: 3}
+    _density: 0.03
+    _minSpacing: 30
+    _scale: {x: 0.8, y: 1.1}
+    _keepColliders: 1
+  _grassDensity: 0.85
+  _flowerDensity: 0.14
+  _creatureSpawns:
+  - _prefab: {fileID: 3278574604635449654, guid: 629c4ab8949b6ef47936ac8e868c5957, type: 3}
+    _count: 3
+    _nightCount: 1
+    _groupSize: {x: 1, y: 3}
+    _respawnSeconds: 150

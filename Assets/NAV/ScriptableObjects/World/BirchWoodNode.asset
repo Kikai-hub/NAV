@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 851ded87fbe38614ab896652bfbf621f, type: 3}
+  m_Name: BirchWoodNode
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ResourceNodeDefinition
+  _displayName: Birch
+  _drops: []
+  _hitsToDeplete: 3
+  _requiredTool: 1
+  _minToolTier: 1
+  _shrinkOnHit: 0
+  _becomesPrefab: {fileID: 473808446611172445, guid: 5d419a4ca0af00145a593fb36a66a07e, type: 3}
+  _leavesBehindPrefab: {fileID: 6060385692137290557, guid: 6303c5ceed18299409b8dfac151decc3, type: 3}
+  _fallImpulse: 300

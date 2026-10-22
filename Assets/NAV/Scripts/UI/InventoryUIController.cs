@@ -35,6 +35,8 @@ namespace NAV.UI
 
         [Tooltip("Optional. While build mode is on, the inventory key opens the build menu (BuildMenuUIController) instead of this panel.")]
         [SerializeField] private NAV.Gameplay.Building.PlayerBuilding _building;
+        [Tooltip("Optional - the container panel (chest/gravestone). A stack dropped on it goes into an open chest instead of being thrown into the world.")]
+        [SerializeField] private GravestoneUIController _containerPanel;
 
         private UIDocument _document;
         private VisualElement _root;
@@ -328,6 +330,11 @@ namespace NAV.UI
                 {
                     _playerInventory.Inventory.MoveSlot(sourceIndex, targetIndex);
                 }
+            }
+            else if (_containerPanel != null && _containerPanel.TryReceiveFromPlayer(picked, sourceIndex))
+            {
+                // Released over the open container panel - it stored the stack in a chest, or
+                // ignored it for a take-only container (gravestone). Never thrown into the world.
             }
             else if (!_root.worldBound.Contains(evt.position))
             {

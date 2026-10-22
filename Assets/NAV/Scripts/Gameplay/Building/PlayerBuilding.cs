@@ -387,6 +387,14 @@ namespace NAV.Gameplay.Building
             piece.gameObject.SetActive(false);
             Destroy(piece.gameObject);
             DropCost(definition, bounds);
+
+            // A chest spills what it held rather than deleting it.
+            var storage = piece.GetComponent<NAV.Gameplay.Inventory.StorageContainer>();
+            if (storage != null)
+            {
+                float scatter = Mathf.Clamp(Mathf.Min(bounds.extents.x, bounds.extents.z), 0.3f, 1.2f);
+                storage.DropContents(bounds.center, scatter, _dropScatterForce, _dropUpwardForce);
+            }
             Debug.Log($"{name} demolished {definition.DisplayName} (materials dropped).", this);
             PieceDemolished?.Invoke(definition);
         }

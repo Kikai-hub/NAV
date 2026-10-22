@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 851ded87fbe38614ab896652bfbf621f, type: 3}
+  m_Name: SpruceFallenNode
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ResourceNodeDefinition
+  _displayName: Fallen Spruce
+  _drops: []
+  _hitsToDeplete: 3
+  _requiredTool: 1
+  _minToolTier: 1
+  _shrinkOnHit: 0
+  _becomesPrefab: {fileID: 7781940604012072915, guid: 145504975f904d945b6a974124b7dca6, type: 3}
+  _leavesBehindPrefab: {fileID: 0}
+  _fallImpulse: 0

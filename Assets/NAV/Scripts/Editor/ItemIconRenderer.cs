@@ -63,7 +63,9 @@ namespace NAV.Editor
             Debug.Log($"{nameof(ItemIconRenderer)}: rendered {rendered} icon(s) into {OutputFolder}.");
         }
 
-        private static byte[] RenderIcon(GameObject prefab)
+        /// <summary>Renders prefab to a transparent PNG. pose = its rotation in front of the camera
+        /// (default: a held item tilted handle-down-left).</summary>
+        internal static byte[] RenderIcon(GameObject prefab, Quaternion? pose = null)
         {
             var instance = Object.Instantiate(prefab);
             var cameraObject = new GameObject("IconCamera");
@@ -76,7 +78,7 @@ namespace NAV.Editor
                 RenderSettings.fog = false;
                 instance.transform.position = new Vector3(0f, -10000f, 0f);
                 // Handle (+Y) pointing up-right, so the blade/head sits in the top-right corner.
-                instance.transform.rotation = Quaternion.Euler(0f, 0f, -45f);
+                instance.transform.rotation = pose ?? Quaternion.Euler(0f, 0f, -45f);
                 foreach (Transform child in instance.GetComponentsInChildren<Transform>(true))
                 {
                     child.gameObject.layer = IconLayer;
@@ -145,7 +147,7 @@ namespace NAV.Editor
             return bounds;
         }
 
-        private static void ConfigureSprite(string path)
+        internal static void ConfigureSprite(string path)
         {
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.textureType = TextureImporterType.Sprite;

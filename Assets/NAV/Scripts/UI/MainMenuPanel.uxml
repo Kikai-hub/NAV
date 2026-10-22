@@ -6,6 +6,7 @@
             <ui:Label text="A Fairy-Tale Rus Survival" class="main-menu-subtitle" />
             <ui:Button name="play-button" text="Play" class="main-menu-button" />
             <ui:Button name="load-button" text="Load" class="main-menu-button" />
+            <ui:Button name="settings-button" text="Settings" class="main-menu-button" />
             <ui:Button name="quit-button" text="Quit" class="main-menu-button" />
         </ui:VisualElement>
         <ui:VisualElement name="create-world-panel" class="main-menu-panel create-world-panel">

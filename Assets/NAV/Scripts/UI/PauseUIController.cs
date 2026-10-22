@@ -22,6 +22,8 @@ namespace NAV.UI
         [SerializeField] private PlayerInputHandler _inputHandler;
         [Tooltip("Optional. If assigned, leaving to the Main Menu autosaves first so a manual quit never loses progress the periodic autosave hasn't caught yet.")]
         [SerializeField] private SaveManager _saveManager;
+        [Tooltip("Optional - the Settings window; without it the Settings button is hidden.")]
+        [SerializeField] private SettingsUIController _settings;
 
         private UIDocument _document;
         private VisualElement _root;
@@ -62,6 +64,16 @@ namespace NAV.UI
             resumeButton.clicked += HandleResumeClicked;
             mainMenuButton.clicked += HandleMainMenuClicked;
 
+            var settingsButton = documentRoot.Q<Button>("settings-button");
+            if (settingsButton != null && _settings != null)
+            {
+                settingsButton.clicked += HandleSettingsClicked;
+            }
+            else if (settingsButton != null)
+            {
+                settingsButton.style.display = DisplayStyle.None;
+            }
+
             SetVisible(false);
         }
 
@@ -89,7 +101,28 @@ namespace NAV.UI
 
         private void HandlePausePerformed()
         {
+            // Esc while the Settings window is open belongs to it (it closes itself, or cancels
+            // a key rebind) - the pause menu stays as it is underneath.
+            if (_settings != null && _settings.IsOpen)
+            {
+                return;
+            }
+
             SetVisible(!_visible);
+        }
+
+        /// <summary>Hides the pause panel while the Settings window is up (still paused), and
+        /// brings it back when that closes.</summary>
+        private void HandleSettingsClicked()
+        {
+            _root.style.display = DisplayStyle.None;
+            _settings.Open(() =>
+            {
+                if (_visible)
+                {
+                    _root.style.display = DisplayStyle.Flex;
+                }
+            });
         }
 
         private void HandleResumeClicked()

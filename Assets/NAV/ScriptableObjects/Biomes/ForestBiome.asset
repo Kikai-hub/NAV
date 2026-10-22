@@ -18,16 +18,107 @@ MonoBehaviour:
   _heightVariation: 0.65
   _resourceSpawns:
   - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
-    _density: 0.35
+    _density: 0.27
     _minSpacing: 9
+    _scale: {x: 0.6, y: 1.35}
+  - _prefab: {fileID: 3065945620809371928, guid: ac6a66155fcfd074ebcd32e29196214f, type: 3}
+    _density: 0.045
+    _minSpacing: 16
+    _scale: {x: 0.65, y: 1.3}
+  - _prefab: {fileID: 4041049821367213156, guid: 1859d0135e4e46742abce55ab850d2be, type: 3}
+    _density: 0.035
+    _minSpacing: 18
+    _scale: {x: 0.65, y: 1.3}
+  - _prefab: {fileID: 181314623598288619, guid: 4e539f019b7bd5e4db9c83e69bbd701b, type: 3}
+    _density: 0.025
+    _minSpacing: 16
+    _scale: {x: 0.7, y: 1.3}
+  - _prefab: {fileID: 7677283788080100289, guid: d748b26c80e26a84bafcb3f6f8482148, type: 3}
+    _density: 0.025
+    _minSpacing: 16
+    _scale: {x: 0.7, y: 1.3}
+  - _prefab: {fileID: 685565626768099529, guid: aeef85aef78d26546b65e73f4e1f3f66, type: 3}
+    _density: 0.025
+    _minSpacing: 16
+    _scale: {x: 0.7, y: 1.3}
+  - _prefab: {fileID: 1412940346990303026, guid: c5330c98b76acd84d90f2d76e092e288, type: 3}
+    _density: 0.025
+    _minSpacing: 16
+    _scale: {x: 0.7, y: 1.3}
   - _prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
     _density: 0.12
     _minSpacing: 14
+    _scale: {x: 1, y: 1}
   - _prefab: {fileID: 7000480892539141789, guid: e14dea2f61bf28549875fb6463133d6a, type: 3}
     _density: 0.04
     _minSpacing: 18
+    _scale: {x: 1, y: 1}
+  _decorSpawns:
+  - _prefab: {fileID: 7663410815729985492, guid: 10c433e5fed076d47abd0770632e3322, type: 3}
+    _density: 0.08
+    _minSpacing: 10
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 4198261910410287174, guid: c46ef3acf1a746f4da22182d7ec801c6, type: 3}
+    _density: 0.08
+    _minSpacing: 10
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 3104960196621404322, guid: 2a7cfb2f75da7fd44a038e7dd32f079b, type: 3}
+    _density: 0.06
+    _minSpacing: 12
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 7743252823564509495, guid: b62d7b654f2d89e4588b93338b5584c8, type: 3}
+    _density: 0.06
+    _minSpacing: 12
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 1866796817763092657, guid: 5149bcbf3fd86e34a9d29fbb7daef8e9, type: 3}
+    _density: 0.3
+    _minSpacing: 6
+    _scale: {x: 0.9, y: 1.6}
+    _keepColliders: 0
+  - _prefab: {fileID: 6684935879519352256, guid: d0fa3c49b2c9cd84bb5a644c53ef025e, type: 3}
+    _density: 0.1
+    _minSpacing: 10
+    _scale: {x: 0.8, y: 1.3}
+    _keepColliders: 0
+  - _prefab: {fileID: 7390660841207776048, guid: 3006b37c2f6a43142b48b677fae87675, type: 3}
+    _density: 0.06
+    _minSpacing: 12
+    _scale: {x: 0.8, y: 1.3}
+    _keepColliders: 0
+  - _prefab: {fileID: 7726922578587425720, guid: 2e12139c0ee03c44f8538d5e505a0942, type: 3}
+    _density: 0.08
+    _minSpacing: 14
+    _scale: {x: 0.6, y: 1.4}
+    _keepColliders: 0
+  - _prefab: {fileID: 7110513248368685802, guid: 3aa54be08e092174ab6b689e524fdf44, type: 3}
+    _density: 0.04
+    _minSpacing: 26
+    _scale: {x: 0.8, y: 1.1}
+    _keepColliders: 1
+  - _prefab: {fileID: 5385305736409967822, guid: 4fa87cea36a1ce641948a1c0d439d482, type: 3}
+    _density: 0.03
+    _minSpacing: 28
+    _scale: {x: 0.5, y: 0.7}
+    _keepColliders: 1
+  - _prefab: {fileID: 5157409133979067158, guid: 4b21e533c871dba4bb5c56ba22947be8, type: 3}
+    _density: 0.04
+    _minSpacing: 26
+    _scale: {x: 0.8, y: 1.2}
+    _keepColliders: 1
+  _grassDensity: 0.45
+  _flowerDensity: 0.02
   _creatureSpawns:
   - _prefab: {fileID: 7615035062538442650, guid: 72c4127d0a2e60742800947a9ea68e84, type: 3}
     _count: 4
+    _nightCount: 7
+    _groupSize: {x: 2, y: 3}
+    _respawnSeconds: 120
   - _prefab: {fileID: 3278574604635449654, guid: 629c4ab8949b6ef47936ac8e868c5957, type: 3}
     _count: 3
+    _nightCount: 1
+    _groupSize: {x: 1, y: 2}
+    _respawnSeconds: 150

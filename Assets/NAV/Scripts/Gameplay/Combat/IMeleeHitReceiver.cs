@@ -9,6 +9,8 @@ namespace NAV.Gameplay.Combat
     /// </summary>
     public interface IMeleeHitReceiver
     {
-        void ReceiveMeleeHit(GameObject attacker, WeaponDefinition weapon);
+        /// <summary>Returns true if the hit counted (e.g. false when the tool is wrong) - only
+        /// used for feedback, the receiver has already applied its own rules.</summary>
+        bool ReceiveMeleeHit(GameObject attacker, WeaponDefinition weapon);
     }
 }

@@ -15,6 +15,15 @@ namespace NAV.Core.Save
     [Serializable]
     public class SaveGameData
     {
+        /// <summary>SaveSystem.FormatVersion this file was written with. 0 = a save from before
+        /// versioning existed (2026-10-21) - SaveSystem.Migrate upgrades it on read.</summary>
+        public int FormatVersion;
+
+        /// <summary>SaveSystem.WorldGenerationVersion at the time of saving. When it differs from
+        /// the current one, the terrain regenerated from WorldSeed is not the terrain this save
+        /// was made on (see SaveSystem.IsWorldGenerationOutdated).</summary>
+        public int WorldGenerationVersion;
+
         public string SaveId;
         public string WorldName;
         public long SavedAtUnixSeconds;
@@ -81,5 +90,9 @@ namespace NAV.Core.Save
         public string PieceId;
         public Vector3 Position;
         public Quaternion Rotation;
+
+        /// <summary>Occupied slots of the piece's StorageContainer (a chest); empty for every
+        /// other piece and for saves from before chests existed.</summary>
+        public List<InventorySlotSaveData> ContainerSlots = new();
     }
 }

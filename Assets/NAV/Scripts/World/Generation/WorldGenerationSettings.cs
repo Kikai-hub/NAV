@@ -43,6 +43,20 @@ namespace NAV.World.Generation
         [SerializeField] private BiomeDefinition _oceanBiome;
         [SerializeField] private BiomeDefinition _plainsBiome;
         [SerializeField] private BiomeDefinition _forestBiome;
+        [Tooltip("Optional. Patches of the Forest where a separate low-frequency noise is above Grove Threshold become this biome instead (birch groves).")]
+        [SerializeField] private BiomeDefinition _groveBiome;
+        [SerializeField] private float _groveNoiseScale = 110f;
+        [SerializeField, Range(0f, 1f)] private float _groveThreshold = 0.62f;
+
+        [Header("Grass and Flowers (terrain details)")]
+        [Tooltip("Grass blade textures (white-ish masks with alpha), painted as waving terrain grass by each biome's Grass Density - each grass cell picks one at random, tinted between Healthy and Dry colour.")]
+        [SerializeField] private Texture2D[] _grassTextures = new Texture2D[0];
+        [SerializeField] private Color _grassHealthyColor = new(0.32f, 0.52f, 0.16f);
+        [SerializeField] private Color _grassDryColor = new(0.5f, 0.56f, 0.24f);
+        [Tooltip("Same, for each biome's Flower Density - each flower cell picks one of these at random. Terrain details allow exactly one material per prefab.")]
+        [SerializeField] private GameObject[] _flowerDetailPrefabs = new GameObject[0];
+        [Tooltip("Metres from the camera within which grass and flowers are drawn.")]
+        [SerializeField, Min(10f)] private float _detailDistance = 70f;
 
         [Header("Resource Spawning")]
         [Tooltip("Unity Layer WorldGenerator assigns to every spawned resource prefab (trees/rocks/ore). Must match RenderDistanceSettings.ResourceLayerName so RenderDistanceController can cull them at a shorter distance than the terrain - see PROJECT_STATE.md's world-generation performance note.")]
@@ -63,6 +77,14 @@ namespace NAV.World.Generation
         public BiomeDefinition PlainsBiome => _plainsBiome;
         public BiomeDefinition ForestBiome => _forestBiome;
         public string ResourceLayerName => _resourceLayerName;
+        public BiomeDefinition GroveBiome => _groveBiome;
+        public float GroveNoiseScale => _groveNoiseScale;
+        public float GroveThreshold => _groveThreshold;
+        public Texture2D[] GrassTextures => _grassTextures;
+        public Color GrassHealthyColor => _grassHealthyColor;
+        public Color GrassDryColor => _grassDryColor;
+        public GameObject[] FlowerDetailPrefabs => _flowerDetailPrefabs;
+        public float DetailDistance => _detailDistance;
 
         private void OnValidate()
         {

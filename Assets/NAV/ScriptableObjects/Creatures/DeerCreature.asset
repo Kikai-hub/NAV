@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddbc90f4f972db56e7d88a8c4c1b2fa1, type: 3}
+  m_Name: DeerCreature
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.AI.CreatureDefinition
+  _displayName: Deer
+  _isHostile: 0
+  _maxHealth: 40
+  _moveSpeed: 1.2
+  _chaseSpeedMultiplier: 5
+  _detectionRadius: 6
+  _viewAngle: 220
+  _alwaysNoticeDistance: 3
+  _eyeHeight: 0.8
+  _packAlertRadius: 0
+  _attackDamage: 8
+  _attackRange: 2
+  _attackCooldown: 1.5
+  _staggerSeconds: 0.35
+  _knockbackDistance: 0.5
+  _patrolRadius: 8
+  _patrolWaitSeconds: 4
+  _searchWaitSeconds: 3
+  _fleeDistance: 12
+  _lootDrops:
+  - _item: {fileID: 11400000, guid: 7d45b4f27efad0338397de2ad5bc9f0c, type: 2}
+    _amount: 1
+    _chance: 0.75
+  - _item: {fileID: 11400000, guid: 5c96bdc9d48534a40ac8fd36ab5d9338, type: 2}
+    _amount: 1
+    _chance: 1
+  - _item: {fileID: 11400000, guid: 4f02272fd9d05d04da21fd35f0757053, type: 2}
+    _amount: 1
+    _chance: 0.75

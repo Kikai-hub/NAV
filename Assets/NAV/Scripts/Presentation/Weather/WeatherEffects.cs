@@ -1,5 +1,6 @@
 using UnityEngine;
 using NAV.World.Weather;
+using NAV.Core.Settings;
 
 namespace NAV.Presentation.Weather
 {
@@ -29,6 +30,8 @@ namespace NAV.Presentation.Weather
         [SerializeField, Min(0f)] private float _rainVolume = 0.6f;
         [SerializeField, Min(0f)] private float _thunderVolume = 0.9f;
         [SerializeField, Min(0f)] private float _lightningIntensity = 3f;
+        [Tooltip("Rain.mat (URP Particles/Unlit, transparent) - a material asset rather than Shader.Find, so the shader and its transparent variant are included in builds.")]
+        [SerializeField] private Material _rainMaterialTemplate;
 
         private ParticleSystem _rain;
         private ParticleSystem.EmissionModule _rainEmission;
@@ -84,7 +87,7 @@ namespace NAV.Presentation.Weather
 
             float rainRate = _weather.Evaluate(w => w.RainRate);
             _rainEmission.rateOverTime = rainRate;
-            _rainAudio.volume = Mathf.Clamp01(rainRate / MaxRainRateForAudio) * _rainVolume;
+            _rainAudio.volume = Mathf.Clamp01(rainRate / MaxRainRateForAudio) * _rainVolume * GameSettings.GetVolume(AudioCategory.Ambience);
 
             float fog = _weather.Evaluate(w => w.FogDensity);
             RenderSettings.fog = fog > 0.0005f;
@@ -114,7 +117,7 @@ namespace NAV.Presentation.Weather
                 _thunderDelay -= Time.deltaTime;
                 if (_thunderDelay < 0f)
                 {
-                    _thunderAudio.PlayOneShot(_thunderClips[Random.Range(0, _thunderClips.Length)], _thunderVolume);
+                    _thunderAudio.PlayOneShot(_thunderClips[Random.Range(0, _thunderClips.Length)], _thunderVolume * GameSettings.GetVolume(AudioCategory.Ambience));
                 }
             }
 
@@ -191,7 +194,12 @@ namespace NAV.Presentation.Weather
             renderer.receiveShadows = false;
 
             Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-            if (shader != null)
+            if (_rainMaterialTemplate != null)
+            {
+                _rainMaterial = new Material(_rainMaterialTemplate) { name = "Rain (runtime)" };
+                renderer.sharedMaterial = _rainMaterial;
+            }
+            else if (shader != null)
             {
                 _rainMaterial = new Material(shader) { name = "Rain (runtime)" };
                 // Transparent, alpha-blended (URP particle shader surface settings).
@@ -207,7 +215,7 @@ namespace NAV.Presentation.Weather
             }
             else
             {
-                Debug.LogError($"{nameof(WeatherEffects)}: URP particle shader not found - rain will render pink.", this);
+                Debug.LogError($"{nameof(WeatherEffects)}: no Rain Material Template assigned and the URP particle shader was not found - rain will render pink.", this);
             }
 
             _rain.Play();

@@ -13,13 +13,11 @@ MonoBehaviour:
   m_Name: TreeWoodNode
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ResourceNodeDefinition
   _displayName: Tree
-  _drops:
-  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
-    _amount: 3
-    _chance: 1
-  - _item: {fileID: 11400000, guid: d1fd953b9b8a1980f86d7949fb041879, type: 2}
-    _amount: 1
-    _chance: 0.25
+  _drops: []
   _hitsToDeplete: 3
   _requiredTool: 1
   _minToolTier: 1
+  _shrinkOnHit: 0
+  _becomesPrefab: {fileID: 473808446611172445, guid: 5d419a4ca0af00145a593fb36a66a07e, type: 3}
+  _leavesBehindPrefab: {fileID: 6060385692137290557, guid: 6303c5ceed18299409b8dfac151decc3, type: 3}
+  _fallImpulse: 300

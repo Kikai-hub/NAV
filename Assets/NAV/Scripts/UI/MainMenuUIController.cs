@@ -24,6 +24,8 @@ namespace NAV.UI
         [SerializeField] private string _gameSceneName = "WorldGenTest";
         [SerializeField] private SceneLoader _sceneLoader;
         [SerializeField] private LoadingScreenUIController _loadingScreen;
+        [Tooltip("Optional - the Settings window; without it the Settings button is hidden.")]
+        [SerializeField] private SettingsUIController _settings;
 
         private UIDocument _document;
         private VisualElement _root;
@@ -101,6 +103,20 @@ namespace NAV.UI
             loadButton.clicked += HandleLoadClicked;
             loadBackButton.clicked += ShowMainMenuPanel;
             quitButton.clicked += HandleQuitClicked;
+
+            var settingsButton = documentRoot.Q<Button>("settings-button");
+            if (settingsButton != null && _settings != null)
+            {
+                settingsButton.clicked += () =>
+                {
+                    _mainMenuPanel.style.display = DisplayStyle.None;
+                    _settings.Open(ShowMainMenuPanel);
+                };
+            }
+            else if (settingsButton != null)
+            {
+                settingsButton.style.display = DisplayStyle.None;
+            }
             _confirmConfirmButton.clicked += HandleConfirmClicked;
             _confirmCancelButton.clicked += HideConfirmDialog;
 
@@ -209,13 +225,25 @@ namespace NAV.UI
                 nameLabel.AddToClassList("save-list-item__name");
                 info.Add(nameLabel);
 
-                var dateLabel = new Label(savedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture));
+                bool fromNewerGame = SaveSystem.IsFromNewerGame(save);
+                bool outdatedWorld = !fromNewerGame && SaveSystem.IsWorldGenerationOutdated(save);
+                string dateText = savedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
+                if (fromNewerGame)
+                {
+                    dateText += "  ·  saved by a newer version";
+                }
+                else if (outdatedWorld)
+                {
+                    dateText += "  ·  older world version";
+                }
+
+                var dateLabel = new Label(dateText);
                 dateLabel.AddToClassList("save-list-item__date");
                 info.Add(dateLabel);
 
                 string capturedId = save.SaveId;
                 string capturedName = displayName;
-                info.RegisterCallback<ClickEvent>(_ => HandleSaveEntryClicked(capturedId, capturedName));
+                info.RegisterCallback<ClickEvent>(_ => HandleSaveEntryClicked(capturedId, capturedName, fromNewerGame, outdatedWorld));
                 item.Add(info);
 
                 var deleteButton = new Button(() => HandleDeleteClicked(capturedId, capturedName)) { text = "✕" };
@@ -226,9 +254,19 @@ namespace NAV.UI
             }
         }
 
-        private void HandleSaveEntryClicked(string saveId, string worldName)
+        private void HandleSaveEntryClicked(string saveId, string worldName, bool fromNewerGame, bool outdatedWorld)
         {
-            ShowConfirm($"Load '{worldName}'?", () =>
+            if (fromNewerGame)
+            {
+                // Can't be read safely by this build - the dialog only explains; confirming does nothing.
+                ShowConfirm($"'{worldName}' was saved by a newer version of the game and can't be loaded.", () => { });
+                return;
+            }
+
+            string message = outdatedWorld
+                ? $"Load '{worldName}'? It was made with an older world version: the terrain may have changed, buildings may be out of place and gathered resources will grow back."
+                : $"Load '{worldName}'?";
+            ShowConfirm(message, () =>
             {
                 SaveSystem.PendingLoadSaveId = saveId;
                 StartLoadingGameScene();

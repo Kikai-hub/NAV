@@ -12,14 +12,12 @@ namespace NAV.Presentation.Animation
     /// duplicate any movement logic, purely reads it and feeds the Animator (Presentation
     /// observes Gameplay state, per ARCHITECTURE_v0.1.md, generalized from UI to animation).
     ///
-    /// MoveInput can be fed into the Animator's MoveX/MoveY directly with no extra transform:
-    /// PlayerMotor locks the body's yaw to the camera's yaw every single frame (see
-    /// PlayerMotor.Update), so the character's local forward/right axes always match the
-    /// camera's - raw WASD input (camera-relative by construction) IS already
-    /// character-local-space input. This is what makes an 8-directional strafe locomotion
-    /// blend tree correct here: Left/Right/Backward input plays a strafe/backward animation
-    /// while the body keeps facing the camera direction, instead of the character turning to
-    /// face movement direction.
+    /// MoveX/MoveY are PlayerMotor.MoveDirection in the body's own space. Since 2026-10-21 the
+    /// body turns toward where it moves (Valheim-style; the camera orbits freely), so running
+    /// plays the forward run; the 8-directional strafe blend tree is still used while the body
+    /// is held facing the aim (attacking/blocking on the move). The head looks toward the
+    /// camera's direction (OnAnimatorIK), and during an attack/block the spine bends toward the
+    /// aim's height (ApplyAimBend) so swings reach low and high targets.
     ///
     /// MoveX/MoveY are pushed through Animator.SetFloat's damped overload (not a raw snap) so
     /// the blend tree eases between directions instead of jumping - this is what keeps a sudden
@@ -65,6 +63,28 @@ namespace NAV.Presentation.Animation
         [Header("Smoothing")]
         [SerializeField] private float _moveDampTime = 0.15f;
 
+        [Header("Aim")]
+        [Tooltip("The gameplay camera - where the player looks (head look, swing tilt). Empty = Camera.main.")]
+        [SerializeField] private Transform _aimCamera;
+        [Tooltip("How far the swing may tilt down toward a low target (degrees of spine bend).")]
+        [SerializeField, Range(0f, 90f)] private float _maxAimBendDown = 80f;
+        [Tooltip("Spine bend per degree of aim angle. Over 1: the spine bends above the hips, so the arms need more than the aim angle to reach a low target.")]
+        [SerializeField, Range(0.5f, 2f)] private float _aimBendGain = 1.35f;
+        [Tooltip("How far the swing may tilt up toward a high target (degrees).")]
+        [SerializeField, Range(0f, 60f)] private float _maxAimBendUp = 30f;
+        [Tooltip("Aimed targets further than this (m) only use the camera's own pitch.")]
+        [SerializeField, Min(1f)] private float _aimRayDistance = 8f;
+        [Tooltip("How fast the aim bend fades in/out (weight per second).")]
+        [SerializeField, Min(0.1f)] private float _aimBendFadeSpeed = 8f;
+
+        [Header("Head Look")]
+        [Tooltip("Overall look-at weight (0 = off).")]
+        [SerializeField, Range(0f, 1f)] private float _lookWeight = 1f;
+        [SerializeField, Range(0f, 1f)] private float _lookBodyWeight = 0.15f;
+        [SerializeField, Range(0f, 1f)] private float _lookHeadWeight = 0.85f;
+        [Tooltip("Limits how far the head turns: 0 = free, 0.5 = up to ~90 degrees, 1 = none.")]
+        [SerializeField, Range(0f, 1f)] private float _lookClampWeight = 0.6f;
+
         [Header("Combat")]
         [Tooltip("An attack within this many seconds of the previous one (same style) continues its combo; after a longer pause the combo starts over.")]
         [SerializeField, Min(0f)] private float _comboResetSeconds = 1.2f;
@@ -89,6 +109,10 @@ namespace NAV.Presentation.Animation
 
         private Animator _animator;
         private Transform _spine;
+        private Transform _chest;
+        private Transform _upperChest;
+        private float _aimBendWeight;
+        private float _aimPitch;
         private bool _hasTwistParameter;
         private bool _hasFullStanceTwist;
         private int _fullStanceLayer = -1;
@@ -102,6 +126,12 @@ namespace NAV.Presentation.Animation
         {
             _animator = GetComponent<Animator>();
             _spine = _animator.isHuman ? _animator.GetBoneTransform(HumanBodyBones.Spine) : null;
+            _chest = _animator.isHuman ? _animator.GetBoneTransform(HumanBodyBones.Chest) : null;
+            _upperChest = _animator.isHuman ? _animator.GetBoneTransform(HumanBodyBones.UpperChest) : null;
+            if (_aimCamera == null && UnityEngine.Camera.main != null)
+            {
+                _aimCamera = UnityEngine.Camera.main.transform;
+            }
             foreach (AnimatorControllerParameter parameter in _animator.parameters)
             {
                 _hasTwistParameter |= parameter.nameHash == AttackTwistHash;
@@ -165,22 +195,122 @@ namespace NAV.Presentation.Animation
 
         private void LateUpdate()
         {
-            if (_spine == null || !_hasTwistParameter)
+            if (_spine == null)
             {
                 return;
             }
 
-            float twist = _animator.GetFloat(AttackTwistHash);
-            if (_hasFullStanceTwist)
+            if (_hasTwistParameter)
             {
-                twist -= _animator.GetFloat(FullStanceTwistHash);
+                float twist = _animator.GetFloat(AttackTwistHash);
+                if (_hasFullStanceTwist)
+                {
+                    twist -= _animator.GetFloat(FullStanceTwistHash);
+                }
+
+                if (Mathf.Abs(twist) > 0.01f)
+                {
+                    // World up: a pure turn of the whole upper body, whatever the spine bone's axes.
+                    _spine.rotation = Quaternion.AngleAxis(twist, Vector3.up) * _spine.rotation;
+                }
             }
 
-            if (Mathf.Abs(twist) > 0.01f)
+            ApplyAimBend();
+        }
+
+        /// <summary>
+        /// Tilts the swing to the height of what the player aims at: while the body faces the aim
+        /// (an attack or a block - PlayerMotor.IsFacingAim) the spine bends forward/back by the
+        /// angle from the chest to the crosshair's target (or the camera's pitch when nothing is
+        /// in reach), split over Spine/Chest/UpperChest. The attack clips swing roughly level, so
+        /// this is what lets a blade reach ore at the feet or a deer's legs. Runs before
+        /// PlayerCombat's LateUpdate, so the weapon hitbox is swept from the bent pose - hits stay
+        /// physical contact. The swing stays in front: the body turns to the aim first.
+        /// </summary>
+        private void ApplyAimBend()
+        {
+            float targetWeight = _motor.IsFacingAim && _aimCamera != null ? 1f : 0f;
+            _aimBendWeight = Mathf.MoveTowards(_aimBendWeight, targetWeight, _aimBendFadeSpeed * Time.deltaTime);
+            if (_aimBendWeight <= 0f)
             {
-                // World up: a pure turn of the whole upper body, whatever the spine bone's axes.
-                _spine.rotation = Quaternion.AngleAxis(twist, Vector3.up) * _spine.rotation;
+                return;
             }
+
+            Transform chest = _chest != null ? _chest : _spine;
+            float targetPitch = AimPitchFrom(chest.position);
+            // Follow the aim quickly but without popping.
+            _aimPitch = Mathf.MoveTowards(_aimPitch, targetPitch, 360f * Time.deltaTime);
+            float bend = _aimPitch * _aimBendWeight;
+            if (Mathf.Abs(bend) < 0.01f)
+            {
+                return;
+            }
+
+            // Bend about the body's right axis (positive = forward/down).
+            Vector3 axis = _motor.transform.right;
+            if (_upperChest != null && _chest != null)
+            {
+                Bend(_spine, axis, bend * 0.4f);
+                Bend(_chest, axis, bend * 0.35f);
+                Bend(_upperChest, axis, bend * 0.25f);
+            }
+            else if (_chest != null)
+            {
+                Bend(_spine, axis, bend * 0.55f);
+                Bend(_chest, axis, bend * 0.45f);
+            }
+            else
+            {
+                Bend(_spine, axis, bend);
+            }
+        }
+
+        private static void Bend(Transform bone, Vector3 axis, float degrees)
+        {
+            bone.rotation = Quaternion.AngleAxis(degrees, axis) * bone.rotation;
+        }
+
+        /// <summary>Degrees the swing must tilt (positive = down) to meet what the crosshair is on,
+        /// measured from the chest in the body's vertical plane; nothing in reach = a softened
+        /// camera pitch (the camera sits above/behind, so its own pitch overstates it).</summary>
+        private float AimPitchFrom(Vector3 chestPosition)
+        {
+            float pitch;
+            if (Physics.Raycast(_aimCamera.position, _aimCamera.forward, out RaycastHit hit, _aimRayDistance + 6f, ~0, QueryTriggerInteraction.Ignore)
+                && !hit.collider.transform.IsChildOf(_motor.transform))
+            {
+                Vector3 offset = hit.point - chestPosition;
+                float horizontal = new Vector2(offset.x, offset.z).magnitude;
+                pitch = horizontal > 0.2f && offset.magnitude < _aimRayDistance
+                    ? Mathf.Atan2(-offset.y, horizontal) * Mathf.Rad2Deg
+                    : CameraPitch() * 0.6f;
+            }
+            else
+            {
+                pitch = CameraPitch() * 0.6f;
+            }
+
+            return Mathf.Clamp(pitch * _aimBendGain, -_maxAimBendUp, _maxAimBendDown);
+        }
+
+        private float CameraPitch()
+        {
+            float pitch = _aimCamera.eulerAngles.x;
+            return pitch > 180f ? pitch - 360f : pitch;
+        }
+
+        /// <summary>Head (and a little of the upper body) turns toward where the camera looks,
+        /// within limits (Look Clamp Weight) - the body itself keeps its facing (Valheim-style).
+        /// Needs IK Pass on the Base Layer (already on for FootGrounding).</summary>
+        private void OnAnimatorIK(int layerIndex)
+        {
+            if (layerIndex != 0 || !_animator.isHuman || _aimCamera == null || _lookWeight <= 0f)
+            {
+                return;
+            }
+
+            _animator.SetLookAtPosition(_aimCamera.position + _aimCamera.forward * 20f);
+            _animator.SetLookAtWeight(_lookWeight, _lookBodyWeight, _lookHeadWeight, 0f, _lookClampWeight);
         }
 
         private void HandleAttackStarted(WeaponDefinition weapon)
@@ -221,11 +351,18 @@ namespace NAV.Presentation.Animation
 
         private void Update()
         {
-            Vector2 move = _inputHandler.MoveInput;
+            // The body no longer always faces the camera (PlayerMotor turns it toward the move
+            // direction, or the aim), so the blend tree gets the move direction in the body's
+            // own space: forward while running where it faces, strafe/back only while it's held
+            // facing the aim (attacking/blocking on the move).
+            Vector3 localMove = _motor.transform.InverseTransformDirection(_motor.MoveDirection);
+            var move = new Vector2(localMove.x, localMove.z);
             _animator.SetFloat(MoveXHash, move.x, _moveDampTime, Time.deltaTime);
             _animator.SetFloat(MoveYHash, move.y, _moveDampTime, Time.deltaTime);
             _animator.SetBool(SprintingHash, _motor.IsSprinting);
-            _animator.SetBool(GroundedHash, _motor.IsGrounded);
+            // A swimmer counts as grounded - it treads water with the locomotion clips (no swim
+            // animation yet) instead of being stuck in the fall pose.
+            _animator.SetBool(GroundedHash, _motor.IsGrounded || _motor.IsSwimming);
 
             if (_fullStanceLayer >= 0)
             {

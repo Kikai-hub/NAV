@@ -22,6 +22,12 @@ namespace NAV.UI
     /// closes (the ToggleInventory key, I, is never suppressed) or once its gravestone is fully
     /// looted, whichever happens first.
     ///
+    /// A storage container (IsStorage - the chest) also takes items in: a stack dragged from the
+    /// player's Inventory panel onto this one is handed over by InventoryUIController
+    /// (TryReceiveFromPlayer), stacks can be rearranged inside it, and the panel stays open when
+    /// it's empty. While the panel shows a StorageContainer, that container's IsOpen is true
+    /// (its lid opens).
+    ///
     /// LMB drag moves one stack out into the player's Inventory grid, via the same
     /// Inventory.MoveSlotTo used for in-panel drag - just called across two different
     /// Inventory instances instead of one. Move All empties every remaining stack in one
@@ -147,6 +153,7 @@ namespace NAV.UI
             }
 
             _current.Contents.Changed += RefreshSlots;
+            (_current as StorageContainer)?.SetOpen(true);
 
             BuildSlots();
             _inventoryUIController.Show();
@@ -158,9 +165,50 @@ namespace NAV.UI
             if (_current != null)
             {
                 _current.Contents.Changed -= RefreshSlots;
+                (_current as StorageContainer)?.SetOpen(false);
             }
 
             _current = null;
+        }
+
+        /// <summary>
+        /// A stack dragged out of the player's Inventory panel was released at picked. Returns
+        /// true if that point is on this (visible) panel - then the drop is handled here: into
+        /// the chest slot under it (or the first slot it fits, if released on the panel but not
+        /// a slot), or ignored for a take-only container. False = not over this panel.
+        /// </summary>
+        public bool TryReceiveFromPlayer(VisualElement picked, int playerSlotIndex)
+        {
+            // Contains() only checks descendants - the root itself counts too.
+            if (!_visible || _current == null || picked == null || (picked != _root && !_root.Contains(picked)))
+            {
+                return false;
+            }
+
+            if (!_current.IsStorage)
+            {
+                return true;
+            }
+
+            VisualElement targetSlot = FindSlotAncestor(picked, GravestoneSlotClass);
+            if (targetSlot != null)
+            {
+                _playerInventory.Inventory.MoveSlotTo(_current.Contents, playerSlotIndex, (int)targetSlot.userData);
+                return true;
+            }
+
+            IReadOnlyList<ItemStack> slots = _playerInventory.Inventory.Slots;
+            if (playerSlotIndex >= 0 && playerSlotIndex < slots.Count && !slots[playerSlotIndex].IsEmpty)
+            {
+                ItemStack stack = slots[playerSlotIndex];
+                int moved = stack.Quantity - _current.Contents.AddItem(stack.Definition, stack.Quantity);
+                if (moved > 0)
+                {
+                    _playerInventory.Inventory.RemoveFromSlot(playerSlotIndex, moved, out _);
+                }
+            }
+
+            return true;
         }
 
         private void SetVisible(bool visible)
@@ -230,7 +278,8 @@ namespace NAV.UI
                 }
             }
 
-            if (_current.Contents.IsEmpty)
+            // A looted gravestone closes its panel; a chest stays open even when empty.
+            if (!_current.IsStorage && _current.Contents.IsEmpty)
             {
                 SetVisible(false);
             }
@@ -333,9 +382,16 @@ namespace NAV.UI
             {
                 int targetIndex = (int)targetSlot.userData;
                 _current.Contents.MoveSlotTo(_playerInventory.Inventory, sourceIndex, targetIndex);
+                return;
             }
-            // Else: dropped on the gravestone's own grid, empty panel space, or the game world -
-            // all treated as a cancel.
+
+            // A chest can be rearranged: dropped on another of its own slots.
+            VisualElement ownSlot = FindSlotAncestor(picked, GravestoneSlotClass);
+            if (_current.IsStorage && ownSlot != null && (int)ownSlot.userData != sourceIndex)
+            {
+                _current.Contents.MoveSlot(sourceIndex, (int)ownSlot.userData);
+            }
+            // Else: dropped on empty panel space or the game world - a cancel.
         }
 
         private void CancelDrag()

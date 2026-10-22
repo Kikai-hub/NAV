@@ -20,6 +20,8 @@ namespace NAV.Presentation.Building
         [SerializeField] private LayerMask _groundLayers = ~0;
         [Tooltip("Universal Render Pipeline/Unlit - referenced here so it's included in builds.")]
         [SerializeField] private Shader _unlitShader;
+        [Tooltip("WorkbenchAreaDash.mat (URP Unlit, alpha clip on) - keeps the alpha-clip variant in builds; the dash texture and colour are set at runtime.")]
+        [SerializeField] private Material _dashMaterialTemplate;
 
         [Header("Look")]
         [SerializeField] private Color _color = new(1f, 0.85f, 0.35f, 1f);
@@ -160,8 +162,18 @@ namespace NAV.Presentation.Building
             texture.SetPixels(new[] { Color.white, new Color(1f, 1f, 1f, 0f) });
             texture.Apply();
 
-            Shader shader = _unlitShader != null ? _unlitShader : Shader.Find("Universal Render Pipeline/Unlit");
-            var material = new Material(shader) { name = "WorkbenchAreaDash" };
+            Material material;
+            if (_dashMaterialTemplate != null)
+            {
+                material = new Material(_dashMaterialTemplate) { name = "WorkbenchAreaDash" };
+            }
+            else
+            {
+                Shader shader = _unlitShader != null ? _unlitShader : Shader.Find("Universal Render Pipeline/Unlit");
+                material = new Material(shader) { name = "WorkbenchAreaDash" };
+            }
+
+
             material.SetTexture("_BaseMap", texture);
             material.mainTexture = texture;
             material.SetColor("_BaseColor", _color);

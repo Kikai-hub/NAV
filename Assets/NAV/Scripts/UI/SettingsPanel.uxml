@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="SettingsPanel.uss" />
+    <ui:VisualElement name="settings-root" class="settings-root">
+        <ui:VisualElement class="settings-panel">
+            <ui:Label text="Settings" class="settings-title" />
+            <ui:VisualElement class="settings-tabs">
+                <ui:Button name="tab-audio" text="Audio" class="settings-tab" />
+                <ui:Button name="tab-controls" text="Controls" class="settings-tab" />
+                <ui:Button name="tab-graphics" text="Graphics" class="settings-tab" />
+            </ui:VisualElement>
+            <ui:ScrollView name="page-audio" class="settings-page" />
+            <ui:ScrollView name="page-controls" class="settings-page" />
+            <ui:ScrollView name="page-graphics" class="settings-page" />
+            <ui:VisualElement class="settings-footer">
+                <ui:Button name="settings-reset-button" text="Reset to Defaults" class="settings-button" />
+                <ui:Button name="settings-back-button" text="Back" class="settings-button settings-button--primary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

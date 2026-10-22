@@ -20,17 +20,55 @@ MonoBehaviour:
   - _prefab: {fileID: 5056375507921044682, guid: a28c62f724d2be04b812e4ac5502a361, type: 3}
     _density: 0.12
     _minSpacing: 14
+    _scale: {x: 1, y: 1}
   - _prefab: {fileID: 1193798214132743997, guid: a74abd7728b58da4f8da0de34554802c, type: 3}
     _density: 0.06
     _minSpacing: 18
+    _scale: {x: 1, y: 1}
   - _prefab: {fileID: 7000480892539141789, guid: e14dea2f61bf28549875fb6463133d6a, type: 3}
     _density: 0.08
     _minSpacing: 16
+    _scale: {x: 1, y: 1}
   - _prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
     _density: 0.05
     _minSpacing: 16
+    _scale: {x: 1, y: 1}
+  _decorSpawns:
+  - _prefab: {fileID: 7743252823564509495, guid: b62d7b654f2d89e4588b93338b5584c8, type: 3}
+    _density: 0.03
+    _minSpacing: 18
+    _scale: {x: 0.6, y: 1}
+    _keepColliders: 0
+  - _prefab: {fileID: 1253644793452233022, guid: 928e4678af0b6d44299026bc9fc976ab, type: 3}
+    _density: 0.03
+    _minSpacing: 18
+    _scale: {x: 0.6, y: 1}
+    _keepColliders: 0
+  - _prefab: {fileID: 747127095119613554, guid: 49f55265909fcf049bce72ef9a631632, type: 3}
+    _density: 0.14
+    _minSpacing: 7
+    _scale: {x: 0.9, y: 1.5}
+    _keepColliders: 0
+  - _prefab: {fileID: 3358133089628108832, guid: 02f888050ca31be47b87991cd54a0b10, type: 3}
+    _density: 0.1
+    _minSpacing: 8
+    _scale: {x: 0.9, y: 1.4}
+    _keepColliders: 0
+  - _prefab: {fileID: 7726922578587425720, guid: 2e12139c0ee03c44f8538d5e505a0942, type: 3}
+    _density: 0.04
+    _minSpacing: 16
+    _scale: {x: 0.6, y: 1.2}
+    _keepColliders: 0
+  _grassDensity: 0.7
+  _flowerDensity: 0.07
   _creatureSpawns:
   - _prefab: {fileID: 3278574604635449654, guid: 629c4ab8949b6ef47936ac8e868c5957, type: 3}
     _count: 6
+    _nightCount: 2
+    _groupSize: {x: 1, y: 3}
+    _respawnSeconds: 150
   - _prefab: {fileID: 7615035062538442650, guid: 72c4127d0a2e60742800947a9ea68e84, type: 3}
     _count: 2
+    _nightCount: 4
+    _groupSize: {x: 2, y: 2}
+    _respawnSeconds: 120

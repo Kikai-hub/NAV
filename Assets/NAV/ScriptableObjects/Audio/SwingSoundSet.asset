@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03f0df460c3be74f86f3e5973b5aaf9, type: 3}
+  m_Name: SwingSoundSet
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Combat.SwingSoundSet
+  _entries:
+  - WeaponClass: 0
+    Clips:
+    - {fileID: 8300000, guid: d705dc6073dae497389944fd5d0007fb, type: 3}
+    - {fileID: 8300000, guid: dde386b739a694774b2029f9f3f30a02, type: 3}
+    - {fileID: 8300000, guid: fa77d4f0f105b40f2ba7c9cf3fdf3ad7, type: 3}
+    Volume: 0.45
+    Pitch: 1.05
+  - WeaponClass: 2
+    Clips:
+    - {fileID: 8300000, guid: d705dc6073dae497389944fd5d0007fb, type: 3}
+    - {fileID: 8300000, guid: dde386b739a694774b2029f9f3f30a02, type: 3}
+    - {fileID: 8300000, guid: fa77d4f0f105b40f2ba7c9cf3fdf3ad7, type: 3}
+    Volume: 0.5
+    Pitch: 1.12
+  - WeaponClass: 9
+    Clips:
+    - {fileID: 8300000, guid: 5e2b7edc9ff5640ccb35fa6e1e9653d8, type: 3}
+    - {fileID: 8300000, guid: 301d229bb64f74378bafcc36f8049e1f, type: 3}
+    - {fileID: 8300000, guid: 554332353fd5944d19d4d25eb6375888, type: 3}
+    Volume: 0.55
+    Pitch: 0.95
+  - WeaponClass: 3
+    Clips:
+    - {fileID: 8300000, guid: 3085033eb809448c1aa04c41f2b036ae, type: 3}
+    - {fileID: 8300000, guid: 348918b2235c34282b0f14614e2cfe1a, type: 3}
+    - {fileID: 8300000, guid: 2598657f7deb74cb2a6b901c300996e2, type: 3}
+    Volume: 0.6
+    Pitch: 1
+  - WeaponClass: 7
+    Clips:
+    - {fileID: 8300000, guid: b6a7cc11e03dc49a9acb40e77b7eaa85, type: 3}
+    - {fileID: 8300000, guid: 538abb95080ac4b3c8c50fc8944e3cc6, type: 3}
+    - {fileID: 8300000, guid: 3deca9672c7484500957efcb75d000f5, type: 3}
+    Volume: 0.65
+    Pitch: 0.95
+  - WeaponClass: 10
+    Clips:
+    - {fileID: 8300000, guid: b6a7cc11e03dc49a9acb40e77b7eaa85, type: 3}
+    - {fileID: 8300000, guid: 538abb95080ac4b3c8c50fc8944e3cc6, type: 3}
+    - {fileID: 8300000, guid: 3deca9672c7484500957efcb75d000f5, type: 3}
+    Volume: 0.6
+    Pitch: 0.85
+  - WeaponClass: 5
+    Clips:
+    - {fileID: 8300000, guid: 2f8a783f075bf4155ab4b59bdd5fd2be, type: 3}
+    - {fileID: 8300000, guid: 936e0c7b18e034f1db5890e9aa95bc42, type: 3}
+    - {fileID: 8300000, guid: 5777bd69665764cfcb1873a61f617a18, type: 3}
+    Volume: 0.6
+    Pitch: 1
+  - WeaponClass: 1
+    Clips:
+    - {fileID: 8300000, guid: d4bf182ca8c5f4c459c03b1b229fe492, type: 3}
+    - {fileID: 8300000, guid: 5e3a05f28e6504b82a82523aa957b4d2, type: 3}
+    - {fileID: 8300000, guid: d73b68fbd83ce408689d2a6659ded8f8, type: 3}
+    Volume: 0.6
+    Pitch: 1
+  - WeaponClass: 4
+    Clips:
+    - {fileID: 8300000, guid: 4a63ce535c37344c486d619390f7e16d, type: 3}
+    - {fileID: 8300000, guid: 2181e93230d2240b5b3b6406da0cace8, type: 3}
+    - {fileID: 8300000, guid: 42e0e85eefc85427788fc6f3613c5201, type: 3}
+    Volume: 0.7
+    Pitch: 1
+  - WeaponClass: 6
+    Clips:
+    - {fileID: 8300000, guid: b592e3e7ca60c4553b21ee95a29388d4, type: 3}
+    - {fileID: 8300000, guid: 472f30ae362af4ad688578ba5f13a113, type: 3}
+    - {fileID: 8300000, guid: 01942ec095f584777bbcd8ebd353645a, type: 3}
+    Volume: 0.7
+    Pitch: 1
+  - WeaponClass: 8
+    Clips:
+    - {fileID: 8300000, guid: b592e3e7ca60c4553b21ee95a29388d4, type: 3}
+    - {fileID: 8300000, guid: 472f30ae362af4ad688578ba5f13a113, type: 3}
+    - {fileID: 8300000, guid: 01942ec095f584777bbcd8ebd353645a, type: 3}
+    Volume: 0.75
+    Pitch: 0.88
+  _styleTimings:
+  - Style: 2
+    StrikeTime: 0.445
+  _strikeLead: 0.04
+  _pitchJitter: 0.06
