@@ -164,16 +164,16 @@ namespace NAV.Core.Settings
             switch (preset)
             {
                 case GraphicsPreset.Low:
-                    data.RenderScale = 0.75f; data.Shadows = ShadowLevel.Low; data.Msaa = 1; data.TextureQuality = 1; data.ObjectDrawDistance = 150f;
+                    data.RenderScale = 0.75f; data.Shadows = ShadowLevel.Low; data.Msaa = 1; data.TextureQuality = 1; data.ObjectDrawDistance = 120f; data.ViewDistance = 350f;
                     break;
                 case GraphicsPreset.Medium:
-                    data.RenderScale = 0.9f; data.Shadows = ShadowLevel.Low; data.Msaa = 1; data.TextureQuality = 0; data.ObjectDrawDistance = 250f;
+                    data.RenderScale = 0.9f; data.Shadows = ShadowLevel.Low; data.Msaa = 1; data.TextureQuality = 0; data.ObjectDrawDistance = 180f; data.ViewDistance = 500f;
                     break;
                 case GraphicsPreset.High:
-                    data.RenderScale = 1f; data.Shadows = ShadowLevel.Medium; data.Msaa = 1; data.TextureQuality = 0; data.ObjectDrawDistance = 0f;
+                    data.RenderScale = 1f; data.Shadows = ShadowLevel.Medium; data.Msaa = 1; data.TextureQuality = 0; data.ObjectDrawDistance = 250f; data.ViewDistance = 700f;
                     break;
                 case GraphicsPreset.Ultra:
-                    data.RenderScale = 1f; data.Shadows = ShadowLevel.High; data.Msaa = 4; data.TextureQuality = 0; data.ObjectDrawDistance = 0f;
+                    data.RenderScale = 1f; data.Shadows = ShadowLevel.High; data.Msaa = 4; data.TextureQuality = 0; data.ObjectDrawDistance = 350f; data.ViewDistance = 900f;
                     break;
             }
         }

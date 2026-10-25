@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
+  m_Name: WoodGablePiece
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: WoodGablePiece
+  _displayName: Wood Gable
+  _icon: {fileID: 21300000, guid: 68a4e1124158ef54091750866f3c53fe, type: 3}
+  _cost:
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 3
+  _prefab: {fileID: 2849724934911762094, guid: 859fc1fd49469114293e16bea7cae883, type: 3}
+  _requiresWorkbench: 1
+  _requiredStation: {fileID: 0}
+  _requiredStationLevel: 0
+  _directional: 1
+  _unlockItems: []

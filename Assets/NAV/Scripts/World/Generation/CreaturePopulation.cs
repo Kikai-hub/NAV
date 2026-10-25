@@ -31,6 +31,8 @@ namespace NAV.World.Generation
         [SerializeField, Min(1f)] private float _maxSpawnDistance = 120f;
         [Tooltip("Extra animals (above the target) are removed only when at least this far from the player.")]
         [SerializeField, Min(0f)] private float _despawnDistance = 80f;
+        [Tooltip("Animals farther than this from the player are removed (not when fighting) - the NavMesh only reaches about this far around the player.")]
+        [SerializeField, Min(20f)] private float _leashDistance = 115f;
         [SerializeField, Min(0.5f)] private float _checkInterval = 5f;
         [SerializeField, Min(1)] private int _placementAttempts = 20;
 
@@ -96,6 +98,7 @@ namespace NAV.World.Generation
             }
 
             bool night = _clock != null && _clock.IsNight;
+            RemoveStragglers();
 
             foreach (BiomeDefinition biome in _worldGenerator.Biomes)
             {
@@ -137,7 +140,9 @@ namespace NAV.World.Generation
 
             _nextRespawn[spawn] = now + spawn.RespawnSeconds;
 
-            if (!_worldGenerator.TryFindCreaturePointNear(biome, _player.position, _minSpawnDistance, _maxSpawnDistance, _placementAttempts, out Vector3 point))
+            // Inside the leash, so the newcomer isn't removed right away.
+            float maxDistance = Mathf.Min(_maxSpawnDistance, _leashDistance - 15f);
+            if (!_worldGenerator.TryFindCreaturePointNear(biome, _player.position, Mathf.Min(_minSpawnDistance, maxDistance * 0.5f), maxDistance, _placementAttempts, out Vector3 point))
             {
                 return;
             }
@@ -158,6 +163,37 @@ namespace NAV.World.Generation
             }
 
             return alive;
+        }
+
+        /// <summary>The NavMesh only exists around the player (LocalNavMesh), so animals that
+        /// wandered or were left farther than the leash are removed (unless fighting) - the
+        /// population is topped up near the player again.</summary>
+        private void RemoveStragglers()
+        {
+            float leashSqr = _leashDistance * _leashDistance;
+            for (int i = Creature.All.Count - 1; i >= 0; i--)
+            {
+                Creature creature = Creature.All[i];
+                if (creature.SpawnSource == null || creature.IsEngaged)
+                {
+                    continue;
+                }
+
+                Vector3 offset = creature.transform.position - _player.position;
+                offset.y = 0f;
+                if (offset.sqrMagnitude > leashSqr)
+                {
+                    // Left behind, not killed: its place is refilled near the player at the next
+                    // check instead of waiting out the respawn time.
+                    if (creature.SpawnSource is BiomeCreatureSpawn source)
+                    {
+                        _nextRespawn[source] = 0f;
+                    }
+
+                    creature.SpawnSource = null;
+                    Destroy(creature.gameObject);
+                }
+            }
         }
 
         private void RemoveExtras(BiomeCreatureSpawn spawn, int extra)

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using NAV.Gameplay.Crafting;
+using NAV.Gameplay.Interaction;
 using NAV.Gameplay.Inventory;
 using NAV.Gameplay.Items;
 using NAV.Gameplay.Player;
@@ -25,9 +26,16 @@ namespace NAV.UI
         [SerializeField] private PlayerCrafting _playerCrafting;
         [SerializeField] private PlayerInventory _playerInventory;
         [SerializeField] private PlayerInputHandler _inputHandler;
+        [Tooltip("E on a workbench/forge (CraftingStationAccess) opens the panel with that station's recipes.")]
+        [SerializeField] private PlayerInteractor _interactor;
 
         private UIDocument _document;
         private VisualElement _root;
+        private Label _title;
+
+        // The station the panel was opened at with E (null = opened with the crafting key:
+        // only recipes that need no station are listed).
+        private Workbench _station;
         private ScrollView _recipeListView;
         private VisualElement _detailIcon;
         private Label _detailName;
@@ -72,6 +80,7 @@ namespace NAV.UI
             }
 
             _root = documentRoot.Q<VisualElement>("crafting-root");
+            _title = documentRoot.Q<Label>("crafting-title");
             _recipeListView = documentRoot.Q<ScrollView>("recipe-list");
             _detailIcon = documentRoot.Q<VisualElement>("detail-icon");
             _detailName = documentRoot.Q<Label>("detail-name");
@@ -94,6 +103,7 @@ namespace NAV.UI
 
             _playerInventory.Inventory.Changed += RefreshAffordability;
             _playerCrafting.NearbyWorkbenchChanged += RefreshAffordability;
+            _playerCrafting.RecipesChanged += HandleRecipesChanged;
 
             BuildRecipeList();
             SetVisible(false);
@@ -105,6 +115,11 @@ namespace NAV.UI
             {
                 _inputHandler.ToggleCraftingPerformed += HandleToggleCraftingPerformed;
             }
+
+            if (_interactor != null)
+            {
+                _interactor.Interacted += HandleInteracted;
+            }
         }
 
         private void OnDisable()
@@ -113,6 +128,59 @@ namespace NAV.UI
             {
                 _inputHandler.ToggleCraftingPerformed -= HandleToggleCraftingPerformed;
             }
+
+            if (_interactor != null)
+            {
+                _interactor.Interacted -= HandleInteracted;
+            }
+        }
+
+        private void Update()
+        {
+            // Walked away from the station it was opened at - close, like Valheim.
+            if (_visible && _station != null && !_playerCrafting.IsNear(_station))
+            {
+                SetVisible(false);
+            }
+        }
+
+        private void HandleInteracted(IInteractable interactable)
+        {
+            if (interactable is not CraftingStationAccess access)
+            {
+                return;
+            }
+
+            if (_visible && _station == access.Station)
+            {
+                SetVisible(false);
+                return;
+            }
+
+            Open(access.Station);
+        }
+
+        private void HandleRecipesChanged()
+        {
+            if (_visible)
+            {
+                BuildRecipeList();
+                RefreshAffordability();
+            }
+        }
+
+        /// <summary>Opens the panel at a station (its recipes listed) or, with null, with only
+        /// the recipes that need no station.</summary>
+        public void Open(Workbench station)
+        {
+            _station = station;
+            if (_title != null)
+            {
+                _title.text = station != null ? station.DisplayName : "Crafting";
+            }
+
+            BuildRecipeList();
+            SetVisible(true);
         }
 
         private void OnDestroy()
@@ -125,12 +193,20 @@ namespace NAV.UI
             if (_playerCrafting != null)
             {
                 _playerCrafting.NearbyWorkbenchChanged -= RefreshAffordability;
+                _playerCrafting.RecipesChanged -= HandleRecipesChanged;
             }
         }
 
         private void HandleToggleCraftingPerformed()
         {
-            SetVisible(!_visible);
+            if (_visible)
+            {
+                SetVisible(false);
+            }
+            else
+            {
+                Open(null);
+            }
         }
 
         /// <summary>Closes this panel if it's open. Safe to call when already closed.</summary>
@@ -159,12 +235,9 @@ namespace NAV.UI
             _recipeListView.Clear();
             _entries.Clear();
 
-            foreach (RecipeDefinition recipe in _playerCrafting.KnownRecipes)
+            RecipeDefinition previouslySelected = _selectedRecipe;
+            foreach (RecipeDefinition recipe in _playerCrafting.GetVisibleRecipes(_station))
             {
-                if (recipe == null)
-                {
-                    continue;
-                }
 
                 var item = new VisualElement();
                 item.AddToClassList("recipe-list-item");
@@ -188,7 +261,17 @@ namespace NAV.UI
                 _entries.Add(new RecipeListEntry { Recipe = recipe, Root = item });
             }
 
-            SelectRecipe(_entries.Count > 0 ? _entries[0].Recipe : null);
+            if (_entries.Count == 0)
+            {
+                var empty = new Label(_station != null
+                    ? "Nothing to make here yet - find new materials."
+                    : "Nothing to craft by hand. Use a workbench (E) for more.");
+                empty.AddToClassList("recipe-list-empty");
+                _recipeListView.Add(empty);
+            }
+
+            bool stillListed = _entries.Exists(entry => entry.Recipe == previouslySelected);
+            SelectRecipe(stillListed ? previouslySelected : _entries.Count > 0 ? _entries[0].Recipe : null);
         }
 
         private void SelectRecipe(RecipeDefinition recipe)
@@ -217,11 +300,9 @@ namespace NAV.UI
 
         private void RefreshAffordability()
         {
-            int nearbyWorkbenchTier = _playerCrafting.NearbyWorkbenchTier;
-
             foreach (RecipeListEntry entry in _entries)
             {
-                bool canCraft = entry.Recipe.CanCraft(_playerInventory.Inventory, nearbyWorkbenchTier);
+                bool canCraft = _playerCrafting.CanCraft(entry.Recipe);
                 entry.Root.EnableInClassList("recipe-list-item--unaffordable", !canCraft);
             }
 
@@ -254,7 +335,7 @@ namespace NAV.UI
             BuildRequirement();
             BuildIngredients();
 
-            bool canCraft = _selectedRecipe.CanCraft(_playerInventory.Inventory, _playerCrafting.NearbyWorkbenchTier);
+            bool canCraft = _playerCrafting.CanCraft(_selectedRecipe);
             _detailCraftButton.SetEnabled(canCraft);
         }
 
@@ -265,6 +346,12 @@ namespace NAV.UI
             if (output == null)
             {
                 return;
+            }
+
+            if (output.IsArmor)
+            {
+                AddStatRow("Armour", $"{output.Armor.Armor:0.#}");
+                AddStatRow("Slot", output.Armor.Slot.ToString());
             }
 
             AddStatRow("Weight", $"{output.Weight:F1}");
@@ -294,12 +381,16 @@ namespace NAV.UI
                 return;
             }
 
-            bool hasWorkbench = _playerCrafting.NearbyWorkbenchTier >= _selectedRecipe.RequiredWorkbenchTier;
-            // A workbench of the right tier is near but has no roof - say so (Valheim-style).
-            bool needsRoof = !hasWorkbench && _playerCrafting.NearbyUnshelteredWorkbenchTier >= _selectedRecipe.RequiredWorkbenchTier;
+            WorkbenchDefinition station = _selectedRecipe.Station;
+            string stationName = station != null ? station.DisplayName : "Workbench";
+            int level = _selectedRecipe.RequiredWorkbenchTier;
+            bool hasWorkbench = _playerCrafting.GetStationLevel(station) >= level;
+            // A station of the right level is near but has no roof - say so (Valheim-style).
+            bool needsRoof = !hasWorkbench && _playerCrafting.GetUnshelteredStationLevel(station) >= level;
+            string levelText = level > 1 ? $" level {level}" : "";
             _detailRequirement.text = needsRoof
-                ? $"Requires Workbench (Tier {_selectedRecipe.RequiredWorkbenchTier}) - the workbench needs a roof"
-                : $"Requires Workbench (Tier {_selectedRecipe.RequiredWorkbenchTier})";
+                ? $"Requires {stationName}{levelText} - it needs a roof"
+                : $"Requires {stationName}{levelText}";
             _detailRequirement.EnableInClassList("recipe-detail__requirement--missing", !hasWorkbench);
             _detailRequirement.style.display = DisplayStyle.Flex;
         }
@@ -317,9 +408,12 @@ namespace NAV.UI
 
                 var slot = new VisualElement();
                 slot.AddToClassList("ingredient-slot");
+                slot.AddToClassList("nav-slot");
+                slot.tooltip = ingredient.Item.DisplayName;
 
                 var icon = new VisualElement();
                 icon.AddToClassList("ingredient-slot__icon");
+                icon.AddToClassList("nav-slot__icon");
                 icon.style.backgroundImage = new StyleBackground(ingredient.Item.Icon);
                 slot.Add(icon);
 

@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_spear1
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_spear1
-  _displayName: Spear 1
-  _description: Spear from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Fang Spear
+  _description: A hunting spear tipped with wolf fangs.
   _icon: {fileID: 21300000, guid: eac88f26a48ac054d8e951493e45e724, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 1fc14ca77b6bc174b92a0baa7e993511, type: 2}
   _heldPrefab: {fileID: 3471449823704430004, guid: cdf116302e330f84ca30f76d7701695e, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}

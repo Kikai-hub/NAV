@@ -1,3 +1,8 @@
+/* HUD in the NAV UI kit style (Art/UI/Kit, cut from the developer's ChatGPT UI kit by
+   NAV > UI > Build UI Kit Sprites). Sizes are in reference units of NAV_PanelSettings
+   (1200 wide, scaled with the screen width); 9-slice borders are given in texture pixels and
+   shrunk with -unity-slice-scale. */
+
 .hud-root {
     position: absolute;
     left: 0;
@@ -6,69 +11,93 @@
     bottom: 0;
 }
 
-/* --- Hotbar: top-left, horizontal, 7 slots --- */
+/* --- Hotbar: top-left - an ornamented cap, 6 slots, a cap --- */
 
 .hotbar-container {
     position: absolute;
-    top: 24px;
-    left: 24px;
+    top: 14px;
+    left: 14px;
     flex-direction: row;
+    align-items: center;
 }
 
+.hotbar-cap {
+    width: 17px;
+    height: 46px;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.hotbar-cap--left {
+    background-image: url("../../Art/UI/Kit/HotbarCapLeft.png");
+}
+
+.hotbar-cap--right {
+    background-image: url("../../Art/UI/Kit/HotbarCapRight.png");
+}
+
+/* The slot sprites carry a transparent margin as wide as the selected slot's glow, so both
+   states swap in place - the visible frame is ~90% of the element. */
 .hotbar-slot {
-    width: 56px;
-    height: 56px;
-    margin: 4px;
-    background-color: rgb(61, 48, 35);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(90, 70, 50);
-    border-right-color: rgb(90, 70, 50);
-    border-top-color: rgb(90, 70, 50);
-    border-bottom-color: rgb(90, 70, 50);
+    width: 54px;
+    height: 51px;
+    margin-left: -2px;
+    margin-right: -2px;
+    background-image: url("../../Art/UI/Kit/Slot.png");
+    -unity-background-scale-mode: stretch-to-fill;
     align-items: center;
     justify-content: center;
-    position: relative;
+}
+
+.hotbar-slot--equipped {
+    background-image: url("../../Art/UI/Kit/SlotSelected.png");
 }
 
 .hotbar-slot__icon {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     -unity-background-scale-mode: scale-to-fit;
 }
 
 .hotbar-slot__quantity {
     position: absolute;
-    right: 2px;
-    bottom: 2px;
-    color: rgb(240, 230, 210);
+    right: 8px;
+    bottom: 5px;
+    color: rgb(245, 235, 215);
     font-size: 11px;
     -unity-font-style: bold;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
 }
 
-/* --- Health: bottom-left, vertical fill --- */
+.hotbar-slot__key {
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    color: rgb(225, 205, 160);
+    font-size: 10px;
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
+}
+
+/* --- Health: bottom-left, vertical bar with diamond caps, fills from the bottom --- */
 
 .health-bar {
     position: absolute;
-    bottom: 24px;
-    left: 24px;
-    width: 32px;
-    height: 160px;
-    background-color: rgb(43, 33, 24);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
+    bottom: 14px;
+    left: 16px;
+    width: 36px;
+    height: 200px;
+    background-image: url("../../Art/UI/Kit/BarVertical.png");
+    -unity-slice-top: 75;
+    -unity-slice-bottom: 75;
+    -unity-slice-scale: 0.42px;
+}
+
+.health-bar__groove {
+    position: absolute;
+    left: 11px;
+    right: 11px;
+    top: 37px;
+    bottom: 37px;
     justify-content: flex-end;
     overflow: hidden;
 }
@@ -76,46 +105,154 @@
 .health-bar__fill {
     width: 100%;
     height: 100%;
-    background-color: rgb(190, 40, 40);
+    background-image: url("../../Art/UI/Kit/FillRed.png");
+    -unity-slice-left: 6;
+    -unity-slice-right: 6;
+    -unity-slice-top: 6;
+    -unity-slice-bottom: 6;
+    -unity-slice-scale: 0.3px;
 }
 
-/* --- Stamina: centered, same bottom level as health, horizontal fill. Stays visible from
-   the moment stamina starts draining until it's fully back to max (not just while actively
-   draining), and fades in/out via opacity rather than snapping - PlayerHudController only
-   ever sets opacity, never display, so this transition is what animates it. --- */
+/* --- Stamina: centered at the bottom; fades in while not full (PlayerHudController sets
+   only opacity, this transition animates it). --- */
 
 .stamina-bar {
     position: absolute;
-    bottom: 24px;
+    bottom: 14px;
     left: 50%;
-    margin-left: -120px;
-    width: 240px;
-    height: 22px;
+    width: 290px;
+    height: 30px;
+    margin-left: -145px;
     opacity: 0;
     transition-property: opacity;
     transition-duration: 0.4s;
     transition-timing-function: ease-out;
-    background-color: rgb(43, 33, 24);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    justify-content: flex-start;
+    background-image: url("../../Art/UI/Kit/BarHorizontal.png");
+    -unity-slice-left: 75;
+    -unity-slice-right: 75;
+    -unity-slice-scale: 0.345px;
+}
+
+.stamina-bar__groove {
+    position: absolute;
+    left: 33px;
+    right: 32px;
+    top: 8px;
+    bottom: 9px;
     overflow: hidden;
 }
 
 .stamina-bar__fill {
     width: 100%;
     height: 100%;
-    background-color: rgb(180, 170, 60);
+    background-image: url("../../Art/UI/Kit/FillGold.png");
+    -unity-slice-left: 6;
+    -unity-slice-right: 6;
+    -unity-slice-top: 6;
+    -unity-slice-bottom: 6;
+    -unity-slice-scale: 0.3px;
+}
+
+/* --- Active food: right of the health bar - round wooden slots; the gold ring drains as a
+   timer (drawn by PlayerHudController over the ring). --- */
+
+.food-container {
+    position: absolute;
+    bottom: 12px;
+    left: 62px;
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.food-slot {
+    width: 58px;
+    height: 68px;
+    margin-right: 4px;
+    background-image: url("../../Art/UI/Kit/FoodSlot.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    align-items: center;
+    justify-content: center;
+}
+
+.food-slot__icon {
+    width: 32px;
+    height: 32px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.food-slot__ring {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+/* --- Day sign: top-right birch-bark plank, "Day N · HH:MM" and the weather icon --- */
+
+.day-sign {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 196px;
+    height: 54px;
+    background-image: url("../../Art/UI/Kit/DaySign.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding-left: 18px;
+    padding-right: 12px;
+}
+
+.clock-label {
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    color: rgb(62, 40, 22);
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.clock-label--night {
+    color: rgb(40, 50, 95);
+}
+
+.weather-icon {
+    width: 30px;
+    height: 30px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+/* Interaction prompt under the crosshair: "[E] Pick up: Wood" on a dark plaque. */
+.interact-prompt {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% 0;
+    margin-top: 22px;
+    padding: 3px 10px;
+    background-color: rgba(24, 16, 10, 0.72);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(176, 132, 52, 0.6);
+    border-right-color: rgba(176, 132, 52, 0.6);
+    border-top-color: rgba(176, 132, 52, 0.6);
+    border-bottom-color: rgba(176, 132, 52, 0.6);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    -unity-text-align: middle-center;
+    color: rgb(240, 230, 210);
+    font-size: 13px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.interact-prompt--hidden {
+    display: none;
 }
 
 /* --- Crosshair: dead center of the screen, a ring + a dot so it stays readable against any
@@ -201,121 +338,4 @@
     border-right-color: rgb(220, 60, 60);
     border-top-color: rgb(220, 60, 60);
     border-bottom-color: rgb(220, 60, 60);
-}
-
-/* --- Active food: bottom-left, just right of the health bar. One slot per active food
-   (PlayerFood.MaxActiveFoods), each an icon plus a thin bar showing remaining duration. --- */
-
-.food-container {
-    position: absolute;
-    bottom: 24px;
-    left: 68px;
-    flex-direction: row;
-}
-
-.food-slot {
-    width: 44px;
-    margin-right: 6px;
-    align-items: center;
-}
-
-.food-slot__icon {
-    width: 40px;
-    height: 40px;
-    background-color: rgb(61, 48, 35);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    -unity-background-scale-mode: scale-to-fit;
-}
-
-.food-slot__timer {
-    width: 40px;
-    height: 5px;
-    margin-top: 3px;
-    background-color: rgb(43, 33, 24);
-    overflow: hidden;
-}
-
-.food-slot__timer-fill {
-    height: 100%;
-    width: 100%;
-    background-color: rgb(200, 150, 60);
-}
-
-.food-slot__timer-fill--low {
-    background-color: rgb(200, 70, 50);
-}
-
-/* --- Clock: top-right, "Day N  HH:MM", tinted bluish at night. --- */
-
-.clock-label {
-    position: absolute;
-    top: 24px;
-    right: 24px;
-    padding: 6px 12px;
-    background-color: rgba(43, 33, 24, 0.75);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    color: rgb(240, 230, 210);
-    font-size: 14px;
-    -unity-font-style: bold;
-}
-
-.clock-label--night {
-    color: rgb(170, 190, 240);
-}
-
-/* Held (equipped) item - same gold frame as the Inventory panel. */
-.hotbar-slot--equipped {
-    border-left-color: rgb(230, 190, 80);
-    border-right-color: rgb(230, 190, 80);
-    border-top-color: rgb(230, 190, 80);
-    border-bottom-color: rgb(230, 190, 80);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    background-color: rgb(84, 66, 40);
-}
-
-.hotbar-slot__key {
-    position: absolute;
-    left: 3px;
-    top: 1px;
-    color: rgb(200, 185, 150);
-    font-size: 10px;
-}
-
-/* Interaction prompt under the crosshair: "[E] Gather Wood (needs Axe)". */
-.interact-prompt {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    margin-top: 22px;
-    -unity-text-align: upper-center;
-    color: rgb(240, 230, 210);
-    font-size: 14px;
-    -unity-font-style: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
 }

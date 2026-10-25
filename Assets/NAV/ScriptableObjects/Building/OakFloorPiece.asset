@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
+  m_Name: OakFloorPiece
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: OakFloorPiece
+  _displayName: Oak Floor
+  _icon: {fileID: 21300000, guid: 82a34656cb8abf54e9b6a8d27e381365, type: 3}
+  _cost:
+  - _item: {fileID: 11400000, guid: 9a7426b6a96769447a0e78221a1b421e, type: 2}
+    _amount: 4
+  _prefab: {fileID: 8464721206887795056, guid: 01786e1c5ab5571479e4a90583836719, type: 3}
+  _requiresWorkbench: 1
+  _requiredStation: {fileID: 11400000, guid: 88076d6efe864874a13bb414e213afdb, type: 2}
+  _requiredStationLevel: 3
+  _unlockItems: []

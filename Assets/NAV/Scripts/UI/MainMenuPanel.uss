@@ -1,3 +1,7 @@
+/* Main menu, Create World, Load Game and the confirm dialog - windows, buttons and inputs come
+   from NAVTheme.uss. Layout follows the developer's mockup: logo and a column of buttons on
+   the left. The background is plain dark until the menu art (mockup without UI) exists. */
+
 .main-menu-root {
     position: absolute;
     left: 0;
@@ -6,197 +10,221 @@
     bottom: 0;
     align-items: center;
     justify-content: center;
-    background-color: rgb(20, 15, 10);
+    background-color: rgb(18, 14, 10);
 }
+
+/* --- Title screen --- */
 
 .main-menu-panel {
-    background-color: rgb(43, 33, 24);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    padding: 32px 48px;
+    position: absolute;
+    left: 70px;
+    top: 50px;
     align-items: center;
-    min-width: 320px;
 }
 
-.main-menu-title {
-    color: rgb(230, 210, 160);
-    font-size: 48px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    margin-bottom: 4px;
-}
-
-.main-menu-subtitle {
-    color: rgb(190, 175, 150);
-    font-size: 14px;
-    -unity-text-align: middle-center;
-    margin-bottom: 24px;
+.main-menu-logo {
+    width: 420px;
+    height: 186px;
+    margin-bottom: 18px;
+    background-image: url("../../Art/UI/Kit/Logo.png");
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .main-menu-button {
-    width: 200px;
-    height: 44px;
-    margin: 6px 0;
-    background-color: rgb(61, 48, 35);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    color: rgb(230, 210, 160);
-    font-size: 18px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
+    width: 310px;
+    height: 72px;
+    margin-bottom: 4px;
+    font-size: 23px;
 }
 
-.main-menu-button:hover {
-    background-color: rgb(80, 63, 45);
+.main-menu-version {
+    position: absolute;
+    right: 18px;
+    bottom: 12px;
+    color: rgb(200, 170, 110);
+    font-size: 12px;
 }
 
-.load-game-panel {
-    min-width: 420px;
-}
+/* --- Create World (parchment) --- */
 
 .create-world-panel {
-    min-width: 360px;
+    width: 460px;
+    display: none;
+    align-items: stretch;
+    padding: 46px 40px 30px 40px;
 }
 
 .create-world-field {
-    width: 100%;
     margin-bottom: 14px;
 }
 
 .create-world-field__label {
-    color: rgb(190, 175, 150);
-    font-size: 13px;
+    color: rgb(62, 38, 18);
+    font-size: 16px;
+    -unity-font-style: bold;
     margin-bottom: 4px;
-}
-
-.create-world-field__input {
-    background-color: rgb(30, 23, 17);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    color: rgb(230, 210, 160);
-    font-size: 14px;
-    padding: 4px 6px;
 }
 
 .create-world-seed-row {
     flex-direction: row;
+    align-items: center;
 }
 
 .create-world-seed-row__input {
     flex-grow: 1;
-    margin-right: 6px;
 }
 
 .create-world-seed-row__randomize {
-    width: 90px;
-    height: auto;
-    margin: 0;
-    font-size: 12px;
+    min-width: 0;
+    width: 140px;
+    height: 48px;
+    margin-left: 8px;
+    font-size: 14px;
+    padding: 0 18px 2px 18px;
 }
 
-.load-game-title {
-    font-size: 30px;
+.create-world-button {
+    align-self: center;
+    width: 250px;
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+
+.create-world-back-button {
+    align-self: center;
+    width: 170px;
+    height: 50px;
+    font-size: 14px;
+}
+
+/* --- Load Game --- */
+
+.load-game-panel {
+    width: 640px;
+    display: none;
+    height: 500px;
+    max-height: 90%;
 }
 
 .save-list {
-    width: 100%;
-    max-height: 320px;
-    margin-bottom: 16px;
+    flex-grow: 1;
+    margin-bottom: 10px;
 }
 
 .save-list-item {
     flex-direction: row;
     align-items: center;
-    padding: 10px 12px;
+    height: 66px;
     margin-bottom: 6px;
-    background-color: rgb(61, 48, 35);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
+    padding-left: 18px;
+    padding-right: 34px;
+    background-image: url("../../Art/UI/Kit/InputField.png");
+    -unity-slice-left: 26;
+    -unity-slice-right: 44;
+    -unity-slice-top: 14;
+    -unity-slice-bottom: 14;
+    -unity-slice-scale: 0.7px;
+}
+
+.save-list-item:hover {
+    -unity-background-image-tint-color: rgb(255, 222, 160);
 }
 
 .save-list-item__info {
-    flex-direction: column;
     flex-grow: 1;
-}
-
-.save-list-item__info:hover {
-    opacity: 0.85;
+    height: 100%;
+    justify-content: center;
 }
 
 .save-list-item__name {
-    color: rgb(230, 210, 160);
-    font-size: 15px;
+    color: rgb(240, 228, 200);
+    font-size: 17px;
+    margin: 0;
+    padding: 0;
     -unity-font-style: bold;
+}
+
+.save-list-item__seed {
+    color: rgb(196, 178, 146);
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+}
+
+.save-list-item__meta {
+    position: absolute;
+    right: 6px;
+    top: 0;
+    bottom: 0;
+    align-items: flex-end;
+    justify-content: center;
 }
 
 .save-list-item__date {
-    color: rgb(190, 175, 150);
-    font-size: 12px;
+    color: rgb(222, 206, 172);
+    font-size: 13px;
+    margin: 0;
+    padding: 0;
+}
+
+.save-list-item__badge {
+    margin-top: 3px;
+    padding: 0 9px 1px 9px;
+    background-image: url("../../Art/UI/Kit/Badge.png");
+    -unity-slice-left: 18;
+    -unity-slice-right: 18;
+    -unity-slice-scale: 0.5px;
+    color: rgb(58, 34, 12);
+    font-size: 10px;
+    -unity-font-style: bold;
 }
 
 .save-list-item__delete-button {
-    width: 28px;
-    height: 28px;
-    margin-left: 8px;
+    width: 30px;
+    height: 30px;
+    margin-left: 10px;
     padding: 0;
-    background-color: rgb(90, 40, 32);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    color: rgb(230, 210, 160);
-    font-size: 14px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    background-image: url("../../Art/UI/Kit/IconClose.png");
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .save-list-item__delete-button:hover {
-    background-color: rgb(130, 55, 42);
+    background-color: rgba(0, 0, 0, 0);
+    -unity-background-image-tint-color: rgb(255, 170, 140);
 }
 
 .save-list-empty {
-    color: rgb(150, 135, 115);
-    font-size: 14px;
-    -unity-font-style: italic;
-    margin-bottom: 16px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    margin-bottom: 10px;
     display: none;
 }
+
+.save-list-empty__icon {
+    width: 34px;
+    height: 34px;
+    margin-right: 10px;
+    background-image: url("../../Art/UI/Kit/IconEmpty.png");
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.save-list-empty__text {
+    font-size: 17px;
+}
+
+.load-back-button {
+    align-self: center;
+    width: 180px;
+}
+
+/* --- Confirm dialog (parchment) --- */
 
 .confirm-dialog-root {
     position: absolute;
@@ -211,31 +239,19 @@
 }
 
 .confirm-dialog {
-    background-color: rgb(43, 33, 24);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    padding: 24px 32px;
-    min-width: 320px;
+    width: 380px;
+    margin-top: 0;
+    padding: 30px 30px 22px 30px;
     align-items: center;
 }
 
 .confirm-dialog__message {
-    color: rgb(230, 210, 160);
+    color: rgb(62, 38, 18);
     font-size: 16px;
+    -unity-font-style: bold;
     white-space: normal;
     -unity-text-align: middle-center;
-    margin-bottom: 20px;
-    max-width: 320px;
+    margin-bottom: 16px;
 }
 
 .confirm-dialog__buttons {
@@ -243,18 +259,8 @@
 }
 
 .confirm-dialog__button {
-    width: 130px;
-    margin: 0 6px;
-}
-
-.confirm-dialog__button--danger {
-    background-color: rgb(120, 40, 30);
-    border-left-color: rgb(180, 60, 45);
-    border-right-color: rgb(180, 60, 45);
-    border-top-color: rgb(180, 60, 45);
-    border-bottom-color: rgb(180, 60, 45);
-}
-
-.confirm-dialog__button--danger:hover {
-    background-color: rgb(150, 55, 40);
+    min-width: 0;
+    width: 150px;
+    height: 44px;
+    margin: 0 4px;
 }

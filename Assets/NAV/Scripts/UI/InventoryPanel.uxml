@@ -1,10 +1,19 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="NAVTheme.uss" />
     <Style src="InventoryPanel.uss" />
     <ui:VisualElement name="inventory-root" class="inventory-root">
-        <ui:VisualElement name="inventory-panel" class="inventory-panel">
-            <ui:Label text="Inventory" class="inventory-title" />
-            <ui:Label name="weight-label" text="Weight: 0/0 kg" class="inventory-weight" />
+        <ui:VisualElement name="inventory-panel" class="inventory-panel nav-window">
+            <ui:Label text="Inventory" class="nav-title" />
             <ui:VisualElement name="slot-container" class="inventory-grid" />
+            <ui:VisualElement class="inventory-footer">
+                <ui:VisualElement class="inventory-footer__icon" />
+                <ui:Label name="weight-label" text="0 / 0 kg" class="inventory-weight nav-text" />
+                <ui:VisualElement class="inventory-footer__bar nav-bar-small">
+                    <ui:VisualElement class="nav-bar-small__groove">
+                        <ui:VisualElement name="weight-fill" class="nav-bar-small__fill" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

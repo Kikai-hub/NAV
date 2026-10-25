@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_dagger2
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_dagger2
-  _displayName: Dagger 2
-  _description: Dagger from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Bronze Dagger
+  _description: A cast bronze dagger with a golden guard.
   _icon: {fileID: 21300000, guid: 615a31130c5d26347ac3fddad408ceea, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 2c5f6a15a33043643b28648b80101fd5, type: 2}
   _heldPrefab: {fileID: 8981725920044241310, guid: 837177e476c5c7946ba85e5af352dfec, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}

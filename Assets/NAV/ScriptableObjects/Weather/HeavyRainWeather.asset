@@ -14,15 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Weather.WeatherDefinition
   _id: HeavyRain
   _displayName: Heavy Rain
-  _minDurationSeconds: 90
-  _maxDurationSeconds: 180
+  _icon: {fileID: 21300000, guid: 2172c417ace46f541bcc74bfc5b14abc, type: 3}
+  _nightIcon: {fileID: 0}
+  _minDurationSeconds: 60
+  _maxDurationSeconds: 120
   _transitions:
   - _target: {fileID: 11400000, guid: 06bc896831938814a91d08e969ffa0a1, type: 2}
-    _weight: 0.5
-  - _target: {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
-    _weight: 0.3
+    _weight: 0.55
   - _target: {fileID: 11400000, guid: 3da18292f47cc2e4f951146358aab652, type: 2}
-    _weight: 0.2
+    _weight: 0.3
+  - _target: {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
+    _weight: 0.15
   _rainRate: 4500
   _sunMultiplier: 0.18
   _ambientMultiplier: 0.55

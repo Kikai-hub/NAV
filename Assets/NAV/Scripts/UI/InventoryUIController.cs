@@ -42,6 +42,8 @@ namespace NAV.UI
         private VisualElement _root;
         private VisualElement _slotContainer;
         private Label _weightLabel;
+        private VisualElement _weightFill;
+        private ItemTooltip _tooltip;
         private readonly List<VisualElement> _slotElements = new();
         private bool _visible;
 
@@ -82,6 +84,7 @@ namespace NAV.UI
             _root = documentRoot.Q<VisualElement>("inventory-root");
             _slotContainer = documentRoot.Q<VisualElement>("slot-container");
             _weightLabel = documentRoot.Q<Label>("weight-label");
+            _weightFill = documentRoot.Q<VisualElement>("weight-fill");
 
             if (_root == null || _slotContainer == null || _weightLabel == null)
             {
@@ -96,6 +99,8 @@ namespace NAV.UI
                 _playerEquipment.Changed += RefreshSlots;
             }
 
+            // On the whole screen, not the panel, so it can sit beside the panel's edge.
+            _tooltip = new ItemTooltip(documentRoot);
             BuildSlots();
             SetVisible(false);
         }
@@ -172,6 +177,7 @@ namespace NAV.UI
             else
             {
                 CancelDrag();
+                _tooltip?.Hide();
             }
 
             VisibilityChanged?.Invoke(visible);
@@ -187,16 +193,21 @@ namespace NAV.UI
             {
                 var slot = new VisualElement { userData = i };
                 slot.AddToClassList("inventory-slot");
+                slot.AddToClassList("nav-slot");
 
-                var icon = new VisualElement();
+                var icon = new VisualElement { pickingMode = PickingMode.Ignore };
                 icon.AddToClassList("inventory-slot__icon");
+                icon.AddToClassList("nav-slot__icon");
                 slot.Add(icon);
 
-                var quantity = new Label();
+                var quantity = new Label { pickingMode = PickingMode.Ignore };
                 quantity.AddToClassList("inventory-slot__quantity");
+                quantity.AddToClassList("nav-slot__quantity");
                 slot.Add(quantity);
 
                 slot.RegisterCallback<PointerDownEvent>(OnSlotPointerDown);
+                slot.RegisterCallback<PointerEnterEvent>(OnSlotPointerEnter);
+                slot.RegisterCallback<PointerLeaveEvent>(_ => _tooltip.Hide());
 
                 _slotContainer.Add(slot);
                 _slotElements.Add(slot);
@@ -206,16 +217,15 @@ namespace NAV.UI
         private void RefreshSlots()
         {
             IReadOnlyList<ItemStack> slots = _playerInventory.Inventory.Slots;
-            int equippedIndex = _playerEquipment != null ? _playerEquipment.FindEquippedSlotIndex() : -1;
-
             for (int i = 0; i < _slotElements.Count && i < slots.Count; i++)
             {
                 VisualElement slotElement = _slotElements[i];
-                slotElement.EnableInClassList("inventory-slot--equipped", i == equippedIndex);
+                slotElement.EnableInClassList("nav-slot--selected", _playerEquipment != null && _playerEquipment.IsSlotEquipped(i));
                 VisualElement icon = slotElement.Q<VisualElement>(className: "inventory-slot__icon");
                 Label quantity = slotElement.Q<Label>(className: "inventory-slot__quantity");
 
                 ItemStack stack = slots[i];
+                slotElement.EnableInClassList("nav-slot--empty", stack.IsEmpty);
                 if (stack.IsEmpty)
                 {
                     icon.style.backgroundImage = new StyleBackground();
@@ -237,10 +247,39 @@ namespace NAV.UI
             bool hasLimit = inventory.MaxWeight > 0f;
 
             _weightLabel.text = hasLimit
-                ? $"Weight: {inventory.TotalWeight:F1}/{inventory.MaxWeight:F0} kg" + (inventory.IsOverloaded ? "  (OVERLOADED)" : string.Empty)
-                : $"Weight: {inventory.TotalWeight:F1} kg";
+                ? $"{inventory.TotalWeight:0.#} / {inventory.MaxWeight:0} kg"
+                : $"{inventory.TotalWeight:0.#} kg";
+            if (_playerEquipment != null && _playerEquipment.TotalArmor > 0f)
+            {
+                _weightLabel.text += $"  ·  Armour {_playerEquipment.TotalArmor:0.#}";
+            }
 
             _weightLabel.EnableInClassList("inventory-weight--overloaded", inventory.IsOverloaded);
+            if (_weightFill != null)
+            {
+                float fraction = hasLimit ? Mathf.Clamp01(inventory.TotalWeight / inventory.MaxWeight) : 0f;
+                _weightFill.style.width = Length.Percent(fraction * 100f);
+                _weightFill.EnableInClassList("nav-bar-small__fill--over", inventory.IsOverloaded);
+            }
+        }
+
+        private void OnSlotPointerEnter(PointerEnterEvent evt)
+        {
+            if (_dragSourceIndex >= 0 || evt.currentTarget is not VisualElement slot)
+            {
+                return;
+            }
+
+            int index = (int)slot.userData;
+            IReadOnlyList<ItemStack> slots = _playerInventory.Inventory.Slots;
+            ItemDefinition item = index < slots.Count && !slots[index].IsEmpty ? slots[index].Definition : null;
+            if (item == null)
+            {
+                _tooltip.Hide();
+                return;
+            }
+
+            _tooltip.Show(item, slot, ItemTooltip.UseHint(item));
         }
 
         // --- Drag and drop (LMB): move/swap within the grid, or drop outside the panel to
@@ -279,6 +318,7 @@ namespace NAV.UI
             }
 
             _dragSourceIndex = index;
+            _tooltip.Hide();
             slot.CapturePointer(evt.pointerId);
             slot.RegisterCallback<PointerMoveEvent>(OnSlotPointerMove);
             slot.RegisterCallback<PointerUpEvent>(OnSlotPointerUp);
@@ -361,7 +401,7 @@ namespace NAV.UI
             {
                 _playerFood.TryEatFromSlot(index);
             }
-            else if (item.IsEquippable && _playerEquipment != null)
+            else if ((item.IsEquippable || item.IsArmor) && _playerEquipment != null)
             {
                 _playerEquipment.ToggleFromSlot(index);
             }

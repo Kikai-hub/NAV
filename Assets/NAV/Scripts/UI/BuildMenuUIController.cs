@@ -65,6 +65,7 @@ namespace NAV.UI
             }
 
             _building.StateChanged += HandleBuildingStateChanged;
+            _building.PiecesChanged += HandlePiecesChanged;
             _playerInventory.Inventory.Changed += Refresh;
             BuildSlots();
             _root.style.display = DisplayStyle.None;
@@ -91,6 +92,7 @@ namespace NAV.UI
             if (_building != null)
             {
                 _building.StateChanged -= HandleBuildingStateChanged;
+                _building.PiecesChanged -= HandlePiecesChanged;
             }
 
             if (_playerInventory != null && _playerInventory.Inventory != null)
@@ -121,6 +123,13 @@ namespace NAV.UI
             {
                 Refresh();
             }
+        }
+
+        // A newly discovered piece (or a loaded save) changes the slot list.
+        private void HandlePiecesChanged()
+        {
+            BuildSlots();
+            Refresh();
         }
 
         private void SetVisible(bool visible)
@@ -257,7 +266,12 @@ namespace NAV.UI
                     .Append(" (").Append(have).Append(')');
             }
 
-            if (piece.RequiresWorkbench)
+            if (piece.RequiresWorkbench && piece.RequiredStation != null)
+            {
+                text.Append("\nNeeds a ").Append(piece.RequiredStation.DisplayName)
+                    .Append(" (level ").Append(piece.RequiredStationLevel).Append(") nearby");
+            }
+            else if (piece.RequiresWorkbench)
             {
                 text.Append("\nNeeds a workbench nearby");
             }

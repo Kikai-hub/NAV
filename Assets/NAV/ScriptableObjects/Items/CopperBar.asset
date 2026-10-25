@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: CopperBar
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: CopperBar
+  _displayName: Copper Bar
+  _description: Smelted copper, ready for the smith.
+  _icon: {fileID: 21300000, guid: 5604ea38399f5984a9928cc938ac411a, type: 3}
+  _category: 0
+  _maxStackSize: 30
+  _weight: 1
+  _worldPrefab: {fileID: 559423184426722581, guid: 4f79424f9dac4744cb17c189ffd5a09f, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}

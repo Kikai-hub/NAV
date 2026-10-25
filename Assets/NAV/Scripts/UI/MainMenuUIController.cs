@@ -35,7 +35,7 @@ namespace NAV.UI
         private TextField _worldSeedField;
         private VisualElement _loadGamePanel;
         private ScrollView _saveListView;
-        private Label _saveListEmptyLabel;
+        private VisualElement _saveListEmptyLabel;
         private VisualElement _confirmDialogRoot;
         private Label _confirmDialogMessage;
         private Button _confirmConfirmButton;
@@ -71,7 +71,12 @@ namespace NAV.UI
             _worldSeedField = documentRoot.Q<TextField>("world-seed-field");
             _loadGamePanel = documentRoot.Q<VisualElement>("load-game-panel");
             _saveListView = documentRoot.Q<ScrollView>("save-list");
-            _saveListEmptyLabel = documentRoot.Q<Label>("save-list-empty-label");
+            _saveListEmptyLabel = documentRoot.Q<VisualElement>("save-list-empty-label");
+            Label versionLabel = documentRoot.Q<Label>("version-label");
+            if (versionLabel != null)
+            {
+                versionLabel.text = $"v{Application.version}";
+            }
             _confirmDialogRoot = documentRoot.Q<VisualElement>("confirm-dialog-root");
             _confirmDialogMessage = documentRoot.Q<Label>("confirm-dialog-message");
             _confirmConfirmButton = documentRoot.Q<Button>("confirm-dialog-confirm-button");
@@ -221,32 +226,38 @@ namespace NAV.UI
                 string displayName = string.IsNullOrWhiteSpace(save.WorldName) ? "Unnamed World" : save.WorldName;
 
                 DateTime savedAt = DateTimeOffset.FromUnixTimeSeconds(save.SavedAtUnixSeconds).LocalDateTime;
-                var nameLabel = new Label($"{displayName} (seed {save.WorldSeed})");
+                var nameLabel = new Label(displayName);
                 nameLabel.AddToClassList("save-list-item__name");
                 info.Add(nameLabel);
 
+                var seedLabel = new Label($"Seed: {save.WorldSeed}");
+                seedLabel.AddToClassList("save-list-item__seed");
+                info.Add(seedLabel);
+
                 bool fromNewerGame = SaveSystem.IsFromNewerGame(save);
                 bool outdatedWorld = !fromNewerGame && SaveSystem.IsWorldGenerationOutdated(save);
-                string dateText = savedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
-                if (fromNewerGame)
+
+                // Right side: the date, and a gold badge for saves that need attention.
+                var meta = new VisualElement { pickingMode = PickingMode.Ignore };
+                meta.AddToClassList("save-list-item__meta");
+                var dateLabel = new Label(savedAt.ToString("dd.MM.yyyy   HH:mm", CultureInfo.InvariantCulture));
+                dateLabel.AddToClassList("save-list-item__date");
+                meta.Add(dateLabel);
+                if (fromNewerGame || outdatedWorld)
                 {
-                    dateText += "  ·  saved by a newer version";
-                }
-                else if (outdatedWorld)
-                {
-                    dateText += "  ·  older world version";
+                    var badge = new Label(fromNewerGame ? "saved by a newer version" : "older world version");
+                    badge.AddToClassList("save-list-item__badge");
+                    meta.Add(badge);
                 }
 
-                var dateLabel = new Label(dateText);
-                dateLabel.AddToClassList("save-list-item__date");
-                info.Add(dateLabel);
+                info.Add(meta);
 
                 string capturedId = save.SaveId;
                 string capturedName = displayName;
                 info.RegisterCallback<ClickEvent>(_ => HandleSaveEntryClicked(capturedId, capturedName, fromNewerGame, outdatedWorld));
                 item.Add(info);
 
-                var deleteButton = new Button(() => HandleDeleteClicked(capturedId, capturedName)) { text = "✕" };
+                var deleteButton = new Button(() => HandleDeleteClicked(capturedId, capturedName)) { text = string.Empty, tooltip = "Delete" };
                 deleteButton.AddToClassList("save-list-item__delete-button");
                 item.Add(deleteButton);
 

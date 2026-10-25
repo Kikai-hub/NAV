@@ -14,15 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Weather.WeatherDefinition
   _id: Rain
   _displayName: Rain
-  _minDurationSeconds: 120
-  _maxDurationSeconds: 240
+  _icon: {fileID: 21300000, guid: 2172c417ace46f541bcc74bfc5b14abc, type: 3}
+  _nightIcon: {fileID: 0}
+  _minDurationSeconds: 90
+  _maxDurationSeconds: 180
   _transitions:
   - _target: {fileID: 11400000, guid: 3da18292f47cc2e4f951146358aab652, type: 2}
-    _weight: 0.5
+    _weight: 0.65
   - _target: {fileID: 11400000, guid: 186938d0a265d2944bd400ba96908ee9, type: 2}
-    _weight: 0.35
+    _weight: 0.25
   - _target: {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
-    _weight: 0.15
+    _weight: 0.1
   _rainRate: 1500
   _sunMultiplier: 0.3
   _ambientMultiplier: 0.75

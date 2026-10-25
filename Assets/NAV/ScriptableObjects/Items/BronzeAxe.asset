@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: BronzeAxe
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: BronzeAxe
+  _displayName: Bronze Axe
+  _description: A bronze axe - keeps its edge longer than copper.
+  _icon: {fileID: 21300000, guid: 3fc46ae47bbebd14cb2d431f24f2fe12, type: 3}
+  _category: 1
+  _maxStackSize: 1
+  _weight: 3
+  _worldPrefab: {fileID: 701936779449967190, guid: 9f8a4c2b297423e45a6f7063eec07003, type: 3}
+  _food: {fileID: 0}
+  _toolType: 1
+  _toolTier: 3
+  _weapon: {fileID: 11400000, guid: b1e7409b6d7ea3540b1ce08cfb157fb0, type: 2}
+  _heldPrefab: {fileID: 8062918011731008700, guid: 5abbae9bfdc5a724b9922f718aacbb50, type: 3}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}

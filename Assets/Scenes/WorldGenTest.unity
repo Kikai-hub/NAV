@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 125577334}
   - component: {fileID: 125577333}
   - component: {fileID: 125577332}
+  - component: {fileID: 125577335}
   m_Layer: 0
   m_Name: WorldClock
   m_TagString: Untagged
@@ -184,6 +185,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &125577335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125577331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7aa381ac454e824c9018ec89b629467, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Lighting.AtmosphereFog
+  _lighting: {fileID: 125577332}
+  _weather: {fileID: 582060415}
+  _clock: {fileID: 125577333}
+  _worldGenerator: {fileID: 1017573453}
+  _camera: {fileID: 0}
+  _morningHazeDensity: 0.006
+  _morningHazeHours: 3
+  _biomeBlendSeconds: 4
+  _horizonMatch: 0.85
+  _horizonSampleSeconds: 0.25
 --- !u!1 &311055026
 GameObject:
   m_ObjectHideFlags: 0
@@ -651,6 +674,7 @@ GameObject:
   m_Component:
   - component: {fileID: 490110773}
   - component: {fileID: 490110772}
+  - component: {fileID: 490110774}
   m_Layer: 0
   m_Name: HitFeedback
   m_TagString: Untagged
@@ -672,6 +696,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Combat.HitFeedback
   _playerCombat: {fileID: 1082341856}
   _particleMaterialTemplate: {fileID: 2100000, guid: 021533d45263e834ab5d290a78090a1a, type: 2}
+  _impacts: {fileID: 490110774}
   _combatantParticles: 16
   _gatherParticles: 18
   _bouncedParticles: 4
@@ -707,6 +732,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &490110774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 490110771}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 824b4980e59f2044d97c321472b59aa2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Combat.ImpactEffects
+  _chunkMaterial: {fileID: 2100000, guid: 276434ceb317d5c45a0484d9f288d0c9, type: 2}
+  _softMaterial: {fileID: 2100000, guid: 3045a9d67c925f94aa39708b02551c5c, type: 2}
+  _additiveMaterial: {fileID: 2100000, guid: a04dfb5745e562b429bbf0112d92cfb0, type: 2}
+  _splatMaterial: {fileID: 2100000, guid: dcef25238ea2b024cb74b9124e54a16d, type: 2}
+  _chipMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  _shardMesh: {fileID: 4300000, guid: ce6de610827016e4aa1d89b902df9bcc, type: 2}
 --- !u!1 &497118594
 GameObject:
   m_ObjectHideFlags: 0
@@ -792,6 +835,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
   _initialWeather: {fileID: 11400000, guid: 3da18292f47cc2e4f951146358aab652, type: 2}
   _transitionSeconds: 30
+  _maxWetSeconds: 360
   _debugWeather: {fileID: 11400000, guid: bae530de2d7bec646aa3ba1899e25d87, type: 2}
 --- !u!4 &582060416
 Transform:
@@ -800,6 +844,61 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 582060414}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &613919650
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 613919652}
+  - component: {fileID: 613919651}
+  m_Layer: 0
+  m_Name: Ambience
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &613919651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 613919650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15f24d99d512fd248a03ca3f42ed3a78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Audio.AmbienceController
+  _worldGenerator: {fileID: 1017573453}
+  _clock: {fileID: 125577333}
+  _weather: {fileID: 582060415}
+  _listener: {fileID: 0}
+  _player: {fileID: 0}
+  _lightRain: {fileID: 8300000, guid: d6cb6466a567b4e47a2f8ae99e882edc, type: 3}
+  _heavyRain: {fileID: 8300000, guid: 3a9e52985b9e3c54c9979718b76095ac, type: 3}
+  _heavyRainRate: 4000
+  _rainVolume: 0.7
+  _sampleRadius: 30
+  _indoorFactor: 0.45
+--- !u!4 &613919652
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 613919650}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -965,6 +1064,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7515587546222981938, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 813183045}
+    - targetCorrespondingSourceObject: {fileID: 7515587546222981938, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 813183047}
   m_SourcePrefab: {fileID: 100100000, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
 --- !u!1 &685342613
 GameObject:
@@ -1174,6 +1276,25 @@ MonoBehaviour:
   _footSmoothing: 18
   _bodySmoothing: 10
   _weightSmoothing: 8
+--- !u!114 &813183047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813183040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa0017a372ed940489345c33d58279b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Equipment.ArmorView
+  _equipment: {fileID: 1082341859}
+  _headBone: B-head
+  _chestBone: B-chest
+  _thighLeftBone: B-thigh.L
+  _thighRightBone: B-thigh.R
+  _shinLeftBone: B-shin.L
+  _shinRightBone: B-shin.R
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1417,6 +1538,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49f6bdf89419255410b0594e5dd9aadd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Generation.WorldGenerator
+  _streamTarget: {fileID: 0}
+  _impostors: {fileID: 11400000, guid: 53fe8995a63313548ac40ab3012b77fb, type: 2}
   _settings: {fileID: 11400000, guid: e84f65130b2806f3315aa7dadfc6e57c, type: 2}
   _terrain: {fileID: 1571528516}
   _waterPlane: {fileID: 1335896911}
@@ -1469,6 +1592,7 @@ MonoBehaviour:
   _minSpawnDistance: 50
   _maxSpawnDistance: 120
   _despawnDistance: 80
+  _leashDistance: 115
   _checkInterval: 5
   _placementAttempts: 20
 --- !u!1 &1082341843
@@ -1495,6 +1619,7 @@ GameObject:
   - component: {fileID: 1082341857}
   - component: {fileID: 1082341858}
   - component: {fileID: 1082341859}
+  - component: {fileID: 1082341860}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1699,6 +1824,51 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c4a95659f0c8e0587fb57b7a9e08c119, type: 2}
   - {fileID: 11400000, guid: dabec712b1d925652c4a438c880e1bd1, type: 2}
   - {fileID: 11400000, guid: cedf55cc5dbc728499439cdfca080d63, type: 2}
+  - {fileID: 11400000, guid: fc3f520fa07e0b345bab0bd5e5308c0a, type: 2}
+  - {fileID: 11400000, guid: a2f60630dd513d24c838eff19497d239, type: 2}
+  - {fileID: 11400000, guid: afdbdda6fb2911546a18a9d2d9052bf0, type: 2}
+  - {fileID: 11400000, guid: 980bcdac72ad02148bd1f28486d18d89, type: 2}
+  - {fileID: 11400000, guid: 1e5318f8c413e824fbdf5e88f2808d30, type: 2}
+  - {fileID: 11400000, guid: 527fbde99778e194c8aab5961126886c, type: 2}
+  - {fileID: 11400000, guid: 22faf048a2b27ab4598c70c315439410, type: 2}
+  - {fileID: 11400000, guid: e2de009371fa3b44bb22006b14c41c31, type: 2}
+  - {fileID: 11400000, guid: 55c658fcaff36dc40ba741a98e6bcbbb, type: 2}
+  - {fileID: 11400000, guid: 7ed72226bc8fd8c45a04b1f2f5d97ecc, type: 2}
+  - {fileID: 11400000, guid: d899f01e78f87584688358bb47b38e98, type: 2}
+  - {fileID: 11400000, guid: b84bb8be787af4e4eb0bdf897892b548, type: 2}
+  - {fileID: 11400000, guid: 21871f85b4ec8ae4588c1bbae1a054e7, type: 2}
+  - {fileID: 11400000, guid: 71b6b0fb364e2aa4c8f4b38ee939c642, type: 2}
+  - {fileID: 11400000, guid: 024dccc1022012843b78aae98689bbba, type: 2}
+  - {fileID: 11400000, guid: 8dfd323733ed04a47a8774bfef64def8, type: 2}
+  - {fileID: 11400000, guid: e648ef4b7c1b68249b31b05ebdaa3772, type: 2}
+  - {fileID: 11400000, guid: f56d591fd511f4e42aac311d0e7f06ab, type: 2}
+  - {fileID: 11400000, guid: 6e4d9999e3fde234e950d9e649c8fcca, type: 2}
+  - {fileID: 11400000, guid: 5e96cb4f763590b45a17f81ddc97f5b0, type: 2}
+  - {fileID: 11400000, guid: 86843115cd9c8bc4a9b56e35f7127368, type: 2}
+  - {fileID: 11400000, guid: abed2dbe7d1dd634f94e8ea4f387e1e3, type: 2}
+  - {fileID: 11400000, guid: 25ae85d3551836b4092fb0cc7244f12c, type: 2}
+  - {fileID: 11400000, guid: 596be00f5b4fdb64ba232b9071078f9f, type: 2}
+  - {fileID: 11400000, guid: 5b0f7173eb452764f9f5a592df8a9a31, type: 2}
+  - {fileID: 11400000, guid: aca2e063b63babf47985ec7ced203465, type: 2}
+  - {fileID: 11400000, guid: a6a146df5df7336418b05327a944c325, type: 2}
+  - {fileID: 11400000, guid: dbee4deb05d744249a7a524fc3dde8ea, type: 2}
+  - {fileID: 11400000, guid: 39f0f13da05dbcc4b8ab04f1aeda155f, type: 2}
+  - {fileID: 11400000, guid: 9330979355e57f44fbd2d4a01c1b46f0, type: 2}
+  - {fileID: 11400000, guid: efd2dee6dd4f66f43882193ce09c24b8, type: 2}
+  - {fileID: 11400000, guid: 67e1a4559afa09747a4632907c5c7fd2, type: 2}
+  - {fileID: 11400000, guid: 3dac1e91b74959047af243321644d20a, type: 2}
+  - {fileID: 11400000, guid: a522f23afe4e7dd49845d017905e2faa, type: 2}
+  - {fileID: 11400000, guid: d0a2f3a701f2f6446a01f38367be9f2a, type: 2}
+  - {fileID: 11400000, guid: 650a87495700e164094a7c14bd8d004d, type: 2}
+  - {fileID: 11400000, guid: 1c2883c7fca709e40bcb33cd1af593f7, type: 2}
+  - {fileID: 11400000, guid: 871e66169a336ff43abc767018ea0935, type: 2}
+  - {fileID: 11400000, guid: c7e59bbcaa60c83499de93a88863ebf3, type: 2}
+  - {fileID: 11400000, guid: 9aeac28f24ae9884aa2f931ed6ed6732, type: 2}
+  - {fileID: 11400000, guid: c4c6d1a27feeb614b95374baa797db70, type: 2}
+  - {fileID: 11400000, guid: 09fe6f9ba0c80bc449901cb05ece4dce, type: 2}
+  - {fileID: 11400000, guid: 5066fdf9b943a1244ba2ba5bdb32bb19, type: 2}
+  - {fileID: 11400000, guid: 8a47c9a9591262543bd3d8973b5a8aa0, type: 2}
+  - {fileID: 11400000, guid: bdfbb8c0331f72245a70ca42047b87ec, type: 2}
 --- !u!114 &1082341854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1724,6 +1894,24 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 826deb7d88f7ac248864107ce096af9a, type: 2}
   - {fileID: 11400000, guid: 48bb8abc4f7c6514aad9f88da542a958, type: 2}
   - {fileID: 11400000, guid: f4394a8db4b8c144fa4255769bba47fd, type: 2}
+  - {fileID: 11400000, guid: 11d467675d614984e9f7e4d2bd88c284, type: 2}
+  - {fileID: 11400000, guid: 7c4499c3ab81c7f4b8620a5e5b525326, type: 2}
+  - {fileID: 11400000, guid: c5b6f47c750fd2243a8918061607d1d4, type: 2}
+  - {fileID: 11400000, guid: 8899bcd29e3b95f45ab7a36ed3a18d12, type: 2}
+  - {fileID: 11400000, guid: cc0ca07fef62e5449856243dac546353, type: 2}
+  - {fileID: 11400000, guid: 1393d9445904f654787491088f44e185, type: 2}
+  - {fileID: 11400000, guid: 12fccc4f4db91dc458c48cb450a43f74, type: 2}
+  - {fileID: 11400000, guid: 2fc348a569bef4c49b0e04476f696690, type: 2}
+  - {fileID: 11400000, guid: 1e2274c5c1579164e935cb732be837f5, type: 2}
+  - {fileID: 11400000, guid: eba4c1f79a38cb44c8044964e8d17b71, type: 2}
+  - {fileID: 11400000, guid: 87133aa2cf506af4d89c2d0284e7cbe6, type: 2}
+  - {fileID: 11400000, guid: 936a8542479ea13459d2c898931d96dc, type: 2}
+  - {fileID: 11400000, guid: aaeabdfc1708c02489e0628f320c5099, type: 2}
+  - {fileID: 11400000, guid: 48beba5b874bfef4bae5e90067b78df2, type: 2}
+  - {fileID: 11400000, guid: 62d5a4ce51460714194b513f0161b144, type: 2}
+  - {fileID: 11400000, guid: c02737cb3d0e9dd4cac5d0baa311ba74, type: 2}
+  - {fileID: 11400000, guid: cce604e60529d2d43bd7a2af47713d45, type: 2}
+  _crafting: {fileID: 1082341853}
   _placeCooldown: 0.6
   _maxPlacementDistance: 15
   _rotationStepDegrees: 45
@@ -1826,6 +2014,26 @@ MonoBehaviour:
   _playerInventory: {fileID: 1082341852}
   _inputHandler: {fileID: 1082341846}
   _hotbarSlotCount: 6
+--- !u!114 &1082341860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082341843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c5013db3798690449ae336436a3367c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Audio.FootstepAudio
+  _profile: {fileID: 11400000, guid: 58cb56273373f9641a570b748c35b3ad, type: 2}
+  _liftHeight: 0.08
+  _minDescentSpeed: 0.6
+  _strideSeconds: 0.5
+  _volume: 0.45
+  _sprintVolume: 0.6
+  _landingVolume: 0.75
+  _wadeDepth: 0.08
 --- !u!1 &1100439199
 GameObject:
   m_ObjectHideFlags: 0
@@ -1859,6 +2067,7 @@ MonoBehaviour:
   _playerCrafting: {fileID: 1082341853}
   _playerInventory: {fileID: 1082341852}
   _inputHandler: {fileID: 1082341846}
+  _interactor: {fileID: 1082341851}
 --- !u!114 &1100439201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2386,7 +2595,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Weather.WeatherEffects
   _weather: {fileID: 582060415}
   _followTarget: {fileID: 0}
-  _rainVolume: 0.6
   _thunderVolume: 0.9
   _lightningIntensity: 3
   _rainMaterialTemplate: {fileID: 2100000, guid: c6296f7a0829da744954594764219b0d, type: 2}
@@ -2441,6 +2649,7 @@ MonoBehaviour:
   _playerInventory: {fileID: 1082341852}
   _playerFood: {fileID: 1082341858}
   _playerEquipment: {fileID: 1082341859}
+  _playerCrafting: {fileID: 1082341853}
   _worldClock: {fileID: 125577333}
   _weatherSystem: {fileID: 582060415}
   _itemDatabase: {fileID: 11400000, guid: ea880a290d3f48e4da7642c920ffe08f, type: 2}
@@ -2456,58 +2665,6 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2629.364, y: 555.65765, z: -4157.7104}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1745063295
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1745063297}
-  - component: {fileID: 1745063296}
-  m_Layer: 0
-  m_Name: WeaponArsenal (TEMP)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1745063296
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1745063295}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df4b24fe4cd329a4b9e5044212c1cc1b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NAV.Dev.WeaponArsenalSpawner
-  _worldGenerator: {fileID: 1017573453}
-  _arsenal: {fileID: 11400000, guid: fccac75023d3df64d945ce187b038dc6, type: 2}
-  _rackPrefab: {fileID: 4640028001087596183, guid: 3cffc52d476b8ee4ba2856960cd4261b, type: 3}
-  _radius: 7
-  _arcDegrees: 200
-  _groundLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!4 &1745063297
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1745063295}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2610,10 +2767,10 @@ SceneRoots:
   - {fileID: 125577334}
   - {fileID: 582060416}
   - {fileID: 1591855026}
-  - {fileID: 1745063297}
   - {fileID: 1132040916}
   - {fileID: 416331182}
   - {fileID: 490110773}
   - {fileID: 311055029}
   - {fileID: 388618676}
   - {fileID: 1493472342}
+  - {fileID: 613919652}

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 851ded87fbe38614ab896652bfbf621f, type: 3}
+  m_Name: OakTreeNode
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ResourceNodeDefinition
+  _displayName: Old Oak
+  _drops: []
+  _hitsToDeplete: 6
+  _requiredTool: 1
+  _minToolTier: 2
+  _shrinkOnHit: 0
+  _becomesPrefab: {fileID: 4544264622150817599, guid: d9ac2e2cbead78e48b730e3bc64b33ea, type: 3}
+  _leavesBehindPrefab: {fileID: 1553777850274220743, guid: 3bcf93709b4296844828e59f21f2a413, type: 3}
+  _fallImpulse: 450

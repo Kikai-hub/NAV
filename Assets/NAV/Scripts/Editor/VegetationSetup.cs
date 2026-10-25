@@ -71,6 +71,15 @@ namespace NAV.Editor
                 nskBushes.Add(ConvertNsk($"bush0{i}", null));
             }
 
+            // The same bushes as breakable nodes for the plains: bare hands, 2 hits, 1-2 wood
+            // (developer, 2026-10-24 - early wood before the first axe).
+            ResourceNodeDefinition bushDefinition = GetOrCreateBushDefinition();
+            var bushNodes = new List<GameObject>();
+            for (int i = 2; i <= 6; i++)
+            {
+                bushNodes.Add(ConvertNsk($"bush0{i}", bushDefinition));
+            }
+
             var treeDefinition = AssetDatabase.LoadAssetAtPath<ResourceNodeDefinition>(TreeDefinitionPath);
             var nskTrees = new List<GameObject>();
             for (int i = 1; i <= 4; i++)
@@ -101,15 +110,16 @@ namespace NAV.Editor
             GameObject deer = Load("Assets/NAV/Prefabs/Creatures/Deer.prefab");
 
             var forest = new SerializedObject(LoadBiome("ForestBiome"));
-            // Mostly spruce, with larches, cedars and the odd broadleaf tree.
+            // Mostly spruce, with larches, cedars and the odd broadleaf tree (2.5x the first
+            // pass's trees - developer, 2026-10-24; DenseForestSetup writes the same values).
             SetResources(forest,
-                (spruce, 0.27f, 9f, 0.6f, 1.35f),
-                (hpLarch, 0.045f, 16f, 0.65f, 1.3f),
-                (hpCedar, 0.035f, 18f, 0.65f, 1.3f),
-                (nskTrees[0], 0.025f, 16f, 0.7f, 1.3f),
-                (nskTrees[1], 0.025f, 16f, 0.7f, 1.3f),
-                (nskTrees[2], 0.025f, 16f, 0.7f, 1.3f),
-                (nskTrees[3], 0.025f, 16f, 0.7f, 1.3f),
+                (spruce, 0.65f, 9f, 0.6f, 1.35f),
+                (hpLarch, 0.11f, 16f, 0.65f, 1.3f),
+                (hpCedar, 0.09f, 18f, 0.65f, 1.3f),
+                (nskTrees[0], 0.06f, 16f, 0.7f, 1.3f),
+                (nskTrees[1], 0.06f, 16f, 0.7f, 1.3f),
+                (nskTrees[2], 0.06f, 16f, 0.7f, 1.3f),
+                (nskTrees[3], 0.06f, 16f, 0.7f, 1.3f),
                 (looseBranch, 0.12f, 14f, 1f, 1f),
                 (looseStone, 0.04f, 18f, 1f, 1f));
             SetDecor(forest, 0.45f, 0.02f,
@@ -128,9 +138,23 @@ namespace NAV.Editor
             forest.ApplyModifiedPropertiesWithoutUndo();
 
             var plains = new SerializedObject(LoadBiome("PlainsBiome"));
+            // Open fields with a few lone small trees - young birches and broadleaf saplings,
+            // 3-6 m, choppable like any tree (developer, 2026-10-24: the plains were too bare).
+            // tree01/02 have round full crowns; the small tree03/04 read as bare sticks at this size.
+            SetResources(plains,
+                (birches[0], 0.08f, 18f, 0.4f, 0.6f),
+                (birches[1], 0.08f, 18f, 0.4f, 0.6f),
+                (birches[2], 0.06f, 20f, 0.4f, 0.6f),
+                (nskTrees[0], 0.07f, 18f, 0.35f, 0.55f),
+                (nskTrees[1], 0.07f, 18f, 0.3f, 0.45f));
+            RemoveResources(plains, nskTrees[2], nskTrees[3]);
+            // Scattered bushes of every kind - breakable by hand for 1-2 wood.
+            foreach (GameObject bush in bushNodes)
+            {
+                SetResources(plains, (bush, 0.06f, 12f, 0.8f, 1.3f));
+            }
+
             SetDecor(plains, 0.7f, 0.07f,
-                (nskBushes[3], 0.03f, 18f, 0.6f, 1f, false),
-                (nskBushes[4], 0.03f, 18f, 0.6f, 1f, false),
                 (dandelion, 0.14f, 7f, 0.9f, 1.5f, false),
                 (plantain, 0.1f, 8f, 0.9f, 1.4f, false),
                 (pebble, 0.04f, 16f, 0.6f, 1.2f, false));
@@ -145,10 +169,10 @@ namespace NAV.Editor
             groveSerialized.FindProperty("_terrainLayer").objectReferenceValue = GetOrCreateGroveLayer();
             groveSerialized.FindProperty("_heightVariation").floatValue = 0.45f;
             SetResources(groveSerialized,
-                (birches[0], 0.16f, 8f, 0.65f, 1.3f),
-                (birches[1], 0.16f, 8f, 0.65f, 1.3f),
-                (birches[2], 0.16f, 8f, 0.65f, 1.3f),
-                (spruce, 0.05f, 18f, 0.6f, 1.3f),
+                (birches[0], 0.4f, 8f, 0.65f, 1.3f),
+                (birches[1], 0.4f, 8f, 0.65f, 1.3f),
+                (birches[2], 0.4f, 8f, 0.65f, 1.3f),
+                (spruce, 0.12f, 18f, 0.6f, 1.3f),
                 (looseBranch, 0.1f, 14f, 1f, 1f));
             SetDecor(groveSerialized, 0.85f, 0.14f,
                 (nskBushes[0], 0.05f, 14f, 0.6f, 1f, false),
@@ -496,6 +520,55 @@ namespace NAV.Editor
             return definition;
         }
 
+        private const string BushDefinitionPath = "Assets/NAV/ScriptableObjects/World/BushNode.asset";
+
+        /// <summary>A bush: no tool needed, 2 hits, shrinks as it's hit, drops 1 wood and a second
+        /// at 50%.</summary>
+        private static ResourceNodeDefinition GetOrCreateBushDefinition()
+        {
+            var definition = AssetDatabase.LoadAssetAtPath<ResourceNodeDefinition>(BushDefinitionPath);
+            if (definition == null)
+            {
+                definition = ScriptableObject.CreateInstance<ResourceNodeDefinition>();
+                AssetDatabase.CreateAsset(definition, BushDefinitionPath);
+            }
+
+            ItemDefinition wood = null;
+            foreach (string guid in AssetDatabase.FindAssets("t:ItemDefinition"))
+            {
+                var item = AssetDatabase.LoadAssetAtPath<ItemDefinition>(AssetDatabase.GUIDToAssetPath(guid));
+                if (item != null && item.Id == "wood")
+                {
+                    wood = item;
+                }
+            }
+
+            if (wood == null)
+            {
+                Debug.LogError("VegetationSetup: no 'wood' item - the bushes will drop nothing.");
+            }
+
+            var serialized = new SerializedObject(definition);
+            serialized.FindProperty("_displayName").stringValue = "Bush";
+            serialized.FindProperty("_hitsToDeplete").intValue = 2;
+            serialized.FindProperty("_requiredTool").intValue = (int)ToolType.None;
+            serialized.FindProperty("_minToolTier").intValue = 1;
+            serialized.FindProperty("_shrinkOnHit").boolValue = true;
+            SerializedProperty drops = serialized.FindProperty("_drops");
+            drops.arraySize = 2;
+            for (int i = 0; i < 2; i++)
+            {
+                SerializedProperty drop = drops.GetArrayElementAtIndex(i);
+                drop.FindPropertyRelative("_item").objectReferenceValue = wood;
+                drop.FindPropertyRelative("_amount").intValue = 1;
+                drop.FindPropertyRelative("_chance").floatValue = i == 0 ? 1f : 0.5f;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(definition);
+            return definition;
+        }
+
         // ---- Nature Starter Kit 2 ----
 
         /// <summary>Rebuilds a Nature Starter Kit 2 Tree Creator prefab for URP: its baked mesh
@@ -835,17 +908,47 @@ namespace NAV.Editor
             EditorUtility.SetDirty(biome.targetObject);
         }
 
-        private static void SetResources(SerializedObject biome, params (GameObject prefab, float density, float spacing, float minScale, float maxScale)[] entries)
+        private static void RemoveResources(SerializedObject biome, params GameObject[] prefabs)
         {
             SerializedProperty list = biome.FindProperty("_resourceSpawns");
-            list.arraySize = entries.Length;
+            for (int i = list.arraySize - 1; i >= 0; i--)
+            {
+                if (System.Array.IndexOf(prefabs, list.GetArrayElementAtIndex(i).FindPropertyRelative("_prefab").objectReferenceValue) >= 0)
+                {
+                    list.DeleteArrayElementAtIndex(i);
+                }
+            }
+
+            biome.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(biome.targetObject);
+        }
+
+        private static void SetResources(SerializedObject biome, params (GameObject prefab, float density, float spacing, float minScale, float maxScale)[] entries)
+        {
+            // Upsert by prefab: entries other tools own (ore from MetallurgySetup) are kept.
+            SerializedProperty list = biome.FindProperty("_resourceSpawns");
             for (int i = 0; i < entries.Length; i++)
             {
-                SerializedProperty entry = list.GetArrayElementAtIndex(i);
+                SerializedProperty entry = null;
+                for (int j = 0; j < list.arraySize; j++)
+                {
+                    if (list.GetArrayElementAtIndex(j).FindPropertyRelative("_prefab").objectReferenceValue == entries[i].prefab)
+                    {
+                        entry = list.GetArrayElementAtIndex(j);
+                    }
+                }
+
+                if (entry == null)
+                {
+                    list.arraySize++;
+                    entry = list.GetArrayElementAtIndex(list.arraySize - 1);
+                }
+
                 entry.FindPropertyRelative("_prefab").objectReferenceValue = entries[i].prefab;
                 entry.FindPropertyRelative("_density").floatValue = entries[i].density;
                 entry.FindPropertyRelative("_minSpacing").floatValue = entries[i].spacing;
                 entry.FindPropertyRelative("_scale").vector2Value = new Vector2(entries[i].minScale, entries[i].maxScale);
+                entry.FindPropertyRelative("_heightAboveWater").vector2Value = new Vector2(-1000f, 1000f);
             }
 
             biome.ApplyModifiedPropertiesWithoutUndo();

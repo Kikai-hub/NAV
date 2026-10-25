@@ -874,6 +874,7 @@ GameObject:
   - component: {fileID: 1119984857263559326}
   - component: {fileID: 7484333997591092128}
   - component: {fileID: 2520617309295913205}
+  - component: {fileID: 7927553070100160637}
   m_Layer: 0
   m_Name: Campfire
   m_TagString: Untagged
@@ -933,6 +934,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPiece
   _definition: {fileID: 11400000, guid: 48bb8abc4f7c6514aad9f88da542a958, type: 2}
+--- !u!114 &7927553070100160637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5216185478641790632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182a989b332e06d499c3ec980a0dee49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Audio.AmbientEmitter
+  _clip: {fileID: 8300000, guid: 1449136fb3eb5994897ffc4ab9f47de4, type: 3}
+  _volume: 0.55
+  _minDistance: 1.5
+  _maxDistance: 18
 --- !u!1 &5508204484886056356
 GameObject:
   m_ObjectHideFlags: 0
@@ -1006,6 +1023,9 @@ MonoBehaviour:
   - _input: {fileID: 11400000, guid: 7d45b4f27efad0338397de2ad5bc9f0c, type: 2}
     _output: {fileID: 11400000, guid: d55f47f4cf745704788a1d29e9319c2c, type: 2}
     _cookSeconds: 10
+  - _input: {fileID: 11400000, guid: 4f02272fd9d05d04da21fd35f0757053, type: 2}
+    _output: {fileID: 11400000, guid: 66ae0e26a803f5d4baffadecd2b5071a, type: 2}
+    _cookSeconds: 20
   _cookingVisual: {fileID: 2948315844937335864}
   _readyVisual: {fileID: 6813998837847859718}
   _dropDistance: 0.8

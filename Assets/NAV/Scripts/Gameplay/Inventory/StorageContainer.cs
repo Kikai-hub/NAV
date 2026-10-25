@@ -15,7 +15,7 @@ namespace NAV.Gameplay.Inventory
     /// can open the lid. Contents are saved with the building (SaveManager) and dropped into the
     /// world when the piece is demolished (DropContents, called by PlayerBuilding).
     /// </summary>
-    public class StorageContainer : MonoBehaviour, IInteractable, IItemContainer
+    public class StorageContainer : MonoBehaviour, IInteractable, IItemContainer, IStoredContents
     {
         [SerializeField] private string _title = "Chest";
         [Tooltip("Number of slots (Valheim's wooden chest has 10).")]

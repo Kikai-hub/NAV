@@ -60,6 +60,23 @@ namespace NAV.Core.Save
         /// <summary>ItemDefinition.Id held in the main hand (PlayerEquipment), or empty. Restored
         /// after the inventory, and only if that item is actually in it.</summary>
         public string MainHandItemId;
+
+        /// <summary>ItemDefinition.Ids of the worn armour (PlayerEquipment), restored the same way.</summary>
+        public List<string> WornArmorItemIds = new();
+
+        /// <summary>Recipe discovery (PlayerCrafting): every item id the player has had, and
+        /// the highest level reached at each station kind. Empty in older saves - recipes are
+        /// then rediscovered from the inventory and the next station use.</summary>
+        public List<string> DiscoveredItemIds = new();
+        public List<StationLevelSaveData> StationLevels = new();
+    }
+
+    /// <summary>Highest level the player has reached at a station kind (WorkbenchDefinition asset name).</summary>
+    [Serializable]
+    public class StationLevelSaveData
+    {
+        public string StationId;
+        public int Level;
     }
 
     /// <summary>One active food (PlayerFood) and its remaining seconds. Restored before
@@ -91,7 +108,8 @@ namespace NAV.Core.Save
         public Vector3 Position;
         public Quaternion Rotation;
 
-        /// <summary>Occupied slots of the piece's StorageContainer (a chest); empty for every
+        /// <summary>Occupied slots of the piece's IStoredContents (a chest, a processing
+        /// station's loaded inputs and fuel); empty for every
         /// other piece and for saves from before chests existed.</summary>
         public List<InventorySlotSaveData> ContainerSlots = new();
     }

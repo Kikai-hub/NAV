@@ -91,7 +91,9 @@ namespace NAV.Gameplay.Items
                 return false;
             }
 
-            _remainingHits--;
+            // A better tool than needed works faster: each tier above the minimum is one more hit
+            // (a copper axe fells a tree in fewer swings than a stone one).
+            _remainingHits -= 1 + ExtraHitsFromTool(interactor);
 
             if (_remainingHits > 0)
             {
@@ -215,6 +217,18 @@ namespace NAV.Gameplay.Items
             {
                 SetLayerRecursively(child, layer);
             }
+        }
+
+        private int ExtraHitsFromTool(GameObject interactor)
+        {
+            if (_definition.RequiredTool == ToolType.None)
+            {
+                return 0;
+            }
+
+            var equipment = interactor.GetComponent<NAV.Gameplay.Equipment.PlayerEquipment>();
+            ItemDefinition tool = equipment != null ? equipment.MainHand : null;
+            return tool != null && tool.ToolType == _definition.RequiredTool ? Mathf.Max(0, tool.ToolTier - _definition.MinToolTier) : 0;
         }
 
         private bool HasRequiredTool(GameObject interactor)

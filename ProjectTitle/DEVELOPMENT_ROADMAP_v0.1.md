@@ -82,7 +82,7 @@ system.
 -   [ ] Recipe unlock structure
 -   [x] Basic tools (Stone Axe, Stone Pickaxe, Wood Hammer - no tool gating yet)
 -   [x] Basic weapons (Stone Sword item + recipe; axe/pickaxe also have weapon stats; fists fallback)
--   [ ] Basic armor
+-   [x] Basic armor (Stage C, 2026-10-24)
 
 ------------------------------------------------------------------------
 
@@ -101,6 +101,8 @@ system.
 -   [x] Workbench build area + roof (2026-10-18): pieces need a placed workbench within 20 m (workbench/campfire go anywhere); crafting at a workbench needs a roof over it
 -   [x] Show the workbench build radius while building - dashed circle on the ground (2026-10-18)
 -   [ ] Basic structural validation
+-   [x] Gable (фронтон) piece, real 45-degree roof slope with an eave on the wall logs, directional snapping (2026-10-24)
+-   [ ] Wood steps / porch (крыльцо) at tier 1 (2026-10-24): on a slope the floor can stand 0.5-1.5 m above the ground at the door and the player (step offset 0.3 m) can't get in - the only stairs are the oak ones (joiner's bench). Needs a cheap wood piece snapping to a foundation edge, ~0.25 m per step
 
 ------------------------------------------------------------------------
 
@@ -155,12 +157,12 @@ system.
 
 -   [x] Seed system
 -   [x] Deterministic random
--   [x] Terrain generation (single bounded Unity Terrain, no chunk/streaming; see PROJECT_STATE.md Known Risk #1)
+-   [x] Terrain generation (one Unity Terrain, 2560 x 2560 m since 2026-10-25; everything on it streams in 64 m chunks around the player - see PROJECT_STATE.md 2026-10-25)
 -   [x] Ocean (sea-level water plane placeholder, no waves/shader)
 -   [x] Plains
 -   [x] Forest (ground texture only - no distinct vegetation/trees yet, see PROJECT_STATE.md)
--   [ ] Birch grove
--   [ ] Dense forest
+-   [x] Birch grove (2026-10-22 - see Stage B below)
+-   [x] Dense forest (2026-10-24 - the wettest heart of each forest: ancient trees 18-27 m with closed crowns, old oaks, copper; see Stage C)
 -   [ ] Resource distribution
 -   [ ] Vegetation distribution
 -   [x] Spawn regions (dry/flat player spawn point per seed + respawn there; creatures per biome, 30 m away from it - 2026-10-15)
@@ -258,7 +260,10 @@ Wolf).
 **Early visuals - in parallel with Stages A--B** (what makes the slice
 *feel like NAV*):
 
--   [ ] Hit and gathering VFX (shared with Stage A damage feedback)
+-   [x] Hit and gathering VFX (shared with Stage A damage feedback) (Done
+    2026-10-24 - ImpactEffects: wood chips + sawdust, stone shards + dust +
+    sparks, blood droplets leaving ground splats, impact flash, parry sparks,
+    falling leaves/needles and dust clouds for felled trees)
 -   [x] Baseline post-processing / colour grading (Done 2026-10-22 - Day
     base look + Golden Hour / Night / Overcast volumes blended by
     DayNightGrading, aerial haze in clear weather, sand on the shore, softer
@@ -274,12 +279,52 @@ Wolf).
 
 ### Stage C --- Resources and Progression Tiers 1--2
 
--   [ ] Ores, smelter, bars; leather/bone processing (Phase 13 "Expand
-    resources")
--   [ ] Workbench tiers / upgrade path (Phase 4)
--   [ ] Armor (Phase 4 / 13)
--   [ ] Workbench recipes for the pack weapons + real stats; then delete the
-    TEMPORARY weapon racks (Phase 13 "Expand weapons")
+The full game has **9 progression tiers, each with its own biome
+(developer, 2026-10-24)**. Stage C builds the first ones; the rest come with
+later biomes and bosses.
+
+-   [x] Plan all 9 tiers: biome, material, station and station levels,
+    tools/weapons/armour per tier, which boss unlocks it (Approved
+    2026-10-24 - `PROGRESSION_TIERS_v0.1.md` v1.0: meadows & birch groves,
+    dense forest + oak, sea islands, swamp, mountains, black forest + bog
+    oak, wild steppe, gem caverns, Nav)
+-   [x] Bronze tier (3): tin, bronze bars, casting mould = forge 2, shift the
+    iron recipes/upgrades up one forge level, iron armour 12 -> 15, bronze
+    tools/weapons/armour from the pack (Done 2026-10-24 - tin on shores until
+    the sea-islands biome exists; bog iron needs a bronze pickaxe)
+-   [x] Oak (tier 2): old oaks in the dense forest (copper axe), joiner's
+    bench = workbench 3, oak building set (beams, posts, upper floors,
+    stairs, gates, porch, carved window frames) (Done 2026-10-24 - oaks in the
+    ordinary forest until the dense forest exists; gate opens; no porch
+    piece - stairs + floor)
+-   [ ] New biome per tier (World Generation): dense forest separated from
+    the ordinary forest, sea islands (+ boat), swamp, mountains, black
+    forest, steppe, gem caverns, Nav - each with its creatures and boss
+    -   [x] Dense forest (tier 2) (Done 2026-10-24 - `DenseForestSetup`;
+        ~10% of the world; ancient spruce/larch/cedar 18-27 m, copper axe;
+        old oaks and copper ore moved here only; many wolves. Also forest and
+        birch-grove trees x2.5. Still to do: gloom under the crowns
+        (per-biome fog/light), its own creatures, boss slot)
+    -   [ ] Sea islands (tier 3) + boat, then the rest
+
+-   [x] Ores, smelter, bars; leather/bone processing (Phase 13 "Expand
+    resources") (Done 2026-10-24 -
+    copper ore + bog iron in the world, charcoal kiln, bloomery, tanning
+    rack, bone glue on the campfire. Still to do: tools/armour that use
+    bars and leather - next items)
+-   [x] Workbench tiers / upgrade path (Phase 4) (Done 2026-10-24 - station
+    kinds + levels from nearby upgrade pieces: Workbench (+Tanning Rack),
+    Forge (+Anvil, +Bellows); copper/iron axes and pickaxes; bog iron needs
+    a copper pickaxe; better tools gather faster)
+-   [x] Armor (Phase 4 / 13) (Done 2026-10-24 - head/chest/legs slots,
+    Valheim armour curve, leather/copper/iron sets with recipes at the
+    Workbench level 2 and Forge levels 1-2, placeholder looks on the body,
+    saved. Still to do: real models, weight/speed penalty, durability, cape)
+-   [x] Workbench recipes for the pack weapons + real stats; then delete the
+    TEMPORARY weapon racks (Phase 13 "Expand weapons") (Done 2026-10-24 -
+    20 pack weapons in wood/bone/copper/iron tiers with recipes at the
+    Workbench and Forge, stats = class base x tier; racks removed from the
+    scene. The other ~135 models wait for later tiers)
 
 Bosses need this stage: without tiers a boss has nothing to reward or
 unlock.
@@ -380,6 +425,8 @@ Target: 1--4 player cooperative multiplayer.
 ## Phase 16 --- Polish and Release
 
 -   [ ] Optimization
+    -   [x] Dynamic fog, chunk streaming, far-plane tree impostors, local NavMesh (2026-10-25)
+    -   [ ] Check the remaining rare 36-90 ms spikes in a build (NavMesh rebuild integration, GC); decor in far chunks; split the terrain into tiles if the world grows further
 -   [ ] UI polish
 -   [x] Input rebinding (2026-10-22: keyboard/mouse, Settings window; gamepad not yet)
 -   [ ] Accessibility

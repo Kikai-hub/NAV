@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
+  m_Name: ForgePiece
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: ForgePiece
+  _displayName: Forge
+  _icon: {fileID: 21300000, guid: 8f0eb0578c0875749ab24e20060f5632, type: 3}
+  _cost:
+  - _item: {fileID: 11400000, guid: f2d88055de27ac542a3af0c4f14ee684, type: 2}
+    _amount: 15
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 6
+  - _item: {fileID: 11400000, guid: 1cceabdb65945c24ba4254afba58b0a1, type: 2}
+    _amount: 4
+  - _item: {fileID: 11400000, guid: 7e57685acc2228d4f8a050bd1459a219, type: 2}
+    _amount: 4
+  _prefab: {fileID: 5314459184244811301, guid: 5bcf1e8d0d870484596af37096f274f8, type: 3}
+  _requiresWorkbench: 1
+  _unlockItems: []

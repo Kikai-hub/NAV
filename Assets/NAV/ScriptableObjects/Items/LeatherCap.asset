@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: LeatherCap
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: LeatherCap
+  _displayName: Leather Cap
+  _description: A snug cap of tanned leather.
+  _icon: {fileID: 21300000, guid: 775c1b1bf71b0594c8b43ee64faf07ba, type: 3}
+  _category: 3
+  _maxStackSize: 1
+  _weight: 1
+  _worldPrefab: {fileID: 5188554625429567560, guid: 8409afdb9bc1d8d46b687f58d3d31181, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 11400000, guid: 59b6d44fcde76b64b9d5247954411476, type: 2}

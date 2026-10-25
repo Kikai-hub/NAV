@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
   m_Name: LPW_dagger3_Weapon
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
-  _displayName: Dagger 3
+  _displayName: Iron Dagger
   _icon: {fileID: 21300000, guid: e84c1288fe9ee3340b1ca2226e0bf21c, type: 3}
   _weaponClass: 2
-  _damage: 9
+  _damage: 12.2
   _range: 1.7
   _attackCooldown: 0.45
   _attackStaminaCost: 6
@@ -23,6 +23,6 @@ MonoBehaviour:
   _attackAnimationSpeed: 1.9
   _hitWindowStart: 0.03
   _hitWindowEnd: 0.24
-  _blockDamageReduction: 0.25
+  _blockDamageReduction: 0.32
   _blockStaminaCostPerHit: 12
   _parryWindowSeconds: 0.3

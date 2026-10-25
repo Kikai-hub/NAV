@@ -1,5 +1,6 @@
 using UnityEngine;
 using NAV.Gameplay.Combat;
+using NAV.Gameplay.Equipment;
 using NAV.Gameplay.Survival;
 
 namespace NAV.Gameplay.Items
@@ -38,6 +39,10 @@ namespace NAV.Gameplay.Items
         [Tooltip("Show Held Prefab in the left hand (B-handProp.L) instead of the right - shields.")]
         [SerializeField] private bool _heldInLeftHand;
 
+        [Header("Armour")]
+        [Tooltip("Optional. Assign to make this item wearable armour (its slot, armour value and worn models) - see PlayerEquipment.")]
+        [SerializeField] private ArmorDefinition _armor;
+
         public string Id => _id;
         public string DisplayName => _displayName;
         public string Description => _description;
@@ -67,6 +72,10 @@ namespace NAV.Gameplay.Items
 
         /// <summary>Can be held in the main hand (PlayerEquipment) - any tool or weapon.</summary>
         public bool IsEquippable => _toolType != ToolType.None || _weapon != null;
+
+        /// <summary>Armour stats, or null if this item isn't worn.</summary>
+        public ArmorDefinition Armor => _armor;
+        public bool IsArmor => _armor != null;
 
         private void OnValidate()
         {

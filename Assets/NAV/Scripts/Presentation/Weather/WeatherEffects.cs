@@ -5,15 +5,15 @@ using NAV.Core.Settings;
 namespace NAV.Presentation.Weather
 {
     /// <summary>
-    /// Renders WeatherSystem's state: a rain particle volume that follows the camera, scene fog
-    /// density, lightning flashes (a separate shadowless directional light pulsed for a moment,
-    /// so it never fights DayNightLighting over the sun) followed by delayed thunder, and a rain
-    /// ambience loop whose volume follows rain intensity. Light/sky darkening is
+    /// Renders WeatherSystem's state: a rain particle volume that follows the camera, lightning
+    /// flashes (a separate shadowless directional light pulsed for a moment,
+    /// so it never fights DayNightLighting over the sun) followed by delayed thunder. The rain's sound is
+    /// AmbienceController's (recorded loops). Light/sky darkening is
     /// DayNightLighting's job (it reads the same WeatherSystem).
     ///
     /// Everything is built in code at startup - no prefab/asset setup beyond assigning the
-    /// WeatherSystem. Audio is a procedural placeholder (PlaceholderWeatherAudio): final
-    /// audio is "Not Yet Decided" per PROJECT_STATE.md. Known limitation: rain falls through
+    /// WeatherSystem. Thunder is a procedural placeholder (PlaceholderWeatherAudio) - the
+    /// nature pack has none. Known limitation: rain falls through
     /// roofs (particles have no collision) - fine for open-world placeholder.
     /// </summary>
     public class WeatherEffects : MonoBehaviour
@@ -21,13 +21,11 @@ namespace NAV.Presentation.Weather
         private const float RainAreaSize = 36f;
         private const float RainHeightAboveCamera = 14f;
         private const float RainFallSpeed = 22f;
-        private const float MaxRainRateForAudio = 5000f;
         private const float FlashDuration = 0.18f;
 
         [SerializeField] private WeatherSystem _weather;
         [Tooltip("Optional - defaults to Camera.main. Rain and audio follow it.")]
         [SerializeField] private Transform _followTarget;
-        [SerializeField, Min(0f)] private float _rainVolume = 0.6f;
         [SerializeField, Min(0f)] private float _thunderVolume = 0.9f;
         [SerializeField, Min(0f)] private float _lightningIntensity = 3f;
         [Tooltip("Rain.mat (URP Particles/Unlit, transparent) - a material asset rather than Shader.Find, so the shader and its transparent variant are included in builds.")]
@@ -35,7 +33,6 @@ namespace NAV.Presentation.Weather
 
         private ParticleSystem _rain;
         private ParticleSystem.EmissionModule _rainEmission;
-        private AudioSource _rainAudio;
         private AudioSource _thunderAudio;
         private AudioClip[] _thunderClips;
         private Light _lightning;
@@ -44,7 +41,6 @@ namespace NAV.Presentation.Weather
         private float _nextLightningTime;
         private float _flashTimer;
         private float _thunderDelay = -1f;
-        private bool _fogWasEnabled;
 
         private void Awake()
         {
@@ -65,13 +61,11 @@ namespace NAV.Presentation.Weather
             BuildRain();
             BuildLightning();
             BuildAudio();
-            _fogWasEnabled = RenderSettings.fog;
             ScheduleNextLightning();
         }
 
         private void OnDestroy()
         {
-            RenderSettings.fog = _fogWasEnabled;
             if (_rainMaterial != null)
             {
                 Destroy(_rainMaterial);
@@ -87,16 +81,8 @@ namespace NAV.Presentation.Weather
 
             float rainRate = _weather.Evaluate(w => w.RainRate);
             _rainEmission.rateOverTime = rainRate;
-            _rainAudio.volume = Mathf.Clamp01(rainRate / MaxRainRateForAudio) * _rainVolume * GameSettings.GetVolume(AudioCategory.Ambience);
 
-            float fog = _weather.Evaluate(w => w.FogDensity);
-            RenderSettings.fog = fog > 0.0005f;
-            if (RenderSettings.fog)
-            {
-                RenderSettings.fogMode = FogMode.ExponentialSquared;
-                RenderSettings.fogDensity = fog;
-            }
-
+            // Weather fog density is applied by AtmosphereFog, the one owner of the scene fog.
             TickLightning();
         }
 
@@ -235,13 +221,6 @@ namespace NAV.Presentation.Weather
 
         private void BuildAudio()
         {
-            _rainAudio = gameObject.AddComponent<AudioSource>();
-            _rainAudio.clip = PlaceholderWeatherAudio.CreateRainLoop();
-            _rainAudio.loop = true;
-            _rainAudio.spatialBlend = 0f;
-            _rainAudio.volume = 0f;
-            _rainAudio.Play();
-
             _thunderAudio = gameObject.AddComponent<AudioSource>();
             _thunderAudio.spatialBlend = 0f;
             _thunderClips = new[]

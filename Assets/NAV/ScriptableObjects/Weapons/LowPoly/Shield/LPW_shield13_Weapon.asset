@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
   m_Name: LPW_shield13_Weapon
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
-  _displayName: Shield 13
+  _displayName: Banded Shield
   _icon: {fileID: 21300000, guid: 79c4ae611a9e2c048a359c6be04af82b, type: 3}
   _weaponClass: 10
-  _damage: 6
+  _damage: 8.1
   _range: 1.6
   _attackCooldown: 0.8
   _attackStaminaCost: 10
@@ -23,6 +23,6 @@ MonoBehaviour:
   _attackAnimationSpeed: 1.2
   _hitWindowStart: 0.08
   _hitWindowEnd: 0.3
-  _blockDamageReduction: 0.85
+  _blockDamageReduction: 0.92
   _blockStaminaCostPerHit: 6
   _parryWindowSeconds: 0.35

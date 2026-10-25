@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
   m_Name: LPW_sword1H1_Weapon
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
-  _displayName: Sword 1
+  _displayName: Iron Sword
   _icon: {fileID: 21300000, guid: be7627a461126a64a8309e27c928439e, type: 3}
   _weaponClass: 3
-  _damage: 15
+  _damage: 20.2
   _range: 2.4
   _attackCooldown: 0.6
   _attackStaminaCost: 10
@@ -23,6 +23,6 @@ MonoBehaviour:
   _attackAnimationSpeed: 1.5
   _hitWindowStart: 0.04
   _hitWindowEnd: 0.32
-  _blockDamageReduction: 0.5
+  _blockDamageReduction: 0.57
   _blockStaminaCostPerHit: 10
   _parryWindowSeconds: 0.25

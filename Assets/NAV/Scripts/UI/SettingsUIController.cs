@@ -414,6 +414,9 @@ namespace NAV.UI
                 }
             }, false);
 
+            AddSlider(page, "View Distance", 250f, 1200f, data.EffectiveViewDistance, v => Mathf.RoundToInt(v) + " m",
+                v => data.ViewDistance = Mathf.Round(v / 50f) * 50f, true);
+
             // Right end of the slider = no limit (stored as 0).
             float distance = data.ObjectDrawDistance > 0f ? data.ObjectDrawDistance : MaxObjectDistance;
             AddSlider(page, "Object Draw Distance", MinObjectDistance, MaxObjectDistance, distance,

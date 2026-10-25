@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a40f6099767e044ba161169a6a55ba, type: 3}
+  m_Name: CopperGreavesArmor
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.ArmorDefinition
+  _slot: 2
+  _armor: 2
+  _wornParts:
+  - _bone: 2
+    _prefab: {fileID: 1414240022850115358, guid: fe1f1994eeed4a740853d85c1ee34d3d, type: 3}
+  - _bone: 3
+    _prefab: {fileID: 2930048330072426411, guid: dc5e7a6323031e740a94e80f01eea65b, type: 3}
+  - _bone: 4
+    _prefab: {fileID: 5117566074577392628, guid: 4cc0a16fcf9efce4990913d302f75a31, type: 3}
+  - _bone: 5
+    _prefab: {fileID: 7861811490121609814, guid: 4a3cd2157a2fdad41bb975ed72e2c626, type: 3}

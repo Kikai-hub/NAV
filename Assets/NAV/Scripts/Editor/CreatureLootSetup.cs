@@ -55,7 +55,7 @@ namespace NAV.Editor
             Debug.Log("CreatureLootSetup: built Hide, Bone, Fang items, pickups and icons; wolf and deer loot updated.");
         }
 
-        private static ItemDefinition BuildItem(string id, string displayName, string description, int maxStack, float weight,
+        internal static ItemDefinition BuildItem(string id, string displayName, string description, int maxStack, float weight,
             System.Action<Transform> buildModel, Quaternion iconPose)
         {
             string itemPath = $"{ItemFolder}/{id}.asset";
@@ -224,7 +224,7 @@ namespace NAV.Editor
             return mesh;
         }
 
-        private static void AddPart(Transform parent, PrimitiveType type, string name, Material material, Vector3 position, Vector3 euler, Vector3 scale)
+        internal static void AddPart(Transform parent, PrimitiveType type, string name, Material material, Vector3 position, Vector3 euler, Vector3 scale)
         {
             GameObject part = GameObject.CreatePrimitive(type);
             part.name = name;
@@ -291,7 +291,7 @@ namespace NAV.Editor
             EditorUtility.SetDirty(definition);
         }
 
-        private static void AddToList(SerializedObject owner, string listName, Object item)
+        internal static void AddToList(SerializedObject owner, string listName, Object item)
         {
             SerializedProperty list = owner.FindProperty(listName);
             for (int i = 0; i < list.arraySize; i++)

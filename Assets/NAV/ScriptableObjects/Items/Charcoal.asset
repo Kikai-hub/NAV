@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: Charcoal
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: Charcoal
+  _displayName: Charcoal
+  _description: Wood burned slowly without air. Hot fuel for smelting.
+  _icon: {fileID: 21300000, guid: 96ed6d500ffe0ba41ae51fe284a5da7c, type: 3}
+  _category: 0
+  _maxStackSize: 50
+  _weight: 0.3
+  _worldPrefab: {fileID: 2224516814690198460, guid: 2ca440f55eb03db4fb66604771355835, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}

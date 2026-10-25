@@ -25,6 +25,9 @@ namespace NAV.Gameplay.Crafting
         [Tooltip("Building pieces that need a workbench can only be placed within this distance of one (Valheim-style build area).")]
         [SerializeField] private float _buildRadius = 20f;
 
+        [Tooltip("Upgrade pieces (WorkbenchExtension) within this distance raise the station's level.")]
+        [SerializeField] private float _extensionRadius = 6f;
+
         [Header("Shelter")]
         [Tooltip("Crafting at it only works while it stands under a roof (a placed building piece overhead).")]
         [SerializeField] private bool _requiresRoof = true;
@@ -33,6 +36,7 @@ namespace NAV.Gameplay.Crafting
         public int Tier => _tier;
         public float Range => _range;
         public float BuildRadius => _buildRadius;
+        public float ExtensionRadius => _extensionRadius;
         public bool RequiresRoof => _requiresRoof;
 
         private void OnValidate()

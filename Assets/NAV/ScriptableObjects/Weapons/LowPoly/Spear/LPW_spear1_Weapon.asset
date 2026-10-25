@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
   m_Name: LPW_spear1_Weapon
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
-  _displayName: Spear 1
+  _displayName: Fang Spear
   _icon: {fileID: 21300000, guid: eac88f26a48ac054d8e951493e45e724, type: 3}
   _weaponClass: 9
-  _damage: 18
+  _damage: 15.3
   _range: 3.2
   _attackCooldown: 0.85
   _attackStaminaCost: 12
@@ -23,6 +23,6 @@ MonoBehaviour:
   _attackAnimationSpeed: 1.5
   _hitWindowStart: 0.14
   _hitWindowEnd: 0.38
-  _blockDamageReduction: 0.35
+  _blockDamageReduction: 0.25
   _blockStaminaCostPerHit: 12
   _parryWindowSeconds: 0.2

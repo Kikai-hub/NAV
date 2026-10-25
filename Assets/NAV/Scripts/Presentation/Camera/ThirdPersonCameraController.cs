@@ -78,14 +78,20 @@ namespace NAV.Presentation.Camera
 
             camera.fieldOfView = Mathf.Clamp(GameSettings.Current.FieldOfView, 40f, 100f);
 
-            // Trees/rocks/ore (the WorldResource layer WorldGenerator spawns them on) stop being
-            // drawn past this distance; 0 = the camera's far clip. Spherical, so turning the
-            // camera doesn't make them pop at the screen edges.
+            // Nothing is drawn past the view distance - AtmosphereFog closes the fog in fully
+            // there, so the edge is never seen. A little extra so the clip sits inside full fog.
+            float view = GameSettings.Current.EffectiveViewDistance;
+            camera.farClipPlane = view * 1.05f;
+
+            // Trees/rocks/ore (the WorldResource layer WorldGenerator streams) exist only in the
+            // chunks loaded around the player - the Object Draw Distance setting decides how far
+            // that is - and are drawn as far as any loaded chunk reaches; past it the far-plane
+            // impostors take over. Spherical, so turning the camera doesn't make them pop.
             int resourceLayer = LayerMask.NameToLayer(_resourceLayerName);
             if (resourceLayer >= 0)
             {
                 float[] distances = camera.layerCullDistances;
-                distances[resourceLayer] = Mathf.Max(0f, GameSettings.Current.ObjectDrawDistance);
+                distances[resourceLayer] = Mathf.Min(view, NAV.World.Generation.WorldGenerator.ResourceDrawDistance(GameSettings.Current));
                 camera.layerCullDistances = distances;
                 camera.layerCullSpherical = true;
             }

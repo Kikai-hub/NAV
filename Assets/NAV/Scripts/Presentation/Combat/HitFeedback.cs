@@ -32,6 +32,8 @@ namespace NAV.Presentation.Combat
         [SerializeField] private PlayerCombat _playerCombat;
         [Tooltip("HitParticle.mat (URP Particles/Unlit) - a material asset rather than Shader.Find, so the shader is included in builds (same reason as WeatherEffects' Rain Material Template).")]
         [SerializeField] private Material _particleMaterialTemplate;
+        [Tooltip("Per-material effects (chips, shards, blood, sparks, dust). When empty, the plain coloured particles below are used.")]
+        [SerializeField] private ImpactEffects _impacts;
 
         [Header("Particles")]
         [SerializeField, Min(0)] private int _combatantParticles = 16;
@@ -178,6 +180,20 @@ namespace NAV.Presentation.Combat
         private void HandleTreeFelled(FallingTree tree)
         {
             Vector3 foot = tree.transform.position;
+            if (_impacts != null)
+            {
+                // The crown shakes loose: needles drift down over the whole crown, chips at the cut.
+                for (int i = 0; i < _treeFelledBursts; i++)
+                {
+                    float height = Mathf.Lerp(tree.TreeHeight * 0.3f, tree.TreeHeight, (i + 0.5f) / _treeFelledBursts);
+                    _impacts.Leaves(foot + Vector3.up * height, tree.TreeHeight * 0.15f, _needlesPerBurst, NeedleDark, NeedleLight);
+                }
+
+                _impacts.Wood(foot + Vector3.up, Vector3.up, 2f);
+                Play(_woodClips, foot + Vector3.up, 1f);
+                return;
+            }
+
             for (int i = 0; i < _treeFelledBursts; i++)
             {
                 // Upper two thirds of the tree, where the crown was.
@@ -192,6 +208,20 @@ namespace NAV.Presentation.Combat
         private void HandleTreeLanded(FallingTree tree)
         {
             Transform trunk = tree.transform;
+            if (_impacts != null)
+            {
+                // Dust rolls out along the whole trunk, a few last needles shake off.
+                for (int i = 0; i < 5; i++)
+                {
+                    Vector3 along = trunk.position + trunk.up * (tree.TreeHeight * (0.1f + 0.18f * i));
+                    _impacts.DustCloud(along, 0.8f, 5, new Color(0.62f, 0.55f, 0.43f, 0.7f));
+                    _impacts.Leaves(along + Vector3.up * 0.5f, 0.8f, 5, NeedleDark, NeedleLight);
+                }
+
+                Play(_treeFallClips, trunk.position + trunk.up * (tree.TreeHeight * 0.5f), 1f);
+                return;
+            }
+
             for (int i = 0; i < 4; i++)
             {
                 float along = tree.TreeHeight * (0.2f + 0.2f * i);
@@ -312,8 +342,23 @@ namespace NAV.Presentation.Combat
             if (!hit.Counted)
             {
                 // Touched but bounced off (wrong tool): a few grey chips and a dull clunk.
-                Burst(hit.Point, -hit.Away, _bouncedParticles, SurfaceColor(HitSurface.Other), SurfaceColor(HitSurface.Other), false);
+                if (_impacts != null)
+                {
+                    _impacts.Dull(hit.Point, -hit.Away);
+                }
+                else
+                {
+                    Burst(hit.Point, -hit.Away, _bouncedParticles, SurfaceColor(HitSurface.Other), SurfaceColor(HitSurface.Other), false);
+                }
+
                 Play(_dullClips, hit.Point, _volume);
+                return;
+            }
+
+            if (_impacts != null)
+            {
+                PlayImpact(hit);
+                StartReaction(hit);
                 return;
             }
 
@@ -341,10 +386,66 @@ namespace NAV.Presentation.Combat
             StartReaction(hit);
         }
 
+        /// <summary>The ImpactEffects version of a landed hit: what flies off depends on the
+        /// material; a killing blow throws more.</summary>
+        private void PlayImpact(MeleeHitInfo hit)
+        {
+            float strength = hit.Killed ? 1.6f : 1f;
+            switch (hit.Surface)
+            {
+                case HitSurface.Flesh:
+                    _impacts.Flesh(hit.Point, hit.Away, strength);
+                    Play(_fleshClips, hit.Point, _volume);
+                    break;
+                case HitSurface.Wood:
+                    _impacts.Wood(hit.Point, -hit.Away, strength);
+                    Play(_woodClips, hit.Point, _volume);
+                    break;
+                case HitSurface.Stone:
+                    _impacts.Stone(hit.Point, -hit.Away, strength);
+                    Play(_stoneClips, hit.Point, _volume);
+                    break;
+                default:
+                    if (hit.IsCombatant)
+                    {
+                        _impacts.Flesh(hit.Point, hit.Away, 0.6f);
+                        Play(_fleshClips, hit.Point, _volume);
+                    }
+                    else
+                    {
+                        _impacts.Dull(hit.Point, -hit.Away);
+                        Play(_dullClips, hit.Point, _volume);
+                    }
+
+                    break;
+            }
+        }
+
         private void HandleDamageReceived(IncomingHitResult result, float amount)
         {
             Transform player = _playerCombat.transform;
             Vector3 point = player.position + Vector3.up * _playerHitHeight + player.forward * 0.3f;
+
+            if (_impacts != null)
+            {
+                switch (result)
+                {
+                    case IncomingHitResult.Parried:
+                        _impacts.Parry(point, player.forward);
+                        Play(_parryClips, point, _volume);
+                        break;
+                    case IncomingHitResult.Blocked:
+                        _impacts.Block(point, player.forward);
+                        Play(_blockClips, point, _volume);
+                        break;
+                    default:
+                        _impacts.Flesh(point - player.forward * 0.3f, -player.forward, 0.6f);
+                        Play(_hurtClips, point, _volume);
+                        break;
+                }
+
+                return;
+            }
 
             switch (result)
             {

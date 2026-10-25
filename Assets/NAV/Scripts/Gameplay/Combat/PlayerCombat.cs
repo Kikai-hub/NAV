@@ -439,7 +439,8 @@ namespace NAV.Gameplay.Combat
         /// to PlayerHealth. A hit landing within the equipped weapon's ParryWindowSeconds of
         /// Block starting to be held is a perfect parry (fully negated, no stamina cost);
         /// otherwise a held block reduces damage by BlockDamageReduction and costs
-        /// BlockStaminaCostPerHit. Not blocking at all passes the hit through unchanged.
+        /// BlockStaminaCostPerHit. Not blocking at all passes the hit through unchanged. Worn
+        /// armour then reduces what remains (ArmorMath).
         /// </summary>
         public void TakeDamage(float amount)
         {
@@ -459,7 +460,7 @@ namespace NAV.Gameplay.Combat
                     return;
                 }
 
-                amount *= 1f - weapon.BlockDamageReduction;
+                amount = ApplyArmor(amount * (1f - weapon.BlockDamageReduction));
                 _stamina.Spend(weapon.BlockStaminaCostPerHit);
                 Debug.Log($"{name} blocked, taking {amount:F1} reduced damage.", this);
                 _health.TakeDamage(amount);
@@ -467,8 +468,15 @@ namespace NAV.Gameplay.Combat
                 return;
             }
 
+            amount = ApplyArmor(amount);
             _health.TakeDamage(amount);
             DamageReceived?.Invoke(IncomingHitResult.Hit, amount);
+        }
+
+        // Worn armour (PlayerEquipment) reduces whatever got past the block.
+        private float ApplyArmor(float amount)
+        {
+            return _equipment != null ? ArmorMath.Reduce(amount, _equipment.TotalArmor) : amount;
         }
     }
 }

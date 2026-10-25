@@ -81,6 +81,14 @@ namespace NAV.Gameplay.Interaction
             for (int i = 0; i < hitCount; i++)
             {
                 RaycastHit hit = _hitBuffer[i];
+
+                // The camera sits behind the player: walking up to something at chest height (a
+                // door) puts the player's own body on the aim ray - it never blocks.
+                if (hit.collider.transform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
                 var interactable = hit.collider.isTrigger
                     ? hit.collider.GetComponent<IInteractable>()
                     : hit.collider.GetComponentInParent<IInteractable>();

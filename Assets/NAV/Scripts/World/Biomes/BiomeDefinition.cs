@@ -21,10 +21,13 @@ namespace NAV.World.Biomes
         [SerializeField] private float _minSpacing = 8f;
         [Tooltip("Random uniform size per instance (min, max) - trees of one kind shouldn't all be the same height. (1, 1) = as the prefab.")]
         [SerializeField] private Vector2 _scale = Vector2.one;
+        [Tooltip("Only where the ground is this many metres above the water (min, max) - e.g. (0.2, 2) keeps bog iron on the shore. Leave wide for anywhere.")]
+        [SerializeField] private Vector2 _heightAboveWater = new(-1000f, 1000f);
 
         public GameObject Prefab => _prefab;
         public float MinScale => Mathf.Max(0.05f, _scale.x);
         public float MaxScale => Mathf.Max(MinScale, _scale.y);
+        public Vector2 HeightAboveWater => _heightAboveWater;
 
         /// <summary>Chance (0-1) that any given candidate spawn point in this biome instantiates
         /// this prefab.</summary>
@@ -128,6 +131,22 @@ namespace NAV.World.Biomes
         [Header("Creatures")]
         [SerializeField] private List<BiomeCreatureSpawn> _creatureSpawns = new();
 
+        [Header("Atmosphere")]
+        [Tooltip("Extra fog while the camera is in this biome (exponential-squared density; 0.02 = you see ~100 m). AtmosphereFog adds it to the view-distance edge, weather and morning haze. 0 = none.")]
+        [SerializeField, Min(0f)] private float _fogDensity;
+        [Tooltip("Multiplies the sky-matched fog colour in this biome (0.5 grey = unchanged, darker/greener = gloomier); alpha = how strongly (0 = not at all). Multiplied, so it still darkens at night.")]
+        [SerializeField] private Color _fogColor = new(0.5f, 0.5f, 0.5f, 0f);
+
+        [Header("Ambience")]
+        [Tooltip("Loop heard here by day (birds, cicadas, the sea) - AmbienceController blends the biomes around the listener.")]
+        [SerializeField] private AudioClip _dayAmbience;
+        [Tooltip("Loop heard here at night (crickets, owls); the sea keeps its own.")]
+        [SerializeField] private AudioClip _nightAmbience;
+        [SerializeField, Range(0f, 1f)] private float _ambienceVolume = 0.5f;
+        [Tooltip("Wind loop here (open fields: calm wind; forests: wind in the trees) - louder in bad weather.")]
+        [SerializeField] private AudioClip _windAmbience;
+        [SerializeField, Range(0f, 1f)] private float _windVolume = 0.3f;
+
         public string DisplayName => _displayName;
         public TerrainLayer TerrainLayer => _terrainLayer;
         public bool IsWater => _isWater;
@@ -137,6 +156,13 @@ namespace NAV.World.Biomes
         public IReadOnlyList<BiomeDecorSpawn> DecorSpawns => _decorSpawns;
         public float GrassDensity => _grassDensity;
         public float FlowerDensity => _flowerDensity;
+        public float FogDensity => _fogDensity;
+        public Color FogColor => _fogColor;
+        public AudioClip DayAmbience => _dayAmbience;
+        public AudioClip NightAmbience => _nightAmbience;
+        public float AmbienceVolume => _ambienceVolume;
+        public AudioClip WindAmbience => _windAmbience;
+        public float WindVolume => _windVolume;
 
         private void OnValidate()
         {

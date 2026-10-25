@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: BronzeHelm
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: BronzeHelm
+  _displayName: Bronze Helm
+  _description: A cast bronze helm with cheek guards and a nose guard.
+  _icon: {fileID: 21300000, guid: 70378e9afd142af45956b6ec5f3693d4, type: 3}
+  _category: 3
+  _maxStackSize: 1
+  _weight: 2.5
+  _worldPrefab: {fileID: 4855870947561221564, guid: da215472339e30e409871cc440026696, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 11400000, guid: d8cb1a04cf1f30f47bfd463721f6907b, type: 2}

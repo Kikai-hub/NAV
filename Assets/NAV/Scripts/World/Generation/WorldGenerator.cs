@@ -10,7 +10,7 @@ namespace NAV.World.Generation
     /// <summary>
     /// First slice of the World Generation pipeline from ARCHITECTURE_v0.1.md:
     /// Seed -> Noise -> Heightmap -> Land/Water -> Biome Assignment (-> a first pass at
-    /// Resources and Creatures, see SpawnResources/SpawnCreatures below - Vegetation/POI are
+    /// Resources and Creatures, see WorldGenerator.Chunks and SpawnCreaturesAround - Vegetation/POI are
     /// still later pipeline stages, out of scope here).
     ///
     /// Deterministic: every noise sample is offset by values derived from a seed via a seeded
@@ -22,11 +22,12 @@ namespace NAV.World.Generation
     /// overload with a new-game-random or loaded-from-save seed, which is why WorldGenerationSettings.Seed
     /// itself is never mutated at runtime (see SaveManager's own doc comment).
     ///
-    /// Bounded, non-streaming: generates one fixed-size Terrain, not chunks - see PROJECT_STATE.md
-    /// Known Risk #1. Chunk/streaming support for a truly large open world is future work. A dry,
-    /// flat player spawn point is picked per seed (SpawnPoint - see FindSpawnPoint), and
-    /// resource nodes get stable spawn-index ids so gathered ones can be saved and skipped on
-    /// load (GetDepletedResourceIds / Generate(seed, depletedResourceIds)).
+    /// One Terrain (heights, biome textures, grass) generated whole; everything on it - trees,
+    /// rocks, ore, bushes, decor - streams in 64 m chunks around the player (WorldGenerator.Chunks:
+    /// deterministic per chunk, stable per-node ids so gathered ones are saved and skipped on load
+    /// - GetDepletedResourceIds / Generate(seed, depletedResourceIds)), and the NavMesh and the
+    /// creatures follow the player (LocalNavMesh). A dry, flat player spawn point is picked per
+    /// seed (SpawnPoint - see FindSpawnPoint).
     ///
     /// Height/biome classification is deliberately biome-first, not the other way around: a low-
     /// frequency "base noise" pass alone decides Land/Water and Plains/Forest (see GetBiome) -
@@ -38,17 +39,17 @@ namespace NAV.World.Generation
     /// seabed stays smooth, while Land/Water and Plains/Forest placement itself is untouched by
     /// the fix (still comes from the same base noise/moisture used before).
     /// </summary>
-    public class WorldGenerator : MonoBehaviour
+    public partial class WorldGenerator : MonoBehaviour
     {
         [SerializeField] private WorldGenerationSettings _settings;
         [SerializeField] private Terrain _terrain;
         [Tooltip("Optional. A flat quad/plane repositioned to sea level and scaled to the terrain's footprint - placeholder water, not a real shader/wave system.")]
         [SerializeField] private Transform _waterPlane;
-        [Tooltip("Optional. BuildNavMesh() runs once, right after generation, so creatures/the player can path on the freshly generated terrain.")]
+        [Tooltip("Gives the agent type and layers for the NavMesh LocalNavMesh builds around the player (it no longer bakes itself).")]
         [SerializeField] private NavMeshSurface _navMeshSurface;
         [Tooltip("Optional. A NavMeshModifierVolume (not a child of the water plane) PlaceWater stretches over everything under the water, so the NavMesh doesn't cover lake beds now that the water isn't solid.")]
         [SerializeField] private NavMeshModifierVolume _underwaterNavBlock;
-        [Tooltip("Optional parent for spawned resource-node prefabs (see SpawnResources), purely for Hierarchy organization - spawning still works with this left empty.")]
+        [Tooltip("Optional parent for the streamed chunks (trees, rocks, decor) and starter items, purely for Hierarchy organization.")]
         [SerializeField] private Transform _resourceContainer;
         [Tooltip("No creature is spawned within this distance of the player spawn point (see SpawnPoint).")]
         [SerializeField, Min(0f)] private float _creatureSafeRadius = 30f;
@@ -78,9 +79,7 @@ namespace NAV.World.Generation
         [Tooltip("Off when SaveManager drives generation instead (New Game/Load pick the seed) - see UNITY_SETUP_NEXT_STEPS.md's Save step. On for standalone testing of this scene without a SaveManager present (e.g. WorldGenTest before Save existed).")]
         [SerializeField] private bool _generateOnStart = true;
 
-        private readonly List<GameObject> _spawnedResources = new();
         private readonly List<GameObject> _spawnedCreatures = new();
-        private readonly List<GameObject> _spawnedDecor = new();
 
         // Attempts per requested creature before giving up on finding a valid point (right
         // biome, on the NavMesh, outside the safe zone) - bounds the loop for biomes that are
@@ -98,7 +97,6 @@ namespace NAV.World.Generation
         public event System.Action CreaturesSpawned;
         private const float SpawnFlatnessProbeDistance = 2f;
         private readonly Collider[] _spawnOverlapBuffer = new Collider[16];
-        private ICollection<int> _depletedOnLoad;
 
         /// <summary>A dry, flat, unobstructed ground point picked deterministically from the
         /// seed during Generate (nearest such point to the terrain centre). SaveManager places a
@@ -175,6 +173,11 @@ namespace NAV.World.Generation
             TerrainData terrainData = _terrain.terrainData;
             terrainData.heightmapResolution = _settings.HeightmapResolution;
             terrainData.size = new Vector3(_settings.Width, _settings.MaxHeight, _settings.Length);
+            // Biome textures about every 2.5 m whatever the world size.
+            terrainData.alphamapResolution = GroundMapResolution;
+            // Centred on the origin, so coordinates stay small however big the world gets.
+            Vector3 terrainPosition = _terrain.transform.position;
+            _terrain.transform.position = new Vector3(-_settings.Width * 0.5f, terrainPosition.y, -_settings.Length * 0.5f);
 
             int resolution = terrainData.heightmapResolution;
             float[,] heights = new float[resolution, resolution];
@@ -207,32 +210,18 @@ namespace NAV.World.Generation
             terrainData.SetHeights(0, 0, heights);
 
             PaintBiomes(terrainData, biomeMap);
-            SpawnResources(biomeMap, seed, depletedResourceIds);
-            SpawnDecor(biomeMap, seed);
+            _biomeMap = biomeMap;
+            ClearSpawned(_spawnedCreatures);
+            PrepareChunks(seed, depletedResourceIds);
             PaintDetails(terrainData, biomeMap, seed);
             PlaceWater();
+            DropWholeWorldNavMesh();
+            float seaHeight = _terrain.transform.position.y + _settings.SeaLevel * _settings.MaxHeight;
+            _localNav.SetWater(seaHeight - UnderwaterNavMargin, _terrain.transform.position.y - 1f);
             FindSpawnPoint(biomeMap);
             SpawnStarterResources(seed);
-            BakeNavMesh();
-            SpawnCreatures(biomeMap, seed);
-        }
-
-        /// <summary>Spawn indices of resource nodes that no longer exist (gathered until
-        /// depleted - ResourceNode destroys itself) or were skipped as already depleted on load.
-        /// Indices are stable for a given seed + generation settings, so SaveManager can store
-        /// just these numbers instead of every node.</summary>
-        public List<int> GetDepletedResourceIds()
-        {
-            var ids = new List<int>();
-            for (int i = 0; i < _spawnedResources.Count; i++)
-            {
-                if (_spawnedResources[i] == null)
-                {
-                    ids.Add(i);
-                }
-            }
-
-            return ids;
+            // Trees/rocks around the start, the NavMesh there and the first creatures.
+            PrimeAround(HasSpawnPoint ? SpawnPoint : _terrain.transform.position + new Vector3(_settings.Width, 0f, _settings.Length) * 0.5f);
         }
 
         /// <summary>Spiral search outward from the terrain centre for the first point that is
@@ -302,6 +291,9 @@ namespace NAV.World.Generation
             }
 
             ground = new Vector3(candidate.x, height, candidate.z);
+            // Trees there exist only once their chunk is loaded.
+            EnsureChunksAround(candidate);
+            Physics.SyncTransforms();
             Vector3 bottom = ground + Vector3.up * (_spawnClearRadius + 0.1f);
             Vector3 top = ground + Vector3.up * Mathf.Max(1.8f, _spawnClearRadius + 0.2f);
             int hits = Physics.OverlapCapsuleNonAlloc(bottom, top, _spawnClearRadius, _spawnOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
@@ -333,6 +325,13 @@ namespace NAV.World.Generation
                 return _settings.PlainsBiome;
             }
 
+            // The wettest heart of the forest is the dense forest - always ringed by ordinary
+            // forest, since moisture climbs through the forest band to reach it.
+            if (_settings.DenseForestBiome != null && moistureNoise >= _settings.DenseForestMoistureThreshold)
+            {
+                return _settings.DenseForestBiome;
+            }
+
             // Groves are clearings of the forest - never at its very edge, so a grove doesn't
             // read as just more plains.
             bool deepInForest = moistureNoise >= _settings.ForestMoistureThreshold + 0.03f;
@@ -351,6 +350,7 @@ namespace NAV.World.Generation
             int plainsIndex = AddLayer(layers, _settings.PlainsBiome);
             int forestIndex = AddLayer(layers, _settings.ForestBiome);
             int groveIndex = _settings.GroveBiome != null ? AddLayer(layers, _settings.GroveBiome) : forestIndex;
+            int denseIndex = _settings.DenseForestBiome != null ? AddLayer(layers, _settings.DenseForestBiome) : forestIndex;
             terrainData.terrainLayers = layers.ToArray();
 
             int alphaRes = terrainData.alphamapResolution;
@@ -364,6 +364,7 @@ namespace NAV.World.Generation
                     BiomeDefinition biome = SampleBiomeMap(biomeMap, x, z, alphaRes, heightRes);
                     int layerIndex = ReferenceEquals(biome, _settings.ForestBiome) ? forestIndex
                         : ReferenceEquals(biome, _settings.GroveBiome) ? groveIndex
+                        : ReferenceEquals(biome, _settings.DenseForestBiome) ? denseIndex
                         : ReferenceEquals(biome, _settings.PlainsBiome) ? plainsIndex
                         : oceanIndex;
 
@@ -388,119 +389,15 @@ namespace NAV.World.Generation
             return layers.Count - 1;
         }
 
-        /// <summary>Destroys any resources this generator spawned last time, then re-scatters each
-        /// biome's ResourceSpawns list: for each entry, walks a MinSpacing grid across the whole
-        /// terrain, jitters one candidate point per cell (deterministically, from a seeded RNG),
-        /// keeps it only if that point actually falls inside this biome (via biomeMap - so a
-        /// Forest-only prefab never lands on Plains just because its grid technically overlaps the
-        /// terrain), and then rolls Density to decide whether it actually spawns.</summary>
-        private void SpawnResources(BiomeDefinition[,] biomeMap, int seed, ICollection<int> depletedResourceIds)
-        {
-            _depletedOnLoad = depletedResourceIds;
-
-            ClearSpawned(_spawnedResources);
-
-            // Offset from the height/detail/moisture seeds so resource placement varies
-            // independently of terrain shape while staying fully deterministic per seed.
-            var resourceRng = new System.Random(seed + 1);
-            int heightRes = biomeMap.GetLength(0);
-            Vector3 origin = _terrain.transform.position;
-
-            // Resolved once per generation, not per instance - see RenderDistanceController, which
-            // culls this same layer at a shorter distance than the terrain to keep the thousands of
-            // spawned resources here from tanking draw calls at long view distances.
-            int resourceLayer = LayerMask.NameToLayer(_settings.ResourceLayerName);
-            if (resourceLayer < 0)
-            {
-                Debug.LogError($"{nameof(WorldGenerator)}: Layer '{_settings.ResourceLayerName}' does not exist - create it in Project Settings > Tags and Layers. Spawned resources will stay on their prefab's default layer and won't be distance-culled.", this);
-            }
-
-            SpawnBiomeResources(_settings.OceanBiome, biomeMap, heightRes, origin, resourceRng, resourceLayer);
-            SpawnBiomeResources(_settings.PlainsBiome, biomeMap, heightRes, origin, resourceRng, resourceLayer);
-            SpawnBiomeResources(_settings.ForestBiome, biomeMap, heightRes, origin, resourceRng, resourceLayer);
-            SpawnBiomeResources(_settings.GroveBiome, biomeMap, heightRes, origin, resourceRng, resourceLayer);
-        }
-
-        /// <summary>Scatters each biome's DecorSpawns (bushes, mushrooms, stumps, logs, pebbles)
-        /// the same way resources are placed, from its own RNG (seed + 5) so resource ids never
-        /// shift when decor changes. Runs before the NavMesh bake: decor that keeps its colliders
-        /// is walked around. Not saved.</summary>
-        private void SpawnDecor(BiomeDefinition[,] biomeMap, int seed)
-        {
-            ClearSpawned(_spawnedDecor);
-
-            var decorRng = new System.Random(seed + 5);
-            int heightRes = biomeMap.GetLength(0);
-            Vector3 origin = _terrain.transform.position;
-            int layer = LayerMask.NameToLayer(_settings.ResourceLayerName);
-            Transform parent = _resourceContainer;
-
-            foreach (BiomeDefinition biome in Biomes)
-            {
-                if (biome == null)
-                {
-                    continue;
-                }
-
-                foreach (BiomeDecorSpawn spawn in biome.DecorSpawns)
-                {
-                    if (spawn.Prefab == null || spawn.Density <= 0f || spawn.MinSpacing <= 0f)
-                    {
-                        continue;
-                    }
-
-                    float cell = spawn.MinSpacing;
-                    for (float z = 0f; z < _settings.Length; z += cell)
-                    {
-                        for (float x = 0f; x < _settings.Width; x += cell)
-                        {
-                            float localX = x + (float)decorRng.NextDouble() * cell;
-                            float localZ = z + (float)decorRng.NextDouble() * cell;
-                            float roll = (float)decorRng.NextDouble();
-                            float yaw = (float)decorRng.NextDouble() * 360f;
-                            float scale = Mathf.Lerp(spawn.MinScale, spawn.MaxScale, (float)decorRng.NextDouble());
-                            if (localX >= _settings.Width || localZ >= _settings.Length || roll > spawn.Density)
-                            {
-                                continue;
-                            }
-
-                            int hx = Mathf.Clamp(Mathf.RoundToInt(localX / _settings.Width * (heightRes - 1)), 0, heightRes - 1);
-                            int hz = Mathf.Clamp(Mathf.RoundToInt(localZ / _settings.Length * (heightRes - 1)), 0, heightRes - 1);
-                            if (!ReferenceEquals(biomeMap[hz, hx], biome))
-                            {
-                                continue;
-                            }
-
-                            Vector3 position = new Vector3(origin.x + localX, 0f, origin.z + localZ);
-                            position.y = origin.y + _terrain.SampleHeight(position);
-
-                            GameObject instance = Instantiate(spawn.Prefab, position, Quaternion.Euler(0f, yaw, 0f), parent);
-                            instance.transform.localScale *= scale;
-                            if (!spawn.KeepColliders)
-                            {
-                                foreach (Collider collider in instance.GetComponentsInChildren<Collider>())
-                                {
-                                    // Disabled, not destroyed: Destroy is deferred and the
-                                    // NavMesh bake right after this would still see it.
-                                    collider.enabled = false;
-                                }
-                            }
-
-                            if (layer >= 0)
-                            {
-                                SetLayerRecursively(instance.transform, layer);
-                            }
-
-                            _spawnedDecor.Add(instance);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Grass tufts per detail cell (~2 m) at GrassDensity 1; patch noise thins/thickens it.
+        // Grass tufts per ~2 m detail cell (the original 1 km world's) at GrassDensity 1; bigger
+        // cells get proportionally more. Patch noise thins/thickens it.
         private const int MaxGrassPerCell = 6;
+        private const float GrassReferenceCell = 1000f / 512f;
         private const float GrassPatchNoiseScale = 0.06f;
+
+        /// <summary>Alphamap and grass-map resolution: a cell about every 2.5 m (power of two,
+        /// 512..2048).</summary>
+        private int GroundMapResolution => Mathf.Clamp(Mathf.NextPowerOfTwo(Mathf.CeilToInt(Mathf.Max(_settings.Width, _settings.Length) / 2.5f)), 512, 2048);
 
         /// <summary>Paints grass (waving texture grass) and flowers (instanced meshes) as terrain
         /// details. Per detail cell (~2 m) each biome's GrassDensity gives up to MaxGrassPerCell
@@ -561,8 +458,11 @@ namespace NAV.World.Generation
                 return;
             }
 
-            const int DetailResolution = 512;
-            terrainData.SetDetailResolution(DetailResolution, 32);
+            int detailResolution = GroundMapResolution;
+            float cellSize = _settings.Width / detailResolution;
+            float cellArea = cellSize * cellSize / (GrassReferenceCell * GrassReferenceCell);
+            float patchScale = GrassPatchNoiseScale * cellSize / GrassReferenceCell;
+            terrainData.SetDetailResolution(detailResolution, 32);
             // The layers below hold instance counts per cell; the default (coverage) mode reads
             // them as 0-255 coverage, so 1-6 would draw next to nothing.
             terrainData.SetDetailScatterMode(DetailScatterMode.InstanceCountMode);
@@ -577,24 +477,24 @@ namespace NAV.World.Generation
             var grass = new int[grassIndices.Count][,];
             for (int i = 0; i < grass.Length; i++)
             {
-                grass[i] = new int[DetailResolution, DetailResolution];
+                grass[i] = new int[detailResolution, detailResolution];
             }
 
             var flowers = new int[flowerIndices.Count][,];
             for (int i = 0; i < flowers.Length; i++)
             {
-                flowers[i] = new int[DetailResolution, DetailResolution];
+                flowers[i] = new int[detailResolution, detailResolution];
             }
 
             var detailRng = new System.Random(seed + 6);
             Vector2 patchOffset = new Vector2((float)detailRng.NextDouble() * 1000f, (float)detailRng.NextDouble() * 1000f);
             int heightRes = biomeMap.GetLength(0);
 
-            for (int z = 0; z < DetailResolution; z++)
+            for (int z = 0; z < detailResolution; z++)
             {
-                for (int x = 0; x < DetailResolution; x++)
+                for (int x = 0; x < detailResolution; x++)
                 {
-                    BiomeDefinition biome = SampleBiomeMap(biomeMap, x, z, DetailResolution, heightRes);
+                    BiomeDefinition biome = SampleBiomeMap(biomeMap, x, z, detailResolution, heightRes);
                     double grassRoll = detailRng.NextDouble();
                     double flowerRoll = detailRng.NextDouble();
                     int grassKind = detailRng.Next(Mathf.Max(1, grass.Length));
@@ -606,13 +506,13 @@ namespace NAV.World.Generation
 
                     if (grass.Length > 0 && biome.GrassDensity > 0f)
                     {
-                        float patch = Mathf.Lerp(0.35f, 1.35f, Mathf.PerlinNoise(x * GrassPatchNoiseScale + patchOffset.x, z * GrassPatchNoiseScale + patchOffset.y));
-                        float tufts = biome.GrassDensity * patch * MaxGrassPerCell;
+                        float patch = Mathf.Lerp(0.35f, 1.35f, Mathf.PerlinNoise(x * patchScale + patchOffset.x, z * patchScale + patchOffset.y));
+                        float tufts = biome.GrassDensity * patch * MaxGrassPerCell * cellArea;
                         int count = Mathf.FloorToInt(tufts) + (grassRoll < tufts - Mathf.Floor(tufts) ? 1 : 0);
                         grass[grassKind][z, x] = Mathf.Clamp(count, 0, 16);
                     }
 
-                    if (flowers.Length > 0 && flowerRoll < biome.FlowerDensity)
+                    if (flowers.Length > 0 && flowerRoll < biome.FlowerDensity * cellArea)
                     {
                         flowers[flowerKind][z, x] = 1;
                     }
@@ -664,77 +564,11 @@ namespace NAV.World.Generation
             return prototypes.Count - 1;
         }
 
-        private void SpawnBiomeResources(BiomeDefinition biome, BiomeDefinition[,] biomeMap, int heightRes, Vector3 origin, System.Random resourceRng, int resourceLayer)
-        {
-            if (biome == null)
-            {
-                return;
-            }
-
-            foreach (BiomeResourceSpawn spawn in biome.ResourceSpawns)
-            {
-                if (spawn.Prefab == null || spawn.Density <= 0f || spawn.MinSpacing <= 0f)
-                {
-                    continue;
-                }
-
-                float cell = spawn.MinSpacing;
-
-                for (float z = 0f; z < _settings.Length; z += cell)
-                {
-                    for (float x = 0f; x < _settings.Width; x += cell)
-                    {
-                        float localX = x + (float)resourceRng.NextDouble() * cell;
-                        float localZ = z + (float)resourceRng.NextDouble() * cell;
-                        if (localX >= _settings.Width || localZ >= _settings.Length)
-                        {
-                            continue;
-                        }
-
-                        int hx = Mathf.Clamp(Mathf.RoundToInt(localX / _settings.Width * (heightRes - 1)), 0, heightRes - 1);
-                        int hz = Mathf.Clamp(Mathf.RoundToInt(localZ / _settings.Length * (heightRes - 1)), 0, heightRes - 1);
-
-                        if (!ReferenceEquals(biomeMap[hz, hx], biome) || resourceRng.NextDouble() > spawn.Density)
-                        {
-                            continue;
-                        }
-
-                        Vector3 worldPos = new Vector3(origin.x + localX, 0f, origin.z + localZ);
-                        worldPos.y = origin.y + _terrain.SampleHeight(worldPos);
-
-                        Quaternion rotation = Quaternion.Euler(0f, (float)resourceRng.NextDouble() * 360f, 0f);
-                        // Drawn for every placed node (not only varied ones) so ids/positions don't
-                        // depend on which entries have a size range.
-                        float scale = Mathf.Lerp(spawn.MinScale, spawn.MaxScale, (float)resourceRng.NextDouble());
-
-                        // The list index is the node's stable id. An already-gathered node keeps
-                        // its slot as null (after the RNG draws above, so every later node still
-                        // gets the same position/rotation/index as when the world was created).
-                        if (_depletedOnLoad != null && _depletedOnLoad.Contains(_spawnedResources.Count))
-                        {
-                            _spawnedResources.Add(null);
-                            SpawnLeftover(spawn.Prefab, worldPos, rotation, scale, resourceLayer);
-                            continue;
-                        }
-
-                        GameObject instance = Instantiate(spawn.Prefab, worldPos, rotation, _resourceContainer);
-                        instance.transform.localScale *= scale;
-                        if (resourceLayer >= 0)
-                        {
-                            SetLayerRecursively(instance.transform, resourceLayer);
-                        }
-
-                        _spawnedResources.Add(instance);
-                    }
-                }
-            }
-        }
-
-        /// <summary>Scatters _starterSpawns around SpawnPoint (deterministic, seed + 3). Appended
-        /// after the biome resources in _spawnedResources, so they get ids the same way and
-        /// picked-up ones are skipped on load.</summary>
+        /// <summary>Scatters _starterSpawns around SpawnPoint (deterministic, seed + 3). Not
+        /// streamed - always there; ids StarterIdBase + n, so picked-up ones are skipped on load.</summary>
         private void SpawnStarterResources(int seed)
         {
+            ClearSpawned(_starterResources);
             if (!HasSpawnPoint || _starterSpawns.Count == 0)
             {
                 return;
@@ -744,8 +578,6 @@ namespace NAV.World.Generation
             var rng = new System.Random(seed + 3);
             Vector3 origin = _terrain.transform.position;
             float seaHeight = origin.y + _settings.SeaLevel * _settings.MaxHeight;
-            int resourceLayer = LayerMask.NameToLayer(_settings.ResourceLayerName);
-
             foreach (StarterSpawn spawn in _starterSpawns)
             {
                 if (spawn == null || spawn.Prefab == null)
@@ -767,19 +599,15 @@ namespace NAV.World.Generation
                             continue;
                         }
 
-                        if (_depletedOnLoad != null && _depletedOnLoad.Contains(_spawnedResources.Count))
+                        if (_depleted.Contains(StarterIdBase + _starterResources.Count))
                         {
-                            _spawnedResources.Add(null);
+                            _starterResources.Add(null);
                             break;
                         }
 
                         GameObject instance = Instantiate(spawn.Prefab, position, Quaternion.Euler(0f, yaw, 0f), _resourceContainer);
-                        if (resourceLayer >= 0)
-                        {
-                            SetLayerRecursively(instance.transform, resourceLayer);
-                        }
-
-                        _spawnedResources.Add(instance);
+                        SetLayer(instance);
+                        _starterResources.Add(instance);
                         break;
                     }
                 }
@@ -789,7 +617,7 @@ namespace NAV.World.Generation
         /// <summary>What a gathered node left where it stood (a felled tree's stump - its
         /// definition's LeavesBehindPrefab), recreated on load so the spot doesn't go bare. The
         /// node's later stages (fallen trunk, logs) aren't saved.</summary>
-        private void SpawnLeftover(GameObject nodePrefab, Vector3 position, Quaternion rotation, float scale, int resourceLayer)
+        private void SpawnLeftover(GameObject nodePrefab, Vector3 position, Quaternion rotation, float scale, Transform parent)
         {
             var node = nodePrefab.GetComponent<NAV.Gameplay.Items.ResourceNode>();
             GameObject leftoverPrefab = node != null && node.Definition != null ? node.Definition.LeavesBehindPrefab : null;
@@ -798,12 +626,9 @@ namespace NAV.World.Generation
                 return;
             }
 
-            GameObject leftover = Instantiate(leftoverPrefab, position, rotation, _resourceContainer);
+            GameObject leftover = Instantiate(leftoverPrefab, position, rotation, parent);
             leftover.transform.localScale *= scale;
-            if (resourceLayer >= 0)
-            {
-                SetLayerRecursively(leftover.transform, resourceLayer);
-            }
+            SetLayer(leftover);
         }
 
         private static void SetLayerRecursively(Transform root, int layer)
@@ -837,39 +662,25 @@ namespace NAV.World.Generation
             spawned.Clear();
         }
 
-        /// <summary>Destroys creatures spawned last time, then places each biome's CreatureSpawns
-        /// at random (seeded) points that fall inside that biome and onto the freshly baked
-        /// NavMesh - which is why this runs after BakeNavMesh, unlike SpawnResources (whose
-        /// colliders must exist before the bake). Play Mode only: an Editor-time Regenerate would
-        /// otherwise save live creatures into the scene file. Creatures are not persisted by the
-        /// Save system - every load re-spawns them from the seed, same as resources.</summary>
-        private void SpawnCreatures(BiomeDefinition[,] biomeMap, int seed)
+        /// <summary>Destroys the creatures there were, then places each biome's CreatureSpawns at
+        /// random points within CreatureAreaRadius of centre that fall inside that biome and onto
+        /// the local NavMesh (built just before - PrimeAround). Creatures live around the player
+        /// now (CreaturePopulation tops them up and removes far ones), so only biomes near the
+        /// player get theirs. Play Mode only; not saved.</summary>
+        private void SpawnCreaturesAround(Vector3 centre)
         {
             ClearSpawned(_spawnedCreatures);
-
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            if (_navMeshSurface == null)
-            {
-                Debug.LogWarning($"{nameof(WorldGenerator)} on '{name}' has no NavMeshSurface - creatures need a baked NavMesh, so none were spawned.", this);
-                return;
-            }
-
-            _biomeMap = biomeMap;
-            var creatureRng = new System.Random(seed + 2);
+            var creatureRng = new System.Random(_seed + 2);
 
             foreach (BiomeDefinition biome in Biomes)
             {
-                SpawnBiomeCreatures(biome, creatureRng);
+                SpawnBiomeCreatures(biome, creatureRng, centre);
             }
 
             CreaturesSpawned?.Invoke();
         }
 
-        private void SpawnBiomeCreatures(BiomeDefinition biome, System.Random creatureRng)
+        private void SpawnBiomeCreatures(BiomeDefinition biome, System.Random creatureRng, Vector3 centre)
         {
             if (biome == null)
             {
@@ -888,8 +699,9 @@ namespace NAV.World.Generation
 
                 for (int i = 0; i < attempts && placed < spawn.Count; i++)
                 {
-                    Vector3 local = new Vector3((float)creatureRng.NextDouble() * _settings.Width, 0f, (float)creatureRng.NextDouble() * _settings.Length);
-                    Vector3 candidate = _terrain.transform.position + local;
+                    float angle = (float)creatureRng.NextDouble() * Mathf.PI * 2f;
+                    float distance = Mathf.Sqrt((float)creatureRng.NextDouble()) * CreatureAreaRadius;
+                    Vector3 candidate = centre + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * distance;
 
                     if (HasSpawnPoint && Vector3.Distance(candidate, SpawnPoint) < _creatureSafeRadius)
                     {
@@ -905,10 +717,7 @@ namespace NAV.World.Generation
                     placed += SpawnCreatureGroup(biome, spawn, point, Mathf.Min(size, spawn.Count - placed), creatureRng);
                 }
 
-                if (placed < spawn.Count)
-                {
-                    Debug.LogWarning($"{nameof(WorldGenerator)}: placed only {placed}/{spawn.Count} '{spawn.Prefab.name}' in {biome.DisplayName} (not enough valid NavMesh points).", this);
-                }
+                // Fewer (or none) is normal now: only the part of the biome near the player counts.
             }
         }
 
@@ -927,12 +736,13 @@ namespace NAV.World.Generation
                 yield return _settings.PlainsBiome;
                 yield return _settings.ForestBiome;
                 yield return _settings.GroveBiome;
+                yield return _settings.DenseForestBiome;
             }
         }
 
         /// <summary>True when the last generation spawned creatures (Play Mode, NavMesh baked) -
         /// CreaturePopulation only tops up a world that has a biome map.</summary>
-        public bool HasCreatureWorld => _biomeMap != null && _navMeshSurface != null && Application.isPlaying;
+        public bool HasCreatureWorld => _biomeMap != null && _localNav != null && _localNav.HasMesh && Application.isPlaying;
 
         /// <summary>Picks a point on the NavMesh inside the given biome, between minDistance and
         /// maxDistance from around (a ring - CreaturePopulation uses it to add animals out of the
@@ -990,6 +800,29 @@ namespace NAV.World.Generation
             }
 
             return placed;
+        }
+
+        /// <summary>The biome at a world position (null outside the world or before the first
+        /// generation in Play Mode) - AtmosphereFog asks it where the camera is.</summary>
+        public BiomeDefinition GetBiomeAt(Vector3 position)
+        {
+            if (_biomeMap == null || _terrain == null)
+            {
+                return null;
+            }
+
+            Vector3 origin = _terrain.transform.position;
+            float localX = position.x - origin.x;
+            float localZ = position.z - origin.z;
+            if (localX < 0f || localZ < 0f || localX > _settings.Width || localZ > _settings.Length)
+            {
+                return null;
+            }
+
+            int heightRes = _biomeMap.GetLength(0);
+            int hx = Mathf.Clamp(Mathf.RoundToInt(localX / _settings.Width * (heightRes - 1)), 0, heightRes - 1);
+            int hz = Mathf.Clamp(Mathf.RoundToInt(localZ / _settings.Length * (heightRes - 1)), 0, heightRes - 1);
+            return _biomeMap[hz, hx];
         }
 
         private bool TryGetCreaturePoint(BiomeDefinition biome, Vector3 candidate, out Vector3 point)
@@ -1064,21 +897,16 @@ namespace NAV.World.Generation
             }
         }
 
-        private void BakeNavMesh()
+        /// <summary>The scene's NavMeshSurface no longer bakes the whole world (LocalNavMesh builds
+        /// around the player, from physics colliders - render meshes of imported art aren't
+        /// readable in builds); its old data, if any, is dropped so the two never overlap.</summary>
+        private void DropWholeWorldNavMesh()
         {
-            if (_navMeshSurface == null)
+            if (_navMeshSurface != null && _navMeshSurface.navMeshData != null)
             {
-                return;
+                _navMeshSurface.RemoveData();
+                _navMeshSurface.navMeshData = null;
             }
-
-            // Render-mesh geometry (the default) needs each source mesh's "Read/Write Enabled"
-            // import flag on, which imported art assets (e.g. the Spruce tree pack's LOD meshes)
-            // usually don't have - that only silently works in the Editor's own Play mode, not in
-            // a real build ("does not allow read access" warnings otherwise). Physics Colliders
-            // don't have this restriction and every spawned resource-node prefab already has a
-            // real collider (for gathering/attack raycasts), so this is free.
-            _navMeshSurface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
-            _navMeshSurface.BuildNavMesh();
         }
     }
 }

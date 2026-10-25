@@ -75,6 +75,13 @@ namespace NAV.Core.Settings
         public int TextureQuality;
         [Tooltip("How far (m) trees, rocks and ore are drawn (the WorldResource layer); 0 = no limit. Terrain and sky are always drawn in full.")]
         public float ObjectDrawDistance;
+        [Tooltip("How far (m) the world is seen at all - the camera's far clip, with the fog closing in fully there (AtmosphereFog). 0 = the default (DefaultViewDistance).")]
+        public float ViewDistance;
+
+        public const float DefaultViewDistance = 700f;
+
+        /// <summary>ViewDistance, or the default for settings files saved before it existed.</summary>
+        public float EffectiveViewDistance => ViewDistance > 0f ? ViewDistance : DefaultViewDistance;
 
         public float GetVolume(AudioCategory category)
         {

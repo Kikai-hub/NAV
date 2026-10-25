@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: TinBar
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: TinBar
+  _displayName: Tin Bar
+  _description: Soft white tin. Two parts copper to one of tin make bronze.
+  _icon: {fileID: 21300000, guid: 6ed0981b2847ebb47b8c65b54543b8fd, type: 3}
+  _category: 0
+  _maxStackSize: 30
+  _weight: 1
+  _worldPrefab: {fileID: 5569458380101525837, guid: f80042d77cb51ea41814defb475c2b7e, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}

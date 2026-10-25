@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
   m_Name: LPW_dagger7_001_Weapon
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
-  _displayName: Dagger 7b
+  _displayName: Copper Dagger
   _icon: {fileID: 21300000, guid: 02f91fcad5379c749a534304f117b027, type: 3}
   _weaponClass: 2
   _damage: 9

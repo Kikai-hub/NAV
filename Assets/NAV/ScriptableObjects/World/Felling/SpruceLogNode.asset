@@ -15,8 +15,14 @@ MonoBehaviour:
   _displayName: Spruce Log
   _drops:
   - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
-    _amount: 3
+    _amount: 2
     _chance: 1
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 1
+    _chance: 0.5
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 1
+    _chance: 0.5
   - _item: {fileID: 11400000, guid: d1fd953b9b8a1980f86d7949fb041879, type: 2}
     _amount: 1
     _chance: 0.25

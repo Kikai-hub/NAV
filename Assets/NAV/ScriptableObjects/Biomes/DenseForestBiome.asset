@@ -1,0 +1,145 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 361de9b037aa6154344c9279e01ee3a0, type: 3}
+  m_Name: DenseForestBiome
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Biomes.BiomeDefinition
+  _displayName: Dense Forest
+  _terrainLayer: {fileID: 8574412962073106934, guid: e5e9197ebb26d804c97080d9af5144ad, type: 2}
+  _isWater: 0
+  _heightVariation: 0.8
+  _resourceSpawns:
+  - _prefab: {fileID: 7872121924578471631, guid: 846595641a3acf94d85e3644b5368ebe, type: 3}
+    _density: 0.8
+    _minSpacing: 7
+    _scale: {x: 1.5, y: 2.1}
+    _heightAboveWater: {x: 1.5, y: 1000}
+  - _prefab: {fileID: 4985865531053699991, guid: bb6dde4c049374e428d1ae6219331035, type: 3}
+    _density: 0.22
+    _minSpacing: 12
+    _scale: {x: 1.45, y: 2}
+    _heightAboveWater: {x: 1.5, y: 1000}
+  - _prefab: {fileID: 5360149251101891355, guid: 454e453c3f41d38448a7b66a2e695ede, type: 3}
+    _density: 0.18
+    _minSpacing: 12
+    _scale: {x: 1.7, y: 2.3}
+    _heightAboveWater: {x: 1.5, y: 1000}
+  - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
+    _density: 0.25
+    _minSpacing: 8
+    _scale: {x: 0.5, y: 0.9}
+    _heightAboveWater: {x: 1.5, y: 1000}
+  - _prefab: {fileID: 7861332820134218544, guid: 56b48e10716f69a45b63ad548f635781, type: 3}
+    _density: 0.12
+    _minSpacing: 18
+    _scale: {x: 1.6, y: 1.95}
+    _heightAboveWater: {x: 1.5, y: 1000}
+  - _prefab: {fileID: 8050798952632096481, guid: 135fc2301f7dfd14984cd34e11f5463b, type: 3}
+    _density: 0.14
+    _minSpacing: 16
+    _scale: {x: 0.9, y: 1.4}
+    _heightAboveWater: {x: 1.5, y: 1000}
+  - _prefab: {fileID: 5056375507921044682, guid: a28c62f724d2be04b812e4ac5502a361, type: 3}
+    _density: 0.12
+    _minSpacing: 16
+    _scale: {x: 1.4, y: 2.4}
+    _heightAboveWater: {x: -1000, y: 1000}
+  - _prefab: {fileID: 5822155337055520264, guid: 2bc89edf1f8ea8e4b8abebdff9dbe3d5, type: 3}
+    _density: 0.1
+    _minSpacing: 14
+    _scale: {x: 0.7, y: 1.1}
+    _heightAboveWater: {x: 0.1, y: 1.5}
+  - _prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
+    _density: 0.12
+    _minSpacing: 14
+    _scale: {x: 1, y: 1}
+    _heightAboveWater: {x: -1000, y: 1000}
+  - _prefab: {fileID: 7000480892539141789, guid: e14dea2f61bf28549875fb6463133d6a, type: 3}
+    _density: 0.05
+    _minSpacing: 18
+    _scale: {x: 1, y: 1}
+    _heightAboveWater: {x: -1000, y: 1000}
+  _decorSpawns:
+  - _prefab: {fileID: 7663410815729985492, guid: 10c433e5fed076d47abd0770632e3322, type: 3}
+    _density: 0.08
+    _minSpacing: 10
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 4198261910410287174, guid: c46ef3acf1a746f4da22182d7ec801c6, type: 3}
+    _density: 0.08
+    _minSpacing: 10
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 3104960196621404322, guid: 2a7cfb2f75da7fd44a038e7dd32f079b, type: 3}
+    _density: 0.06
+    _minSpacing: 12
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 7743252823564509495, guid: b62d7b654f2d89e4588b93338b5584c8, type: 3}
+    _density: 0.06
+    _minSpacing: 12
+    _scale: {x: 0.7, y: 1.1}
+    _keepColliders: 0
+  - _prefab: {fileID: 1866796817763092657, guid: 5149bcbf3fd86e34a9d29fbb7daef8e9, type: 3}
+    _density: 0.5
+    _minSpacing: 6
+    _scale: {x: 1, y: 1.6}
+    _keepColliders: 0
+  - _prefab: {fileID: 6684935879519352256, guid: d0fa3c49b2c9cd84bb5a644c53ef025e, type: 3}
+    _density: 0.1
+    _minSpacing: 10
+    _scale: {x: 0.8, y: 1.3}
+    _keepColliders: 0
+  - _prefab: {fileID: 7390660841207776048, guid: 3006b37c2f6a43142b48b677fae87675, type: 3}
+    _density: 0.06
+    _minSpacing: 12
+    _scale: {x: 0.8, y: 1.3}
+    _keepColliders: 0
+  - _prefab: {fileID: 7726922578587425720, guid: 2e12139c0ee03c44f8538d5e505a0942, type: 3}
+    _density: 0.08
+    _minSpacing: 14
+    _scale: {x: 0.6, y: 1.4}
+    _keepColliders: 0
+  - _prefab: {fileID: 7110513248368685802, guid: 3aa54be08e092174ab6b689e524fdf44, type: 3}
+    _density: 0.08
+    _minSpacing: 26
+    _scale: {x: 0.8, y: 1.1}
+    _keepColliders: 1
+  - _prefab: {fileID: 5385305736409967822, guid: 4fa87cea36a1ce641948a1c0d439d482, type: 3}
+    _density: 0.08
+    _minSpacing: 28
+    _scale: {x: 0.5, y: 0.7}
+    _keepColliders: 1
+  - _prefab: {fileID: 5157409133979067158, guid: 4b21e533c871dba4bb5c56ba22947be8, type: 3}
+    _density: 0.08
+    _minSpacing: 26
+    _scale: {x: 0.8, y: 1.2}
+    _keepColliders: 1
+  _grassDensity: 0.12
+  _flowerDensity: 0
+  _creatureSpawns:
+  - _prefab: {fileID: 7615035062538442650, guid: 72c4127d0a2e60742800947a9ea68e84, type: 3}
+    _count: 5
+    _nightCount: 9
+    _groupSize: {x: 2, y: 3}
+    _respawnSeconds: 120
+  - _prefab: {fileID: 3278574604635449654, guid: 629c4ab8949b6ef47936ac8e868c5957, type: 3}
+    _count: 1
+    _nightCount: 0
+    _groupSize: {x: 1, y: 2}
+    _respawnSeconds: 150
+  _fogDensity: 0.018
+  _fogColor: {r: 0.3, g: 0.42, b: 0.3, a: 0.85}
+  _dayAmbience: {fileID: 8300000, guid: bec1cfb465efc7a41bd5ccbac5b6f2a2, type: 3}
+  _nightAmbience: {fileID: 8300000, guid: 21538f6160ff48040a8488deb4ed6d5e, type: 3}
+  _ambienceVolume: 0.25
+  _windAmbience: {fileID: 8300000, guid: 749428170bd956149a4ede7c65dbb8b6, type: 3}
+  _windVolume: 0.5

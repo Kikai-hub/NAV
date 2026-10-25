@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
+  m_Name: BloomeryPiece
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: BloomeryPiece
+  _displayName: Bloomery
+  _icon: {fileID: 21300000, guid: 900f44f0f7a71bf4c9c86c2074aed17c, type: 3}
+  _cost:
+  - _item: {fileID: 11400000, guid: f2d88055de27ac542a3af0c4f14ee684, type: 2}
+    _amount: 20
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 4
+  - _item: {fileID: 11400000, guid: 526d81ff74ff535a262361beef16f23f, type: 2}
+    _amount: 2
+  _prefab: {fileID: 6437929004377488409, guid: 861b3cc6bc0bcb24787e57f3c91e44a2, type: 3}
+  _requiresWorkbench: 1
+  _unlockItems:
+  - {fileID: 11400000, guid: d17591cbddd2f81499f03412e74cdc77, type: 2}

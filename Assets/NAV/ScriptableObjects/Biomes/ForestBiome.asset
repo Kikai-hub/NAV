@@ -18,41 +18,60 @@ MonoBehaviour:
   _heightVariation: 0.65
   _resourceSpawns:
   - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
-    _density: 0.27
+    _density: 0.65
     _minSpacing: 9
     _scale: {x: 0.6, y: 1.35}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 3065945620809371928, guid: ac6a66155fcfd074ebcd32e29196214f, type: 3}
-    _density: 0.045
+    _density: 0.11
     _minSpacing: 16
     _scale: {x: 0.65, y: 1.3}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 4041049821367213156, guid: 1859d0135e4e46742abce55ab850d2be, type: 3}
-    _density: 0.035
+    _density: 0.09
     _minSpacing: 18
     _scale: {x: 0.65, y: 1.3}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 181314623598288619, guid: 4e539f019b7bd5e4db9c83e69bbd701b, type: 3}
-    _density: 0.025
+    _density: 0.06
     _minSpacing: 16
     _scale: {x: 0.7, y: 1.3}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 7677283788080100289, guid: d748b26c80e26a84bafcb3f6f8482148, type: 3}
-    _density: 0.025
+    _density: 0.06
     _minSpacing: 16
     _scale: {x: 0.7, y: 1.3}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 685565626768099529, guid: aeef85aef78d26546b65e73f4e1f3f66, type: 3}
-    _density: 0.025
+    _density: 0.06
     _minSpacing: 16
     _scale: {x: 0.7, y: 1.3}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 1412940346990303026, guid: c5330c98b76acd84d90f2d76e092e288, type: 3}
-    _density: 0.025
+    _density: 0.06
     _minSpacing: 16
     _scale: {x: 0.7, y: 1.3}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
     _density: 0.12
     _minSpacing: 14
     _scale: {x: 1, y: 1}
+    _heightAboveWater: {x: -1000, y: 1000}
   - _prefab: {fileID: 7000480892539141789, guid: e14dea2f61bf28549875fb6463133d6a, type: 3}
     _density: 0.04
     _minSpacing: 18
     _scale: {x: 1, y: 1}
+    _heightAboveWater: {x: -1000, y: 1000}
+  - _prefab: {fileID: 5822155337055520264, guid: 2bc89edf1f8ea8e4b8abebdff9dbe3d5, type: 3}
+    _density: 0.12
+    _minSpacing: 14
+    _scale: {x: 0.7, y: 1.1}
+    _heightAboveWater: {x: 0.1, y: 1.5}
+  - _prefab: {fileID: 1176642649903770046, guid: 993c6d14c01eb5f44897fad73d9c52f3, type: 3}
+    _density: 0.04
+    _minSpacing: 20
+    _scale: {x: 0.8, y: 1.15}
+    _heightAboveWater: {x: 0.8, y: 4}
   _decorSpawns:
   - _prefab: {fileID: 7663410815729985492, guid: 10c433e5fed076d47abd0770632e3322, type: 3}
     _density: 0.08
@@ -122,3 +141,10 @@ MonoBehaviour:
     _nightCount: 1
     _groupSize: {x: 1, y: 2}
     _respawnSeconds: 150
+  _fogDensity: 0
+  _fogColor: {r: 0.5, g: 0.5, b: 0.5, a: 0}
+  _dayAmbience: {fileID: 8300000, guid: bec1cfb465efc7a41bd5ccbac5b6f2a2, type: 3}
+  _nightAmbience: {fileID: 8300000, guid: 21538f6160ff48040a8488deb4ed6d5e, type: 3}
+  _ambienceVolume: 0.55
+  _windAmbience: {fileID: 8300000, guid: 749428170bd956149a4ede7c65dbb8b6, type: 3}
+  _windVolume: 0.3

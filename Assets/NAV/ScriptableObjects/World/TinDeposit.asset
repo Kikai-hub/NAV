@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 851ded87fbe38614ab896652bfbf621f, type: 3}
+  m_Name: TinDeposit
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ResourceNodeDefinition
+  _displayName: Tin Vein
+  _drops:
+  - _item: {fileID: 11400000, guid: a115693f7d8708e4bb9b1370e76c9b4f, type: 2}
+    _amount: 2
+    _chance: 1
+  - _item: {fileID: 11400000, guid: a115693f7d8708e4bb9b1370e76c9b4f, type: 2}
+    _amount: 1
+    _chance: 0.5
+  - _item: {fileID: 11400000, guid: f2d88055de27ac542a3af0c4f14ee684, type: 2}
+    _amount: 2
+    _chance: 1
+  _hitsToDeplete: 5
+  _requiredTool: 2
+  _minToolTier: 2
+  _shrinkOnHit: 1
+  _becomesPrefab: {fileID: 0}
+  _leavesBehindPrefab: {fileID: 0}
+  _fallImpulse: 0

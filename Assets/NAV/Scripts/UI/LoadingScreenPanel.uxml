@@ -1,10 +1,14 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="NAVTheme.uss" />
     <Style src="LoadingScreenPanel.uss" />
     <ui:VisualElement name="loading-root" class="loading-root">
+        <ui:VisualElement class="loading-logo" picking-mode="Ignore" />
         <ui:Label name="loading-label" text="Loading" class="loading-label" />
         <ui:VisualElement class="loading-progress-track">
-            <ui:VisualElement name="loading-progress-fill" class="loading-progress-fill" />
-            <ui:VisualElement name="loading-progress-shimmer" class="loading-progress-shimmer" />
+            <ui:VisualElement class="loading-progress-groove">
+                <ui:VisualElement name="loading-progress-fill" class="loading-progress-fill" />
+                <ui:VisualElement name="loading-progress-shimmer" class="loading-progress-shimmer" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

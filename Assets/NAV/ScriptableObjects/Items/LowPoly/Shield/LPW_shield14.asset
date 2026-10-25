@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_shield14
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_shield14
-  _displayName: Shield 14
-  _description: Shield from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Bronze Shield
+  _description: A kite shield with a bronze rim.
   _icon: {fileID: 21300000, guid: 23235e1fccbe2be4a95714e3e195a755, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 816c672b3105df444b09a98442b7f03f, type: 2}
   _heldPrefab: {fileID: 1191402799851620115, guid: 7900a5764f24bc949a359a1b55666bcc, type: 3}
   _heldInLeftHand: 1
+  _armor: {fileID: 0}

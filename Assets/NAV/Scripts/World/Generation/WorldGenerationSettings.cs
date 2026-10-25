@@ -47,6 +47,9 @@ namespace NAV.World.Generation
         [SerializeField] private BiomeDefinition _groveBiome;
         [SerializeField] private float _groveNoiseScale = 110f;
         [SerializeField, Range(0f, 1f)] private float _groveThreshold = 0.62f;
+        [Tooltip("Optional. The wettest heart of the forest - moisture at or above Dense Forest Moisture Threshold - becomes this biome (the dense forest, tier 2: ancient trees, old oaks, copper).")]
+        [SerializeField] private BiomeDefinition _denseForestBiome;
+        [SerializeField, Range(0f, 1f)] private float _denseForestMoistureThreshold = 0.68f;
 
         [Header("Grass and Flowers (terrain details)")]
         [Tooltip("Grass blade textures (white-ish masks with alpha), painted as waving terrain grass by each biome's Grass Density - each grass cell picks one at random, tinted between Healthy and Dry colour.")]
@@ -59,7 +62,7 @@ namespace NAV.World.Generation
         [SerializeField, Min(10f)] private float _detailDistance = 70f;
 
         [Header("Resource Spawning")]
-        [Tooltip("Unity Layer WorldGenerator assigns to every spawned resource prefab (trees/rocks/ore). Must match RenderDistanceSettings.ResourceLayerName so RenderDistanceController can cull them at a shorter distance than the terrain - see PROJECT_STATE.md's world-generation performance note.")]
+        [Tooltip("Unity Layer WorldGenerator assigns to every spawned resource prefab (trees/rocks/ore). The camera (ThirdPersonCameraController) culls this layer at the Object Draw Distance setting, shorter than the view distance.")]
         [SerializeField] private string _resourceLayerName = "WorldResource";
 
         public int Seed => _seed;
@@ -80,6 +83,8 @@ namespace NAV.World.Generation
         public BiomeDefinition GroveBiome => _groveBiome;
         public float GroveNoiseScale => _groveNoiseScale;
         public float GroveThreshold => _groveThreshold;
+        public BiomeDefinition DenseForestBiome => _denseForestBiome;
+        public float DenseForestMoistureThreshold => _denseForestMoistureThreshold;
         public Texture2D[] GrassTextures => _grassTextures;
         public Color GrassHealthyColor => _grassHealthyColor;
         public Color GrassDryColor => _grassDryColor;

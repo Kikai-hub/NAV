@@ -45,6 +45,8 @@ namespace NAV.Core.Save
         [SerializeField] private PlayerFood _playerFood;
         [Tooltip("Optional - when assigned, the held (main hand) item is saved/restored.")]
         [SerializeField] private PlayerEquipment _playerEquipment;
+        [Tooltip("Optional - when assigned, recipe discovery (items had, station levels reached) is saved/restored.")]
+        [SerializeField] private NAV.Gameplay.Crafting.PlayerCrafting _playerCrafting;
         [Tooltip("Optional - when assigned, the in-game day and time of day are saved/restored.")]
         [SerializeField] private WorldClock _worldClock;
         [Tooltip("Optional - when assigned, the current weather and its remaining time are saved/restored.")]
@@ -164,6 +166,26 @@ namespace NAV.Core.Save
             {
                 _playerEquipment.Restore(_itemDatabase.Get(data.Player.MainHandItemId));
             }
+
+            if (_playerEquipment != null && data.Player.WornArmorItemIds != null)
+            {
+                _playerEquipment.RestoreArmor(data.Player.WornArmorItemIds.ConvertAll(id => _itemDatabase.Get(id)));
+            }
+
+            if (_playerCrafting != null)
+            {
+                var stations = new List<KeyValuePair<string, int>>();
+                if (data.Player.StationLevels != null)
+                {
+                    foreach (StationLevelSaveData station in data.Player.StationLevels)
+                    {
+                        stations.Add(new KeyValuePair<string, int>(station.StationId, station.Level));
+                    }
+                }
+
+                _playerCrafting.RestoreDiscovery(data.Player.DiscoveredItemIds, stations);
+            }
+
             ApplyBuildings(data.Buildings);
 
             SaveSystem.CurrentSaveId = data.SaveId;
@@ -262,7 +284,7 @@ namespace NAV.Core.Save
                     piece.Configure(definition);
                 }
 
-                var storage = instance.GetComponent<StorageContainer>();
+                var storage = instance.GetComponentInChildren<IStoredContents>(true);
                 if (storage != null && saved.ContainerSlots != null)
                 {
                     ApplySlots(storage.Contents, saved.ContainerSlots);
@@ -326,6 +348,23 @@ namespace NAV.Core.Save
                 player.MainHandItemId = _playerEquipment.MainHand.Id;
             }
 
+            if (_playerEquipment != null)
+            {
+                foreach (ItemDefinition worn in _playerEquipment.Worn.Values)
+                {
+                    player.WornArmorItemIds.Add(worn.Id);
+                }
+            }
+
+            if (_playerCrafting != null)
+            {
+                player.DiscoveredItemIds = new List<string>(_playerCrafting.DiscoveredItems);
+                foreach (KeyValuePair<string, int> station in _playerCrafting.StationLevels)
+                {
+                    player.StationLevels.Add(new StationLevelSaveData { StationId = station.Key, Level = station.Value });
+                }
+            }
+
             if (_playerFood != null)
             {
                 foreach (PlayerFood.ActiveFood food in _playerFood.ActiveFoods)
@@ -351,7 +390,7 @@ namespace NAV.Core.Save
                     continue;
                 }
 
-                var storage = piece.GetComponent<StorageContainer>();
+                var storage = piece.GetComponentInChildren<IStoredContents>(true);
                 buildings.Add(new BuildingSaveData
                 {
                     PieceId = piece.Definition.Id,

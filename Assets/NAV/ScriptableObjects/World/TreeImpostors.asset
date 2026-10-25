@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06590b0af13fb8c44966d6d741bddb87, type: 3}
+  m_Name: TreeImpostors
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Generation.ImpostorSet
+  _entries:
+  - Prefab: {fileID: 2853830331436078175, guid: d6059cbdf4e5cd94095fac209d22a962, type: 3}
+    Material: {fileID: 2100000, guid: 81b167e394923ab42a48e73e85c7cd45, type: 2}
+  - Prefab: {fileID: 3137309274800340295, guid: 47da67ea22c10a74e8662c4705052871, type: 3}
+    Material: {fileID: 2100000, guid: 008b0114d70e23d4797c8e7a851644f2, type: 2}
+  - Prefab: {fileID: 1422625811682923130, guid: 6ac34138037ff9f438787dec23aad58a, type: 3}
+    Material: {fileID: 2100000, guid: 46227fc38c01d024c9dfb09e655e4aa5, type: 2}
+  - Prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
+    Material: {fileID: 2100000, guid: 15307781f06a42743ab6a135274c1fa4, type: 2}
+  - Prefab: {fileID: 7872121924578471631, guid: 846595641a3acf94d85e3644b5368ebe, type: 3}
+    Material: {fileID: 2100000, guid: 27d3f10d9f838dc40a09f3c3000b725e, type: 2}
+  - Prefab: {fileID: 4985865531053699991, guid: bb6dde4c049374e428d1ae6219331035, type: 3}
+    Material: {fileID: 2100000, guid: 08bd33639d8d3994bb21123328ee4456, type: 2}
+  - Prefab: {fileID: 5360149251101891355, guid: 454e453c3f41d38448a7b66a2e695ede, type: 3}
+    Material: {fileID: 2100000, guid: 707cb345e459cab43b8e3b9ab313fe43, type: 2}
+  - Prefab: {fileID: 7861332820134218544, guid: 56b48e10716f69a45b63ad548f635781, type: 3}
+    Material: {fileID: 2100000, guid: a3734d4a4ae64524387106bcbb297654, type: 2}
+  - Prefab: {fileID: 3065945620809371928, guid: ac6a66155fcfd074ebcd32e29196214f, type: 3}
+    Material: {fileID: 2100000, guid: 6481743eefa24af46a805d4c7f5b7b64, type: 2}
+  - Prefab: {fileID: 4041049821367213156, guid: 1859d0135e4e46742abce55ab850d2be, type: 3}
+    Material: {fileID: 2100000, guid: f097d4835824f6646b727555a577d005, type: 2}
+  - Prefab: {fileID: 181314623598288619, guid: 4e539f019b7bd5e4db9c83e69bbd701b, type: 3}
+    Material: {fileID: 2100000, guid: 8987eb458fd37bb43b94a746e01a65ee, type: 2}
+  - Prefab: {fileID: 7677283788080100289, guid: d748b26c80e26a84bafcb3f6f8482148, type: 3}
+    Material: {fileID: 2100000, guid: eeac63f8537ed7c40b8afb6a021b97fa, type: 2}
+  - Prefab: {fileID: 685565626768099529, guid: aeef85aef78d26546b65e73f4e1f3f66, type: 3}
+    Material: {fileID: 2100000, guid: edc2814347dbf884ebddfbe15c8aec75, type: 2}
+  - Prefab: {fileID: 1412940346990303026, guid: c5330c98b76acd84d90f2d76e092e288, type: 3}
+    Material: {fileID: 2100000, guid: abfb3db76894d7c4d857c18826c6f042, type: 2}

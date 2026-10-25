@@ -29,6 +29,10 @@ namespace NAV.World.Weather
         [Header("Identity")]
         [SerializeField] private string _id;
         [SerializeField] private string _displayName;
+        [Tooltip("HUD icon in the day sign.")]
+        [SerializeField] private Sprite _icon;
+        [Tooltip("Optional HUD icon at night (the moon for clear weather). Empty = Icon.")]
+        [SerializeField] private Sprite _nightIcon;
 
         [Header("State Machine")]
         [SerializeField, Min(1f)] private float _minDurationSeconds = 120f;
@@ -58,6 +62,9 @@ namespace NAV.World.Weather
 
         public string Id => _id;
         public string DisplayName => _displayName;
+
+        /// <summary>HUD icon for this weather at this time of day, or null.</summary>
+        public Sprite GetIcon(bool night) => night && _nightIcon != null ? _nightIcon : _icon;
         public float MinDurationSeconds => _minDurationSeconds;
         public float MaxDurationSeconds => _maxDurationSeconds;
         public IReadOnlyList<WeatherTransition> Transitions => _transitions;

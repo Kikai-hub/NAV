@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: DefaultWorldGenerationSettings
   m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Generation.WorldGenerationSettings
   _seed: 1546511545
-  _width: 1000
-  _length: 1000
+  _width: 2560
+  _length: 2560
   _maxHeight: 60
-  _heightmapResolution: 513
+  _heightmapResolution: 1025
   _heightNoiseScale: 180
   _detailNoiseWeight: 0.2
   _detailNoiseScale: 40
@@ -29,6 +29,8 @@ MonoBehaviour:
   _groveBiome: {fileID: 11400000, guid: 8ab6cdedf000d4d4a81350dc224aa979, type: 2}
   _groveNoiseScale: 110
   _groveThreshold: 0.62
+  _denseForestBiome: {fileID: 11400000, guid: 32e5c5f4997700649a3d8abe48948b02, type: 2}
+  _denseForestMoistureThreshold: 0.68
   _grassTextures:
   - {fileID: 2800000, guid: 05ed0acf5c943924592e92895a6ddd28, type: 3}
   - {fileID: 2800000, guid: a5afa522eb551e04285e6d9e885e279f, type: 3}

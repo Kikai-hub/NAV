@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -23,8 +24,8 @@ namespace NAV.Editor
         private const string Folder = "Assets/NAV/Prefabs/World/Felling";
         private const string DefinitionFolder = "Assets/NAV/ScriptableObjects/World/Felling";
         private const string TreeDefinitionPath = "Assets/NAV/Scripts/Gameplay/Items/TreeWoodNode.asset";
-        private const string StumpPath = "Assets/InnerverseInteractive/Ultimate Nature – Starter/Environment/Props/Logs/Prefabs/UNS_Stump.prefab";
-        private const string LogModelPath = "Assets/Static Soul Studio/Wood Pack/Built-in/Prefabs/Log_1.prefab";
+        internal const string StumpPath = "Assets/InnerverseInteractive/Ultimate Nature – Starter/Environment/Props/Logs/Prefabs/UNS_Stump.prefab";
+        internal const string LogModelPath = "Assets/Static Soul Studio/Wood Pack/Built-in/Prefabs/Log_1.prefab";
 
         // Spruce model: ~12.5 m tall, trunk radius ~0.23 m.
         private const float TreeHeight = 12.5f;
@@ -78,6 +79,7 @@ namespace NAV.Editor
                 treeSerialized.FindProperty("_drops").ClearArray();
             }
             Configure(logSerialized, "Spruce Log", 2, null, null, 0f);
+            SetLogWood(logDefinition);
             Configure(new SerializedObject(fallenDefinition), "Fallen Spruce", 3, log, null, 0f);
             Configure(treeSerialized, null, -1, fallen, stump, FallImpulse);
 
@@ -85,7 +87,58 @@ namespace NAV.Editor
             Debug.Log($"TreeFellingSetup: built {Folder}/(SpruceStump, SpruceFallen, SpruceLog) and re-pointed {treeDefinition.name}. Log drops: {logDefinition.Drops.Count} entries.");
         }
 
-        private static void Configure(SerializedObject definition, string displayName, int hits, GameObject becomes, GameObject leavesBehind, float impulse)
+        /// <summary>A log gives 2-4 wood (2, then 1 and 1 more at 50% each) - an ordinary tree's
+        /// two logs make 4-8 (developer, 2026-10-24; it was a flat 6) - and resin at 25%.</summary>
+        internal static void SetLogWood(ResourceNodeDefinition logDefinition)
+        {
+            // The log's current drops say which items are the wood and the resin.
+            ItemDefinition wood = null;
+            ItemDefinition resin = null;
+            foreach (ResourceNodeDrop drop in logDefinition.Drops)
+            {
+                if (drop.Item == null)
+                {
+                    continue;
+                }
+
+                if (drop.Item.Id == "Resin")
+                {
+                    resin = drop.Item;
+                }
+                else if (wood == null)
+                {
+                    wood = drop.Item;
+                }
+            }
+
+            if (wood == null)
+            {
+                Debug.LogError($"TreeFellingSetup: {logDefinition.name} has no wood drop to rebalance.");
+                return;
+            }
+
+            var drops = new List<(ItemDefinition item, int amount, float chance)> { (wood, 2, 1f), (wood, 1, 0.5f), (wood, 1, 0.5f) };
+            if (resin != null)
+            {
+                drops.Add((resin, 1, 0.25f));
+            }
+
+            var serialized = new SerializedObject(logDefinition);
+            SerializedProperty list = serialized.FindProperty("_drops");
+            list.arraySize = drops.Count;
+            for (int i = 0; i < drops.Count; i++)
+            {
+                SerializedProperty entry = list.GetArrayElementAtIndex(i);
+                entry.FindPropertyRelative("_item").objectReferenceValue = drops[i].item;
+                entry.FindPropertyRelative("_amount").intValue = drops[i].amount;
+                entry.FindPropertyRelative("_chance").floatValue = drops[i].chance;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(logDefinition);
+        }
+
+        internal static void Configure(SerializedObject definition, string displayName, int hits, GameObject becomes, GameObject leavesBehind, float impulse)
         {
             if (displayName != null)
             {
@@ -172,7 +225,7 @@ namespace NAV.Editor
 
         /// <summary>A Wood Pack log stretched to length x radius, centred on localPosition with its
         /// long axis along the parent's X (rotated by localRotation).</summary>
-        private static GameObject AddLogVisual(Transform parent, string name, float length, float radius, Vector3 localPosition, Quaternion localRotation)
+        internal static GameObject AddLogVisual(Transform parent, string name, float length, float radius, Vector3 localPosition, Quaternion localRotation)
         {
             var holder = new GameObject(name).transform;
             holder.SetParent(parent, false);
@@ -188,7 +241,7 @@ namespace NAV.Editor
             return holder.gameObject;
         }
 
-        private static void AddBody(GameObject root, float mass, float angularDamping)
+        internal static void AddBody(GameObject root, float mass, float angularDamping)
         {
             var body = root.AddComponent<Rigidbody>();
             body.mass = mass;
@@ -199,7 +252,7 @@ namespace NAV.Editor
             body.angularDamping = angularDamping;
         }
 
-        private static void AddNode(GameObject root, ResourceNodeDefinition definition, Transform[] spawnPoints)
+        internal static void AddNode(GameObject root, ResourceNodeDefinition definition, Transform[] spawnPoints)
         {
             var node = root.AddComponent<ResourceNode>();
             var serialized = new SerializedObject(node);
@@ -213,7 +266,7 @@ namespace NAV.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static GameObject InstantiateUnpacked(string path)
+        internal static GameObject InstantiateUnpacked(string path)
         {
             var source = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             var instance = (GameObject)PrefabUtility.InstantiatePrefab(source);
@@ -225,7 +278,7 @@ namespace NAV.Editor
 
         /// <summary>Visual-only copies: the packs' own colliders (incl. non-convex MeshColliders,
         /// which a Rigidbody can't use) are replaced by the root's own colliders.</summary>
-        private static void StripColliders(GameObject visual)
+        internal static void StripColliders(GameObject visual)
         {
             foreach (Collider collider in visual.GetComponentsInChildren<Collider>(true))
             {
@@ -233,7 +286,7 @@ namespace NAV.Editor
             }
         }
 
-        private static GameObject Save(GameObject root, string name)
+        internal static GameObject Save(GameObject root, string name)
         {
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{Folder}/{name}.prefab");
             Object.DestroyImmediate(root);
@@ -242,7 +295,7 @@ namespace NAV.Editor
 
         /// <summary>Grippy wood: full friction, no bounce, Maximum combine so even a smooth surface
         /// (the water plane, building floors) holds a log.</summary>
-        private static PhysicsMaterial GetOrCreateFrictionMaterial()
+        internal static PhysicsMaterial GetOrCreateFrictionMaterial()
         {
             const string path = Folder + "/LogFriction.asset";
             var material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(path);
@@ -261,7 +314,7 @@ namespace NAV.Editor
             return material;
         }
 
-        private static ResourceNodeDefinition GetOrCreateDefinition(string name)
+        internal static ResourceNodeDefinition GetOrCreateDefinition(string name)
         {
             string path = $"{DefinitionFolder}/{name}.asset";
             var definition = AssetDatabase.LoadAssetAtPath<ResourceNodeDefinition>(path);
@@ -274,7 +327,7 @@ namespace NAV.Editor
             return definition;
         }
 
-        private static void EnsureFolder(string folder)
+        internal static void EnsureFolder(string folder)
         {
             if (AssetDatabase.IsValidFolder(folder))
             {

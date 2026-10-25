@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_hammer1H1
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_hammer1H1
-  _displayName: Mace 1
-  _description: Mace from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Wooden Club
+  _description: A knotty club. Better than bare fists.
   _icon: {fileID: 21300000, guid: 5e418f40620c2d5479020f73b626935c, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 1622f8202823eb74fb1805873c905262, type: 2}
   _heldPrefab: {fileID: 7238023216346755660, guid: 858fba8ba446e904f86006fa2503d048, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}

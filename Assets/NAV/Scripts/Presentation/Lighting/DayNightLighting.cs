@@ -88,6 +88,10 @@ namespace NAV.Presentation.Lighting
         [Tooltip("NAV/Skybox/Panoramic Blend. Referenced here so it's included in builds.")]
         [SerializeField] private Shader _panoramicBlendShader;
 
+        /// <summary>The sky-matched fog colour for this frame (horizon by clear weather, the
+        /// dimmed sky when overcast) - AtmosphereFog tints and applies it.</summary>
+        public Color FogColor { get; private set; } = Color.grey;
+
         private Material _originalSkybox;
         private Material _skyboxInstance;
         private float _baseSkyRotation;
@@ -208,7 +212,8 @@ namespace NAV.Presentation.Lighting
             RenderSettings.ambientEquatorColor = equator;
             RenderSettings.ambientGroundColor = equator * GroundAmbientFactor;
             // Overcast fog is a flat grey-blue matching the dimmed sky; clear fog follows the horizon.
-            RenderSettings.fogColor = Color.Lerp(equator, sky, overcast);
+            // AtmosphereFog owns RenderSettings fog and starts from this colour.
+            FogColor = Color.Lerp(equator, sky, overcast);
 
             float exposure = settings.SkyExposure.Evaluate(timeOfDay) * skyMultiplier;
             RenderSettings.reflectionIntensity = Mathf.Clamp01(exposure);

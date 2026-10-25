@@ -32,7 +32,10 @@ namespace NAV.Gameplay.Crafting
         private const float RoofRayLength = 25f;
         private const float RoofRayOffset = 0.45f;
         // Rays (out of RoofRayOffsets.Length) that must hit a roof - forgives a small gap.
-        private const int RoofRaysNeeded = 4;
+        // The ray straight above the bench must hit a roof, and this many of all the rays - a
+        // bench standing under the edge of a roof (a 45-degree-turned hut, a roof whose overhang
+        // has no collider) still counts as sheltered; 4 of 5 rejected exactly that case.
+        private const int RoofRaysNeeded = 3;
 
         private static readonly Vector2[] RoofRayOffsets =
         {
@@ -47,15 +50,21 @@ namespace NAV.Gameplay.Crafting
         private float _nextShelterCheck;
         private bool _registered;
 
-        public int Tier => _definition != null ? _definition.Tier : 0;
+        /// <summary>The station's level: its definition's base Tier plus one per distinct
+        /// WorkbenchExtension of its kind nearby (see WorkbenchExtension).</summary>
+        public int Tier => _definition != null ? _definition.Tier + _extensionLevels : 0;
+        public WorkbenchDefinition Definition => _definition;
         public string DisplayName => _definition != null ? _definition.DisplayName : name;
         public float BuildRadius => _definition != null ? _definition.BuildRadius : 0f;
 
         /// <summary>Under a roof (or the definition doesn't require one).</summary>
         public bool IsSheltered { get; private set; }
 
-        /// <summary>The tier crafting can use here: Tier when sheltered, else 0.</summary>
+        /// <summary>The level crafting can use here: Tier when sheltered, else 0.</summary>
         public int UsableTier => IsSheltered ? Tier : 0;
+
+        private int _extensionLevels;
+        private readonly HashSet<string> _extensionIds = new();
 
         private void Awake()
         {
@@ -102,9 +111,11 @@ namespace NAV.Gameplay.Crafting
 
             _nextShelterCheck = Time.time + ShelterCheckInterval;
             bool sheltered = !_definition.RequiresRoof || HasRoof();
-            if (sheltered != IsSheltered)
+            int extensions = CountExtensions();
+            if (sheltered != IsSheltered || extensions != _extensionLevels)
             {
                 IsSheltered = sheltered;
+                _extensionLevels = extensions;
                 foreach (PlayerCrafting crafting in _playersInRange)
                 {
                     if (crafting != null)
@@ -115,18 +126,37 @@ namespace NAV.Gameplay.Crafting
             }
         }
 
+        private int CountExtensions()
+        {
+            _extensionIds.Clear();
+            float radiusSqr = _definition.ExtensionRadius * _definition.ExtensionRadius;
+            foreach (WorkbenchExtension extension in WorkbenchExtension.All)
+            {
+                if (extension != null && extension.Upgrades == _definition
+                    && (extension.transform.position - transform.position).sqrMagnitude <= radiusSqr)
+                {
+                    _extensionIds.Add(extension.ExtensionId);
+                }
+            }
+
+            return _extensionIds.Count;
+        }
+
         /// <summary>True if position is within this bench's build area.</summary>
         public bool IsInBuildArea(Vector3 position)
         {
             return (position - transform.position).sqrMagnitude <= BuildRadius * BuildRadius;
         }
 
-        /// <summary>True if any real workbench's build area contains position.</summary>
-        public static bool AnyBuildAreaContains(Vector3 position)
+        /// <summary>True if any real workbench's build area contains position. With a kind, only
+        /// stations of that kind at minLevel or higher count (oak pieces need the workbench at
+        /// level 3); the level is the station's Tier - building doesn't need a roof.</summary>
+        public static bool AnyBuildAreaContains(Vector3 position, WorkbenchDefinition kind = null, int minLevel = 0)
         {
             foreach (Workbench workbench in AllWorkbenches)
             {
-                if (workbench != null && workbench.IsInBuildArea(position))
+                if (workbench != null && workbench.IsInBuildArea(position)
+                    && (kind == null || (workbench.Definition == kind && workbench.Tier >= minLevel)))
                 {
                     return true;
                 }
@@ -145,6 +175,11 @@ namespace NAV.Gameplay.Crafting
                 if (RayHitsRoof(start))
                 {
                     covered++;
+                }
+                else if (offset == Vector2.zero)
+                {
+                    // Nothing right above the bench itself - not sheltered, however the rest look.
+                    return false;
                 }
             }
 

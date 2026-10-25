@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_shield11
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_shield11
-  _displayName: Shield 11
-  _description: Shield from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Copper Shield
+  _description: A round shield faced with copper.
   _icon: {fileID: 21300000, guid: 7df7d272385631d44a5815ca01fd94f1, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 506c4cc4d1b5ee64187fc814bc1e68a8, type: 2}
   _heldPrefab: {fileID: 2408020997179450445, guid: ef685e99e7ccba94183490b6379e98dd, type: 3}
   _heldInLeftHand: 1
+  _armor: {fileID: 0}

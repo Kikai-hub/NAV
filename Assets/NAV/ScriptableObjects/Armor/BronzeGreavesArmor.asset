@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a40f6099767e044ba161169a6a55ba, type: 3}
+  m_Name: BronzeGreavesArmor
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.ArmorDefinition
+  _slot: 2
+  _armor: 3
+  _wornParts:
+  - _bone: 2
+    _prefab: {fileID: 2111417746662112231, guid: 75798b3031201dd4a8c5bc78c8295301, type: 3}
+  - _bone: 3
+    _prefab: {fileID: 1357855890184293399, guid: 38dfec6eb74e1984a88deb671e6c3277, type: 3}
+  - _bone: 4
+    _prefab: {fileID: 2801918649857379609, guid: 2b593110f9146a2479c8b41f3e6c3ed1, type: 3}
+  - _bone: 5
+    _prefab: {fileID: 1075583042015899579, guid: cdc40ef2cda624c4c92595de722210b0, type: 3}

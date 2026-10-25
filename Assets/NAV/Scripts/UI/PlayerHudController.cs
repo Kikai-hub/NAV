@@ -59,12 +59,15 @@ namespace NAV.UI
         private const float FoodLowFraction = 0.25f;
 
         private UIDocument _document;
+        private VisualElement _daySign;
         private Label _clockLabel;
+        private VisualElement _weatherIcon;
         private Label _promptLabel;
         private string _lastPrompt;
         private int _lastClockMinute = -1;
         private VisualElement _foodContainer;
-        private readonly List<VisualElement> _foodTimerFills = new();
+        private readonly List<VisualElement> _foodRings = new();
+        private readonly List<float> _foodFractions = new();
         private VisualElement _hotbarContainer;
         private VisualElement _healthFill;
         private VisualElement _staminaBar;
@@ -108,12 +111,16 @@ namespace NAV.UI
             _crosshairRing = documentRoot.Q<VisualElement>("crosshair-ring");
             _crosshairDot = documentRoot.Q<VisualElement>("crosshair-dot");
             _foodContainer = documentRoot.Q<VisualElement>("food-container");
+            _daySign = documentRoot.Q<VisualElement>("day-sign");
             _clockLabel = documentRoot.Q<Label>("clock-label");
+            _weatherIcon = documentRoot.Q<VisualElement>("weather-icon");
             _promptLabel = documentRoot.Q<Label>("interact-prompt");
-            if (_clockLabel != null)
+            if (_daySign != null)
             {
-                _clockLabel.style.display = _worldClock != null ? DisplayStyle.Flex : DisplayStyle.None;
+                _daySign.style.display = _worldClock != null ? DisplayStyle.Flex : DisplayStyle.None;
             }
+
+            _promptLabel?.AddToClassList("interact-prompt--hidden");
 
             if (_hotbarContainer == null || _healthFill == null || _staminaBar == null || _staminaFill == null
                 || _crosshair == null || _crosshairRing == null || _crosshairDot == null)
@@ -217,6 +224,8 @@ namespace NAV.UI
 
             _lastPrompt = prompt;
             _promptLabel.text = prompt ?? string.Empty;
+            // The prompt sits on a dark plaque - hide it entirely when there's nothing to say.
+            _promptLabel.EnableInClassList("interact-prompt--hidden", string.IsNullOrEmpty(prompt));
         }
 
         /// <summary>Text only changes once per in-game minute, so the label is rewritten only
@@ -236,17 +245,26 @@ namespace NAV.UI
             }
 
             _lastClockMinute = minuteOfDay;
-            string weather = _weather != null && _weather.Current != null ? $"  |  {_weather.Current.DisplayName}" : string.Empty;
-            _clockLabel.text = $"Day {_worldClock.Day}  {Mathf.FloorToInt(_worldClock.Hour):00}:{_worldClock.Minute:00}{weather}";
+            _clockLabel.text = $"Day {_worldClock.Day} · {Mathf.FloorToInt(_worldClock.Hour):00}:{_worldClock.Minute:00}";
             _clockLabel.EnableInClassList("clock-label--night", _worldClock.IsNight);
+
+            // The weather shows as an icon on the sign (WeatherDefinition.GetIcon - the moon
+            // for a clear night), hidden if the weather has none.
+            if (_weatherIcon != null)
+            {
+                Sprite icon = _weather != null && _weather.Current != null ? _weather.Current.GetIcon(_worldClock.IsNight) : null;
+                _weatherIcon.style.backgroundImage = icon != null ? new StyleBackground(icon) : new StyleBackground();
+                _weatherIcon.style.display = icon != null ? DisplayStyle.Flex : DisplayStyle.None;
+            }
         }
 
         /// <summary>Recreates one slot per active food - only on PlayerFood.Changed (eaten,
-        /// refreshed, expired), not every frame; RefreshFoodTimers updates the bars in between.</summary>
+        /// refreshed, expired), not every frame; RefreshFoodTimers updates the rings in between.</summary>
         private void RebuildFood()
         {
             _foodContainer.Clear();
-            _foodTimerFills.Clear();
+            _foodRings.Clear();
+            _foodFractions.Clear();
 
             foreach (PlayerFood.ActiveFood food in _food.ActiveFoods)
             {
@@ -258,15 +276,15 @@ namespace NAV.UI
                 icon.style.backgroundImage = new StyleBackground(food.Item.Icon);
                 slot.Add(icon);
 
-                var timer = new VisualElement { pickingMode = PickingMode.Ignore };
-                timer.AddToClassList("food-slot__timer");
-                var fill = new VisualElement { pickingMode = PickingMode.Ignore };
-                fill.AddToClassList("food-slot__timer-fill");
-                timer.Add(fill);
-                slot.Add(timer);
+                int index = _foodRings.Count;
+                var ring = new VisualElement { pickingMode = PickingMode.Ignore };
+                ring.AddToClassList("food-slot__ring");
+                ring.generateVisualContent += context => DrawFoodRing(context, ring, index);
+                slot.Add(ring);
 
                 _foodContainer.Add(slot);
-                _foodTimerFills.Add(fill);
+                _foodRings.Add(ring);
+                _foodFractions.Add(1f);
             }
 
             RefreshFoodTimers();
@@ -280,11 +298,56 @@ namespace NAV.UI
             }
 
             IReadOnlyList<PlayerFood.ActiveFood> foods = _food.ActiveFoods;
-            for (int i = 0; i < _foodTimerFills.Count && i < foods.Count; i++)
+            for (int i = 0; i < _foodRings.Count && i < foods.Count; i++)
             {
+                // Redraw only when the ring visibly changes (about one degree).
                 float fraction = foods[i].RemainingFraction;
-                _foodTimerFills[i].style.width = Length.Percent(fraction * 100f);
-                _foodTimerFills[i].EnableInClassList("food-slot__timer-fill--low", fraction <= FoodLowFraction);
+                if (Mathf.Abs(fraction - _foodFractions[i]) > 0.003f)
+                {
+                    _foodFractions[i] = fraction;
+                    _foodRings[i].MarkDirtyRepaint();
+                }
+            }
+        }
+
+        // FoodSlot.png's gold ring: centre at (129, 151) of the 258x302 sprite, radius 94, about
+        // 12 thick. The eaten-away part of the timer is painted dark over it, clockwise from the
+        // top, so the ring drains; under a quarter left the rest glows red.
+        private const float RingCentreX = 129f / 258f;
+        private const float RingCentreY = 151f / 302f;
+        private const float RingRadius = 94f / 258f;
+        private const float RingThickness = 14f / 258f;
+
+        private void DrawFoodRing(MeshGenerationContext context, VisualElement ring, int index)
+        {
+            if (index >= _foodFractions.Count)
+            {
+                return;
+            }
+
+            float fraction = Mathf.Clamp01(_foodFractions[index]);
+            Rect rect = ring.contentRect;
+            var centre = new Vector2(rect.width * RingCentreX, rect.height * RingCentreY);
+            float radius = rect.width * RingRadius;
+            Painter2D painter = context.painter2D;
+            painter.lineWidth = rect.width * RingThickness;
+            painter.lineCap = LineCap.Butt;
+
+            float boundary = -90f + fraction * 360f;
+            if (fraction < 1f)
+            {
+                painter.strokeColor = new Color(0.09f, 0.06f, 0.04f, 0.85f);
+                painter.BeginPath();
+                painter.Arc(centre, radius, Angle.Degrees(boundary), Angle.Degrees(270f));
+                painter.Stroke();
+            }
+
+            if (fraction > 0f && fraction <= FoodLowFraction)
+            {
+                painter.strokeColor = new Color(0.85f, 0.22f, 0.15f, 0.8f);
+                painter.BeginPath();
+                painter.Arc(centre, radius, Angle.Degrees(-90f), Angle.Degrees(boundary));
+                painter.Stroke();
             }
         }
 
@@ -292,6 +355,11 @@ namespace NAV.UI
         {
             _hotbarContainer.Clear();
             _hotbarSlots.Clear();
+
+            var leftCap = new VisualElement { pickingMode = PickingMode.Ignore };
+            leftCap.AddToClassList("hotbar-cap");
+            leftCap.AddToClassList("hotbar-cap--left");
+            _hotbarContainer.Add(leftCap);
 
             for (int i = 0; i < HotbarSlotCount; i++)
             {
@@ -313,16 +381,19 @@ namespace NAV.UI
                 _hotbarContainer.Add(slot);
                 _hotbarSlots.Add(slot);
             }
+
+            var rightCap = new VisualElement { pickingMode = PickingMode.Ignore };
+            rightCap.AddToClassList("hotbar-cap");
+            rightCap.AddToClassList("hotbar-cap--right");
+            _hotbarContainer.Add(rightCap);
         }
 
         private void RefreshHotbar()
         {
             IReadOnlyList<ItemStack> slots = _playerInventory.Inventory.Slots;
-            int equippedIndex = _equipment != null ? _equipment.FindEquippedSlotIndex() : -1;
-
             for (int i = 0; i < _hotbarSlots.Count && i < slots.Count; i++)
             {
-                _hotbarSlots[i].EnableInClassList("hotbar-slot--equipped", i == equippedIndex);
+                _hotbarSlots[i].EnableInClassList("hotbar-slot--equipped", _equipment != null && _equipment.IsSlotEquipped(i));
                 VisualElement icon = _hotbarSlots[i].Q<VisualElement>(className: "hotbar-slot__icon");
                 Label quantity = _hotbarSlots[i].Q<Label>(className: "hotbar-slot__quantity");
 

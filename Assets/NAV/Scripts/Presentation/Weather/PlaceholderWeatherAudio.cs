@@ -3,40 +3,13 @@ using UnityEngine;
 namespace NAV.Presentation.Weather
 {
     /// <summary>
-    /// Procedurally generated stand-in sounds for weather (the project has no audio assets yet
-    /// and final audio is "Not Yet Decided"): rain = low-passed white noise loop, thunder = a
-    /// sharp crack into a long low rumble. Replace with real clips by swapping what
-    /// WeatherEffects assigns to its AudioSources - nothing else depends on this class.
+    /// Procedurally generated stand-in thunder (the nature sound pack has rain but no thunder): a
+    /// sharp crack into a long low rumble. Replace with real clips by swapping what WeatherEffects
+    /// assigns to its thunder AudioSource - nothing else depends on this class.
     /// </summary>
     public static class PlaceholderWeatherAudio
     {
         private const int SampleRate = 44100;
-
-        public static AudioClip CreateRainLoop(float seconds = 4f)
-        {
-            int length = Mathf.RoundToInt(SampleRate * seconds);
-            var data = new float[length];
-            var rng = new System.Random(1234);
-            float low = 0f;
-
-            // Two passes so the low-pass filter state at the loop point matches the start
-            // (no click when the clip wraps).
-            for (int pass = 0; pass < 2; pass++)
-            {
-                for (int i = 0; i < length; i++)
-                {
-                    float white = (float)(rng.NextDouble() * 2.0 - 1.0);
-                    low += 0.18f * (white - low);
-                    // Occasional brighter "drop" ticks on top of the hiss.
-                    float drop = rng.NextDouble() < 0.0015 ? white * 0.8f : 0f;
-                    data[i] = (low * 0.9f + drop * 0.25f) * 0.5f;
-                }
-            }
-
-            AudioClip clip = AudioClip.Create("Rain (placeholder)", length, 1, SampleRate, false);
-            clip.SetData(data, 0);
-            return clip;
-        }
 
         public static AudioClip CreateThunder(int seed, float seconds = 4f)
         {

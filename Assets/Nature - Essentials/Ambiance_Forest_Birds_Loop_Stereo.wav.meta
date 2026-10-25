@@ -1,0 +1,30 @@
+fileFormatVersion: 2
+guid: bec1cfb465efc7a41bd5ccbac5b6f2a2
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208227
+  packageName: Nature - Essentials
+  packageVersion: 1.2
+  assetPath: Assets/Nature - Essentials/Ambiance_Forest_Birds_Loop_Stereo.wav
+  uploadId: 482619
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 8
+  defaultSettings:
+    serializedVersion: 2
+    loadType: 2
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 0.6
+    conversionMode: 0
+    preloadAudioData: 1
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  loadInBackground: 1
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

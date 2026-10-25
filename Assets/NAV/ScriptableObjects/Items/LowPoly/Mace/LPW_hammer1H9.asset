@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_hammer1H9
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_hammer1H9
-  _displayName: Mace 9
-  _description: Mace from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Bronze Mace
+  _description: A spiked bronze mace.
   _icon: {fileID: 21300000, guid: 4fc9249eb1011354e882b2d7f3c1e397, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: b3c74da6056885d43abc6e780a16c8bb, type: 2}
   _heldPrefab: {fileID: 4849555973753635373, guid: a7b1d106a8fc9074f9832b36e726f636, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}

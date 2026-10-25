@@ -53,6 +53,7 @@ namespace NAV.UI
 
         private IItemContainer _current;
         private Label _title;
+        private ItemTooltip _tooltip;
 
         private VisualElement _dragGhost;
         private int _dragSourceIndex = -1;
@@ -91,7 +92,27 @@ namespace NAV.UI
             }
 
             _moveAllButton.clicked += HandleMoveAllClicked;
+            _tooltip = new ItemTooltip(documentRoot);
             SetVisible(false);
+        }
+
+        private void OnSlotPointerEnter(PointerEnterEvent evt)
+        {
+            if (_current == null || evt.currentTarget is not VisualElement slot)
+            {
+                return;
+            }
+
+            int index = (int)slot.userData;
+            IReadOnlyList<ItemStack> slots = _current.Contents.Slots;
+            if (index < slots.Count && !slots[index].IsEmpty)
+            {
+                _tooltip.Show(slots[index].Definition, slot, "Drag to your inventory");
+            }
+            else
+            {
+                _tooltip.Hide();
+            }
         }
 
         private void OnEnable()
@@ -220,6 +241,7 @@ namespace NAV.UI
             {
                 CancelDrag();
                 UnsubscribeCurrent();
+                _tooltip?.Hide();
             }
         }
 
@@ -233,16 +255,21 @@ namespace NAV.UI
             {
                 var slot = new VisualElement { userData = i };
                 slot.AddToClassList(GravestoneSlotClass);
+                slot.AddToClassList("nav-slot");
 
-                var icon = new VisualElement();
+                var icon = new VisualElement { pickingMode = PickingMode.Ignore };
                 icon.AddToClassList("gravestone-slot__icon");
+                icon.AddToClassList("nav-slot__icon");
                 slot.Add(icon);
 
-                var quantity = new Label();
+                var quantity = new Label { pickingMode = PickingMode.Ignore };
                 quantity.AddToClassList("gravestone-slot__quantity");
+                quantity.AddToClassList("nav-slot__quantity");
                 slot.Add(quantity);
 
                 slot.RegisterCallback<PointerDownEvent>(OnSlotPointerDown);
+                slot.RegisterCallback<PointerEnterEvent>(OnSlotPointerEnter);
+                slot.RegisterCallback<PointerLeaveEvent>(_ => _tooltip?.Hide());
 
                 _slotContainer.Add(slot);
                 _slotElements.Add(slot);
@@ -266,6 +293,7 @@ namespace NAV.UI
                 Label quantity = slotElement.Q<Label>(className: "gravestone-slot__quantity");
 
                 ItemStack stack = slots[i];
+                slotElement.EnableInClassList("nav-slot--empty", stack.IsEmpty);
                 if (stack.IsEmpty)
                 {
                     icon.style.backgroundImage = new StyleBackground();

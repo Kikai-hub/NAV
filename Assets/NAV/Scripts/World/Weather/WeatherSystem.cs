@@ -6,7 +6,8 @@ namespace NAV.World.Weather
 {
     /// <summary>
     /// The weather state machine (GDD 5): holds the current WeatherDefinition for a random
-    /// duration in its [Min, Max] range, then picks the next one from its weighted Transitions.
+    /// duration in its [Min, Max] range, then picks the next one from its weighted Transitions
+    /// (after MaxWetSeconds of rain in a row it takes the driest one instead, so rain always ends).
     /// Each change blends from the previous weather over TransitionSeconds - Blend goes 0 -> 1 -
     /// so Presentation can lerp every look value instead of snapping. Runs on scaled time
     /// (paused with the game). Pure state + events, like WorldClock: DayNightLighting and
@@ -18,6 +19,8 @@ namespace NAV.World.Weather
         [SerializeField] private List<WeatherDefinition> _weathers = new();
         [SerializeField] private WeatherDefinition _initialWeather;
         [SerializeField, Min(0.1f)] private float _transitionSeconds = 30f;
+        [Tooltip("Once it has been raining this long in a row, each next pick takes the driest transition (storm -> rain -> clear), so bad weather always ends.")]
+        [SerializeField, Min(1f)] private float _maxWetSeconds = 360f;
 
         [Header("Debug")]
         [Tooltip("Pick a weather and use the context menu 'Force Debug Weather' (Play Mode) to switch to it immediately.")]
@@ -25,6 +28,8 @@ namespace NAV.World.Weather
 
         private readonly System.Random _rng = new();
         private float _blendTimer;
+        // Seconds of rain in a row (any weather with RainRate > 0); reset by a dry weather.
+        private float _wetSeconds;
 
         public WeatherDefinition Current { get; private set; }
 
@@ -62,6 +67,7 @@ namespace NAV.World.Weather
             float dt = Time.deltaTime;
             _blendTimer += dt;
             RemainingSeconds -= dt;
+            _wetSeconds = Current.RainRate > 0f ? _wetSeconds + dt : 0f;
 
             if (RemainingSeconds <= 0f)
             {
@@ -141,6 +147,26 @@ namespace NAV.World.Weather
             if (total <= 0f)
             {
                 return from;
+            }
+
+            // Rained long enough - head for clear sky. A storm has no direct path to Clear, so it
+            // steps down through rain first, which is how real weather clears up anyway.
+            if (_wetSeconds >= _maxWetSeconds)
+            {
+                WeatherDefinition driest = null;
+                foreach (WeatherTransition transition in from.Transitions)
+                {
+                    if (transition.Target != null && transition.Weight > 0f
+                        && (driest == null || transition.Target.RainRate < driest.RainRate))
+                    {
+                        driest = transition.Target;
+                    }
+                }
+
+                if (driest != null)
+                {
+                    return driest;
+                }
             }
 
             double roll = _rng.NextDouble() * total;

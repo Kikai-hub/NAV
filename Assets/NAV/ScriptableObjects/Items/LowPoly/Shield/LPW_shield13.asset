@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_shield13
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_shield13
-  _displayName: Shield 13
-  _description: Shield from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Banded Shield
+  _description: Oak boards bound with iron bands.
   _icon: {fileID: 21300000, guid: 79c4ae611a9e2c048a359c6be04af82b, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 8bd994756f19bb749b496a959180a6ac, type: 2}
   _heldPrefab: {fileID: 5906359691733599792, guid: 0f3118709c1639f40b4a40b45394e1e0, type: 3}
   _heldInLeftHand: 1
+  _armor: {fileID: 0}

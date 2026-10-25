@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: IronAxe
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: IronAxe
+  _displayName: Iron Axe
+  _description: A heavy iron axe.
+  _icon: {fileID: 21300000, guid: 5afcbbbf647ad8c4fa229bdacf6ee9e3, type: 3}
+  _category: 1
+  _maxStackSize: 1
+  _weight: 3
+  _worldPrefab: {fileID: 4321819461892826306, guid: d76a6b5c51506e14e8fb870e2322aeb1, type: 3}
+  _food: {fileID: 0}
+  _toolType: 1
+  _toolTier: 4
+  _weapon: {fileID: 11400000, guid: a3f7c03d138010c409e851ae0a2d6938, type: 2}
+  _heldPrefab: {fileID: 3789439614009022484, guid: 6b44056146b0cd540a01bb6ed7a2dcab, type: 3}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}

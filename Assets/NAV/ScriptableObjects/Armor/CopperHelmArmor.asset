@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a40f6099767e044ba161169a6a55ba, type: 3}
+  m_Name: CopperHelmArmor
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.ArmorDefinition
+  _slot: 0
+  _armor: 2
+  _wornParts:
+  - _bone: 0
+    _prefab: {fileID: 6487233948226077538, guid: 0dd7bce16d1d4af4cb28c0dde3fa7f36, type: 3}

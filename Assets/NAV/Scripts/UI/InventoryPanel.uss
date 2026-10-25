@@ -1,3 +1,5 @@
+/* Inventory window - the frame, title, slots and tooltip come from NAVTheme.uss. */
+
 .inventory-root {
     position: absolute;
     left: 24px;
@@ -7,99 +9,48 @@
     justify-content: center;
 }
 
-.inventory-panel {
-    background-color: rgb(43, 33, 24);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    padding: 16px;
-    min-width: 420px;
-}
-
-.inventory-title {
-    color: rgb(230, 210, 160);
-    font-size: 20px;
-    -unity-font-style: bold;
-    margin-bottom: 4px;
-    -unity-text-align: middle-center;
-}
-
-.inventory-weight {
-    color: rgb(190, 175, 150);
-    font-size: 12px;
-    margin-bottom: 10px;
-}
-
-.inventory-weight--overloaded {
-    color: rgb(220, 90, 70);
-    -unity-font-style: bold;
-}
-
-.inventory-drag-ghost {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    opacity: 0.85;
-    -unity-background-scale-mode: scale-to-fit;
-}
-
+/* 6 columns of 52 (slot 56 with -2 side margins) = 312. */
 .inventory-grid {
     flex-direction: row;
     flex-wrap: wrap;
-    max-width: 400px;
+    width: 312px;
 }
 
-.inventory-slot {
-    width: 56px;
-    height: 56px;
-    margin: 4px;
-    background-color: rgb(61, 48, 35);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(90, 70, 50);
-    border-right-color: rgb(90, 70, 50);
-    border-top-color: rgb(90, 70, 50);
-    border-bottom-color: rgb(90, 70, 50);
+.inventory-footer {
+    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    position: relative;
+    margin-top: 10px;
 }
 
-.inventory-slot__icon {
-    width: 40px;
-    height: 40px;
+.inventory-footer__icon {
+    width: 22px;
+    height: 22px;
+    margin-right: 6px;
+    background-image: url("../../Art/UI/Kit/IconWeight.png");
     -unity-background-scale-mode: scale-to-fit;
 }
 
-.inventory-slot__quantity {
-    position: absolute;
-    right: 2px;
-    bottom: 2px;
-    color: rgb(240, 230, 210);
-    font-size: 11px;
+.inventory-weight {
+    font-size: 13px;
+    margin-right: 10px;
+    min-width: 96px;
+}
+
+.inventory-weight--overloaded {
+    color: rgb(225, 95, 70);
     -unity-font-style: bold;
 }
 
-/* Held (equipped) item - PlayerEquipment.MainHand. */
-.inventory-slot--equipped {
-    border-left-color: rgb(230, 190, 80);
-    border-right-color: rgb(230, 190, 80);
-    border-top-color: rgb(230, 190, 80);
-    border-bottom-color: rgb(230, 190, 80);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    background-color: rgb(84, 66, 40);
+.inventory-footer__bar {
+    flex-grow: 1;
+}
+
+/* Stack being dragged - a slot frame following the cursor. */
+.inventory-drag-ghost {
+    position: absolute;
+    width: 46px;
+    height: 44px;
+    opacity: 0.9;
+    background-image: url("../../Art/UI/Kit/Slot.png");
+    -unity-background-scale-mode: stretch-to-fill;
 }

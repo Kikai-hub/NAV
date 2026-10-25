@@ -28,6 +28,17 @@ namespace NAV.Gameplay.Building
         [Tooltip("Can only be placed inside a placed workbench's build radius (Valheim-style). Off for the workbench itself and the campfire, which can go anywhere.")]
         [SerializeField] private bool _requiresWorkbench = true;
 
+        [Tooltip("Optional: the piece also needs this station kind with at least Required Station Level within its build radius (oak pieces need the workbench at level 3 - the joiner's bench). Empty = any workbench, any level.")]
+        [SerializeField] private WorkbenchDefinition _requiredStation;
+        [SerializeField, Min(0)] private int _requiredStationLevel;
+
+        [Tooltip("The piece has a front/back that matters (roof slope, gable, carved door): when it snaps, its front (+Z) turns towards the player instead of always taking the snap point's rotation; R turns it the other way.")]
+        [SerializeField] private bool _directional;
+
+        [Header("Discovery")]
+        [Tooltip("Items that must also have been found before this piece shows in the build menu, on top of every cost material - for pieces made only of basic materials that shouldn't be known from the start (the charcoal kiln waits for ore).")]
+        [SerializeField] private List<NAV.Gameplay.Items.ItemDefinition> _unlockItems = new();
+
         /// <summary>Stable identifier used by SaveManager/BuildingPieceDatabase to reference this
         /// definition from a save file (JSON can't hold a direct asset reference) - same pattern
         /// as ItemDefinition.Id. Auto-fills from the asset name if left blank.</summary>
@@ -42,6 +53,37 @@ namespace NAV.Gameplay.Building
 
         /// <summary>Must be placed within a placed workbench's build radius.</summary>
         public bool RequiresWorkbench => _requiresWorkbench;
+
+        /// <summary>Station kind whose build area (at RequiredStationLevel or higher) the piece
+        /// must stand in, or null.</summary>
+        public WorkbenchDefinition RequiredStation => _requiredStation;
+        public int RequiredStationLevel => _requiredStationLevel;
+
+        /// <summary>Snapping may turn it 180 degrees to face the way the player rotated it.</summary>
+        public bool Directional => _directional;
+
+        /// <summary>Valheim's rule for pieces: known once the player has had every cost material
+        /// (and every Unlock Item) - discovered is PlayerCrafting.IsDiscovered.</summary>
+        public bool IsUnlocked(System.Func<NAV.Gameplay.Items.ItemDefinition, bool> discovered)
+        {
+            foreach (RecipeIngredient ingredient in _cost)
+            {
+                if (ingredient.Item != null && !discovered(ingredient.Item))
+                {
+                    return false;
+                }
+            }
+
+            foreach (NAV.Gameplay.Items.ItemDefinition item in _unlockItems)
+            {
+                if (item != null && !discovered(item))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         // Fully qualified, not "using NAV.Gameplay.Inventory" + bare "Inventory": same
         // CS0118 namespace-vs-class collision RecipeDefinition already documents - this file

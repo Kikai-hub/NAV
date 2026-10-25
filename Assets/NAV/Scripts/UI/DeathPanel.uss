@@ -1,3 +1,5 @@
+/* Death screen - a dark red veil, the title in the logo's style and a kit button. */
+
 .death-root {
     position: absolute;
     left: 0;
@@ -6,55 +8,35 @@
     bottom: 0;
     align-items: center;
     justify-content: center;
-    background-color: rgba(20, 4, 4, 0.75);
+    background-color: rgba(26, 4, 3, 0.72);
 }
 
 .death-panel {
-    background-color: rgb(43, 33, 24);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    padding: 32px 48px;
     align-items: center;
-    min-width: 320px;
 }
 
 .death-title {
-    color: rgb(196, 64, 52);
-    font-size: 32px;
+    font-size: 76px;
+    color: rgb(184, 38, 26);
     -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    margin-bottom: 20px;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(226, 176, 74);
+    text-shadow: 3px 4px 6px rgba(0, 0, 0, 0.85);
+    letter-spacing: 4px;
+}
+
+.death-divider {
+    width: 360px;
+}
+
+.death-hint {
+    font-size: 16px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+    margin: 4px 0 22px 0;
 }
 
 .death-button {
-    width: 240px;
-    height: 44px;
-    margin: 6px 0;
-    background-color: rgb(61, 48, 35);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(139, 105, 20);
-    border-right-color: rgb(139, 105, 20);
-    border-top-color: rgb(139, 105, 20);
-    border-bottom-color: rgb(139, 105, 20);
-    color: rgb(230, 210, 160);
-    font-size: 16px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-}
-
-.death-button:hover {
-    background-color: rgb(80, 63, 45);
+    width: 260px;
+    height: 56px;
+    font-size: 20px;
 }

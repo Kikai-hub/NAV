@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: BronzeGreaves
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: BronzeGreaves
+  _displayName: Bronze Greaves
+  _description: Bronze shin and knee guards.
+  _icon: {fileID: 21300000, guid: 4b25007837adb8b489e3df733bab8311, type: 3}
+  _category: 3
+  _maxStackSize: 1
+  _weight: 4.5
+  _worldPrefab: {fileID: 3004071565044353066, guid: 9e2e0308c10d2ea47b4b796ab30abc31, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 11400000, guid: 2e9ef754c6d4f744c89be6c753a39a73, type: 2}

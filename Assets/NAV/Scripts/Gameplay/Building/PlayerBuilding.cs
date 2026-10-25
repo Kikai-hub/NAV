@@ -12,8 +12,9 @@ namespace NAV.Gameplay.Building
     /// Drives placement mode: aiming a translucent "ghost" preview of the selected
     /// BuildingPieceDefinition in front of the camera, rotating/cycling it, snapping it onto
     /// nearby placed pieces' BuildingSnapPoints, and building the real piece (paying its cost)
-    /// when placement is valid. "Known pieces" is a fixed serialized list, same deliberate
-    /// simplification as PlayerCrafting's "known recipes" - no unlock system yet. Structural
+    /// when placement is valid. "Known pieces" is the serialized catalog; the build menu only
+    /// lists those already discovered - every material found (PlayerCrafting's discovery,
+    /// BuildingPieceDefinition.IsUnlocked), Valheim style (2026-10-24). Structural
     /// validation (overlap/support checks) is its own separate Building-phase roadmap item and
     /// is NOT implemented here; validity in this increment is just "the aim ray hit something
     /// within range".
@@ -42,7 +43,10 @@ namespace NAV.Gameplay.Building
         [SerializeField] private Transform _cameraTransform;
         [Tooltip("The held item - build mode needs a Hammer tool in the main hand.")]
         [SerializeField] private PlayerEquipment _equipment;
+        [Tooltip("Every piece in the game. Which ones the build menu shows is decided by discovery (BuildingPieceDefinition.IsUnlocked).")]
         [SerializeField] private List<BuildingPieceDefinition> _knownPieces = new();
+        [Tooltip("Discovery source - pieces show once their materials have been found. Empty = every piece is available (test scenes).")]
+        [SerializeField] private NAV.Gameplay.Crafting.PlayerCrafting _crafting;
 
         [Header("Placement")]
         [Tooltip("Seconds between two placements - about the length of the hammer strike animation.")]
@@ -69,7 +73,12 @@ namespace NAV.Gameplay.Building
         [Tooltip("Upward push on the materials dropped by a demolished piece.")]
         [SerializeField, Min(0f)] private float _dropUpwardForce = 2f;
 
+        // Snap tie-break: a target point turned 90 degrees across the held ghost counts as this
+        // much extra squared distance (~0.17 m) - see TryApplySnap.
+        private const float SnapTurnPenalty = 0.03f;
+
         private int _selectedIndex;
+        private readonly List<BuildingPieceDefinition> _availablePieces = new();
         private GameObject _ghostInstance;
         private readonly List<BuildingSnapPoint> _ghostSnapPoints = new();
         private float _ghostYawOffset;
@@ -94,9 +103,15 @@ namespace NAV.Gameplay.Building
         /// the build menu.</summary>
         public event Action StateChanged;
 
+        /// <summary>The list of available pieces changed (a new one was discovered, or a save
+        /// was loaded) - the build menu rebuilds its slots.</summary>
+        public event Action PiecesChanged;
+
         public bool IsBuildModeActive { get; private set; }
 
-        public IReadOnlyList<BuildingPieceDefinition> KnownPieces => _knownPieces;
+        /// <summary>Pieces the player can build so far, Valheim style: a piece shows up once
+        /// every one of its materials has been found (PlayerCrafting's discovery).</summary>
+        public IReadOnlyList<BuildingPieceDefinition> KnownPieces => _availablePieces;
         public int SelectedIndex => _selectedIndex;
 
         /// <summary>The Demolish tool is selected instead of a piece.</summary>
@@ -111,16 +126,18 @@ namespace NAV.Gameplay.Building
         /// <summary>RMB belongs to building (toggling build mode) right now, not to blocking -
         /// PlayerCombat checks this.</summary>
         public bool UsesSecondaryAction => HoldsHammer || IsBuildModeActive;
-        public BuildingPieceDefinition SelectedPiece => _knownPieces.Count > 0 ? _knownPieces[_selectedIndex] : null;
+        public BuildingPieceDefinition SelectedPiece => _availablePieces.Count > 0 ? _availablePieces[_selectedIndex] : null;
         public bool IsPlacementValid => _hasValidHit;
         public bool IsSnapped { get; private set; }
         public bool CanAffordSelected => SelectedPiece != null && SelectedPiece.CanAfford(_playerInventory.Inventory);
         public bool CanPlace => IsBuildModeActive && !_demolishSelected && _hasValidHit && CanAffordSelected && IsInBuildArea;
 
         /// <summary>The ghost stands where the selected piece may go: anywhere for pieces that
-        /// don't need a workbench, else inside some placed workbench's build radius.</summary>
+        /// don't need a workbench, else inside some placed workbench's build radius - of the
+        /// piece's RequiredStation kind and level, when it names one.</summary>
         public bool IsInBuildArea => SelectedPiece == null || !SelectedPiece.RequiresWorkbench
-            || (_ghostInstance != null && NAV.Gameplay.Crafting.Workbench.AnyBuildAreaContains(_ghostInstance.transform.position));
+            || (_ghostInstance != null && NAV.Gameplay.Crafting.Workbench.AnyBuildAreaContains(_ghostInstance.transform.position,
+                SelectedPiece.RequiredStation, SelectedPiece.RequiredStationLevel));
 
         /// <summary>Why the selected piece can't be placed right now (for the HUD), or null
         /// when it can (or build mode is off / Demolish is selected).</summary>
@@ -140,7 +157,9 @@ namespace NAV.Gameplay.Building
 
                 if (!IsInBuildArea)
                 {
-                    return "Needs a workbench nearby";
+                    return SelectedPiece.RequiredStation != null
+                        ? $"Needs a {SelectedPiece.RequiredStation.DisplayName} (level {SelectedPiece.RequiredStationLevel}) nearby"
+                        : "Needs a workbench nearby";
                 }
 
                 return CanAffordSelected ? null : "Not enough materials";
@@ -154,6 +173,76 @@ namespace NAV.Gameplay.Building
                 Debug.LogError($"{nameof(PlayerBuilding)} on '{name}' is missing a required reference (InputHandler/PlayerInventory/CameraTransform/Equipment).", this);
                 enabled = false;
             }
+
+            if (_crafting == null)
+            {
+                Debug.LogWarning($"{nameof(PlayerBuilding)} on '{name}' has no PlayerCrafting - every building piece is available without discovery.", this);
+            }
+            else
+            {
+                _crafting.DiscoveryChanged += RefreshAvailablePieces;
+            }
+
+            RefreshAvailablePieces();
+        }
+
+        private void OnDestroy()
+        {
+            if (_crafting != null)
+            {
+                _crafting.DiscoveryChanged -= RefreshAvailablePieces;
+            }
+        }
+
+        private void RefreshAvailablePieces()
+        {
+            BuildingPieceDefinition selected = SelectedPiece;
+            int position = 0;
+            bool changed = false;
+            foreach (BuildingPieceDefinition piece in _knownPieces)
+            {
+                if (piece == null || (_crafting != null && !piece.IsUnlocked(_crafting.IsDiscovered)))
+                {
+                    continue;
+                }
+
+                if (position >= _availablePieces.Count || _availablePieces[position] != piece)
+                {
+                    changed = true;
+                    _availablePieces.Insert(position, piece);
+                }
+
+                position++;
+            }
+
+            // Anything left past the end was un-discovered (a different save was loaded).
+            if (_availablePieces.Count > position)
+            {
+                changed = true;
+                _availablePieces.RemoveRange(position, _availablePieces.Count - position);
+            }
+
+            if (!changed)
+            {
+                return;
+            }
+
+            // Keep the same piece selected - its index moves when a new one appears before it.
+            int index = selected != null ? _availablePieces.IndexOf(selected) : -1;
+            _selectedIndex = Mathf.Max(0, index);
+            if (index < 0 && IsBuildModeActive && !_demolishSelected)
+            {
+                if (_availablePieces.Count > 0)
+                {
+                    SpawnGhost();
+                }
+                else
+                {
+                    DestroyGhost();
+                }
+            }
+
+            PiecesChanged?.Invoke();
         }
 
         private void OnEnable()
@@ -217,7 +306,7 @@ namespace NAV.Gameplay.Building
         /// <summary>Build menu: switch to placing this piece.</summary>
         public void SelectPiece(int index)
         {
-            if (index < 0 || index >= _knownPieces.Count)
+            if (index < 0 || index >= _availablePieces.Count)
             {
                 return;
             }
@@ -260,7 +349,7 @@ namespace NAV.Gameplay.Building
                 return;
             }
 
-            if (_knownPieces.Count == 0)
+            if (_availablePieces.Count == 0)
             {
                 Debug.LogWarning($"{nameof(PlayerBuilding)} on '{name}' has no known building pieces to place.", this);
                 return;
@@ -291,22 +380,22 @@ namespace NAV.Gameplay.Building
         // The wheel steps through the pieces (and leaves the Demolish tool).
         private void HandleCycleNext()
         {
-            if (!IsBuildModeActive || _knownPieces.Count == 0)
+            if (!IsBuildModeActive || _availablePieces.Count == 0)
             {
                 return;
             }
 
-            SelectPiece(_demolishSelected ? _selectedIndex : (_selectedIndex + 1) % _knownPieces.Count);
+            SelectPiece(_demolishSelected ? _selectedIndex : (_selectedIndex + 1) % _availablePieces.Count);
         }
 
         private void HandleCyclePrevious()
         {
-            if (!IsBuildModeActive || _knownPieces.Count == 0)
+            if (!IsBuildModeActive || _availablePieces.Count == 0)
             {
                 return;
             }
 
-            SelectPiece(_demolishSelected ? _selectedIndex : (_selectedIndex - 1 + _knownPieces.Count) % _knownPieces.Count);
+            SelectPiece(_demolishSelected ? _selectedIndex : (_selectedIndex - 1 + _availablePieces.Count) % _availablePieces.Count);
         }
 
         private void HandleRotate()
@@ -388,8 +477,9 @@ namespace NAV.Gameplay.Building
             Destroy(piece.gameObject);
             DropCost(definition, bounds);
 
-            // A chest spills what it held rather than deleting it.
-            var storage = piece.GetComponent<NAV.Gameplay.Inventory.StorageContainer>();
+            // A chest (or a station's loaded ore/fuel) spills what it held rather than deleting it.
+            // Children included, inactive included - the piece was just deactivated above.
+            var storage = piece.GetComponentInChildren<NAV.Gameplay.Inventory.IStoredContents>(true);
             if (storage != null)
             {
                 float scatter = Mathf.Clamp(Mathf.Min(bounds.extents.x, bounds.extents.z), 0.3f, 1.2f);
@@ -594,9 +684,10 @@ namespace NAV.Gameplay.Building
                 return;
             }
 
-            float bestSqrDistance = _snapRadius * _snapRadius;
+            float bestScore = _snapRadius * _snapRadius;
             BuildingSnapPoint bestGhostPoint = null;
             BuildingSnapPoint bestTargetPoint = null;
+            Quaternion held = _ghostInstance.transform.rotation;
 
             foreach (BuildingPiece placed in BuildingPiece.AllPieces)
             {
@@ -630,10 +721,16 @@ namespace NAV.Gameplay.Building
                             continue;
                         }
 
-                        float sqrDistance = (targetPoint.transform.position - ghostPoint.transform.position).sqrMagnitude;
-                        if (sqrDistance < bestSqrDistance)
+                        // Distance first; a small extra for a target point turned across the
+                        // way the player holds the ghost breaks ties - where two walls meet at a
+                        // corner their top points coincide, and a roof should follow the wall
+                        // running the way the player faces, not the perpendicular one.
+                        float turn = Quaternion.Angle(targetPoint.transform.rotation, held);
+                        float score = (targetPoint.transform.position - ghostPoint.transform.position).sqrMagnitude
+                            + SnapTurnPenalty * Mathf.Min(turn, 180f - turn) / 90f;
+                        if (score < bestScore)
                         {
-                            bestSqrDistance = sqrDistance;
+                            bestScore = score;
                             bestGhostPoint = ghostPoint;
                             bestTargetPoint = targetPoint;
                         }
@@ -650,7 +747,36 @@ namespace NAV.Gameplay.Building
             // ghost snap point's world position has to be re-read afterward, not reused from
             // the search above, or the translate step below would align against a stale
             // (pre-rotation) position and miss.
-            _ghostInstance.transform.rotation = bestTargetPoint.transform.rotation;
+            // A directional piece (a roof slope, a gable, a carved door) may face either way
+            // along the target point: its front (+Z - the roof's eave, the door's наличник) turns
+            // towards the player, and R (two presses) turns it the other way.
+            Quaternion rotation = bestTargetPoint.transform.rotation;
+            if (SelectedPiece != null && SelectedPiece.Directional)
+            {
+                Quaternion flipped = rotation * Quaternion.Euler(0f, 180f, 0f);
+                Quaternion wanted = GhostRotation() * Quaternion.Euler(0f, 180f, 0f);
+                if (Quaternion.Angle(wanted, flipped) < Quaternion.Angle(wanted, rotation))
+                {
+                    rotation = flipped;
+                }
+            }
+
+            _ghostInstance.transform.rotation = rotation;
+
+            // Turned 180, the matched point swung to the piece's other end - its mirror twin
+            // (a gable's other base corner) is now the one by the target; align that instead,
+            // or the piece would slide a whole span past the target.
+            float nearest = float.MaxValue;
+            foreach (BuildingSnapPoint ghostPoint in _ghostSnapPoints)
+            {
+                float sqrDistance = (bestTargetPoint.transform.position - ghostPoint.transform.position).sqrMagnitude;
+                if (ghostPoint.Kind == bestTargetPoint.Kind && sqrDistance < nearest)
+                {
+                    nearest = sqrDistance;
+                    bestGhostPoint = ghostPoint;
+                }
+            }
+
             _ghostInstance.transform.position += bestTargetPoint.transform.position - bestGhostPoint.transform.position;
             IsSnapped = true;
         }

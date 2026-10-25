@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_sword1H1
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_sword1H1
-  _displayName: Sword 1
-  _description: Sword from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Iron Sword
+  _description: A well-balanced iron sword.
   _icon: {fileID: 21300000, guid: be7627a461126a64a8309e27c928439e, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: a5957dd45ea31554ba3efda1f69ae8b0, type: 2}
   _heldPrefab: {fileID: 7700291355319908497, guid: 3c77d5707d785244ea5f166d4d772457, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}

@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_hammer1H4
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_hammer1H4
-  _displayName: Mace 4
-  _description: Mace from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Iron Mace
+  _description: A flanged iron mace.
   _icon: {fileID: 21300000, guid: 420d96fa16f52934cb206b12a40d1458, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: e197a9b04601bc3409e732f4d641518b, type: 2}
   _heldPrefab: {fileID: 4175615003211242231, guid: bcab529d21c8d4b44a29e0716063dc0f, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}

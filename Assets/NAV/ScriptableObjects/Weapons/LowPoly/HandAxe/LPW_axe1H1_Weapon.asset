@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
   m_Name: LPW_axe1H1_Weapon
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
-  _displayName: Hand Axe 1
+  _displayName: Copper Hand Axe
   _icon: {fileID: 21300000, guid: 55af0b4eec0238744b107247e122b8a3, type: 3}
   _weaponClass: 5
   _damage: 13

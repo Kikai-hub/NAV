@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a40f6099767e044ba161169a6a55ba, type: 3}
+  m_Name: IronGreavesArmor
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.ArmorDefinition
+  _slot: 2
+  _armor: 4
+  _wornParts:
+  - _bone: 2
+    _prefab: {fileID: 1691042021781857419, guid: 59e18ab84299c9047b12c200f28fcb31, type: 3}
+  - _bone: 3
+    _prefab: {fileID: 523321358195903747, guid: 11be4eb514b7dea41a0619d1e6a7b68d, type: 3}
+  - _bone: 4
+    _prefab: {fileID: 4620007452651315017, guid: aca1f91d4648b1b45acd5f7c936e383f, type: 3}
+  - _bone: 5
+    _prefab: {fileID: 4333989309252067846, guid: 0b25283735612fe4699a3fcbedec34b2, type: 3}

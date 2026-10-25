@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
+  m_Name: TanningRackPiece
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: TanningRackPiece
+  _displayName: Tanning Rack
+  _icon: {fileID: 21300000, guid: b43f2fae42e656249a1bea8be459a65c, type: 3}
+  _cost:
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 8
+  - _item: {fileID: 11400000, guid: 526d81ff74ff535a262361beef16f23f, type: 2}
+    _amount: 1
+  _prefab: {fileID: 2330781748459747892, guid: af120d70df5f44441aea469d5cec520f, type: 3}
+  _requiresWorkbench: 1
+  _unlockItems: []

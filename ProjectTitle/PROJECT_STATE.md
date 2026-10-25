@@ -38,6 +38,19 @@ Unity implementation has not yet been finalized.
 -   Crafting
 -   Building
 -   Workbench progression
+-   **9 progression tiers, each with its own biome** (developer 2026-10-24;
+    first "about 6, at least 6", then raised to 9 the same day). Each tier =
+    a new biome, material and station level (workbench/forge levels via
+    upgrade pieces) with its tools, weapons and armour. **The tier plan is
+    approved (developer 2026-10-24): `PROGRESSION_TIERS_v0.1.md` v1.0** -
+    1 meadows & birch groves (wood/stone), 2 dense forest (copper + oak),
+    3 sea islands (bronze, boat), 4 swamp (iron), 5 mountains (silver,
+    cloak), 6 black forest (black steel + bog oak), 7 wild steppe (bulat),
+    8 gem caverns (gems, amulet), 9 Nav (sky iron). Iron moves to tier 4
+    (forge levels shift by one for bronze, iron armour 12 -> 15); copper
+    goes behind Boss 1's reward once that boss exists. Built so far:
+    wood/stone/flint/bone/leather, copper, iron. The workbench has 2 levels
+    and the forge 3 - both need more upgrade pieces as tiers are added.
 -   Equipment
 -   Food system
 -   Skills inspired by Valheim
@@ -4578,3 +4591,877 @@ re-checked anyway - works.
     world saves deleted.
 -   Not done: swim animation, stamina drain/drowning, underwater view,
     splashes from creatures/falling logs, items floating.
+
+### v0.1 --- 2026-10-24 (Hit and gathering VFX)
+
+-   Found: `HitParticle.mat` had no texture - every hit effect was plain
+    coloured squares differing only by colour.
+-   New `Presentation/Combat/ImpactEffects.cs` (on the HitFeedback object):
+    pre-built particle systems fed with Emit, no per-hit allocations:
+    -   wood - lit, tumbling mesh chips (flattened cubes) + sawdust puff;
+    -   stone - lit low-poly shards (`Art/Models/ImpactShard.asset`) + grey
+        dust + additive sparks;
+    -   flesh - stretched blood droplets that turn into fading ground splats
+        where they land (collision sub-emitter) + red mist;
+    -   every counted hit - a short additive star flash; a killing blow
+        throws 1.6x;
+    -   parry - a fan of sparks and a bright flash; block - splinters;
+    -   felled tree - needles/leaves that flutter down slowly (drag + noise)
+        over the crown and chips at the cut; trunk landing - dust clouds
+        rolling out along the trunk.
+-   `HitFeedback` uses ImpactEffects when assigned (field `_impacts`), the
+    old plain particles stay as the fallback.
+-   `HitFeedbackSetup` (NAV/Setup/Add Hit Feedback To Scene) now also
+    generates textures `Art/Textures/Impact/ImpactSoft|Flash|Splat.png`,
+    materials `Materials/Combat/ImpactChunk` (URP Particles/Simple Lit,
+    opaque - darkens at night), `ImpactSoft`, `ImpactSplat`,
+    `ImpactAdditive`, the shard mesh, and wires ImpactEffects. Run and saved
+    in WorldGenTest.
+-   Verified in Play Mode (close-up renders of each effect, leaves and dust
+    at 0.5 s and 2 s). No console messages. Test world save deleted.
+
+### v0.1 --- 2026-10-24 (Stage C start: ore, charcoal, smelting, tanning, bone glue)
+
+-   New `Gameplay/Crafting/ProcessingStation.cs` - a station that works on
+    its own over time (Valheim kiln/smelter style): E loads everything it
+    accepts from the inventory (inputs up to Input Capacity, fuel up to Fuel
+    Capacity), it processes one input at a time (burning Fuel Per Item of
+    fuel, if any) and drops each result out of its Output Point as a pickup.
+    Prompt shows the load and the current job. Inputs/fuel are consumed on
+    completion, so nothing is lost when interrupted.
+-   New `Gameplay/Inventory/IStoredContents.cs` (Contents + DropContents),
+    implemented by StorageContainer and ProcessingStation. SaveManager now
+    saves/restores the ContainerSlots of any IStoredContents in the piece
+    (children too); PlayerBuilding spills them on demolish. A station's
+    loaded ore/fuel survives save/load (progress on the current item
+    restarts).
+-   Items (`ScriptableObjects/Items`, placeholder primitive pickups, icons,
+    DefaultItemDatabase): Copper Ore, Bog Iron Ore, Charcoal, Copper Bar,
+    Iron Bar, Leather, Bone Glue.
+-   Ore in the world: `Prefabs/World/CopperOre_Rock` (flint-rock model +
+    copper/patina vein lumps, CopperDeposit: 5 hits, pickaxe tier 1, 3-4
+    ore + 2 rock) on plains and forest ground at least 1.5 m above water;
+    `BogIron_Rock` (rust-tinted rock + rusty lumps, BogIronDeposit: 4 hits,
+    2-3 ore + 1 rock) on shores 0.1-1.8 m above the water. New
+    `BiomeResourceSpawn.HeightAboveWater` filter. WorldGenerationVersion 3.
+    VegetationSetup's resource lists now upsert (keep the ore entries).
+-   Building pieces (need a workbench nearby), `Prefabs/Build`:
+    -   Charcoal Kiln (10 rock, 6 wood): wood -> charcoal, 10 s, holds 20;
+    -   Bloomery / домница (20 rock, 4 wood, 2 flint): copper ore -> copper
+        bar 20 s, bog iron ore -> iron bar 30 s, 2 charcoal per bar, holds
+        10 ore + 20 charcoal; fire + light while smelting;
+    -   Tanning Rack (8 wood, 1 flint): hide -> leather, 30 s, holds 5.
+-   Campfire cooking: Bone -> Bone Glue (20 s).
+-   Editor menu **NAV/Build/Build Ore, Smelting and Tanning (Stage C)**
+    (`Editor/MetallurgySetup.cs`) builds all of the above (CreatureLootSetup
+    helpers made internal and reused). Run and saved in WorldGenTest.
+-   Verified in Play Mode (time x8): 60 copper rocks and 25 bog iron rocks
+    (0.14-1.47 m above water); stations placed by script: 6 wood -> 6
+    charcoal, 1 hide -> 1 leather, 2 copper ore + 1 bog iron + 6 charcoal ->
+    2 copper bars + 1 iron bar; the bloomery's ore+charcoal appear in the
+    save data; fire/glow visuals on while working. No console messages.
+    Gotcha: brand-new materials can render blank in the first icon render
+    (editor async shader compile) - re-run the menu if an icon is empty.
+-   Not done: anything that uses bars/leather/glue yet (tools, armour,
+    weapon recipes, workbench tiers - the next Stage C items); no
+    station UI beyond the prompt; ore rocks have placeholder veins.
+
+### v0.1 --- 2026-10-24 (Stage C: station levels, Forge, copper/iron tools)
+
+-   Station kinds and levels (Valheim style): `RecipeDefinition._station`
+    (WorkbenchDefinition; empty = any) + `RequiredWorkbenchTier` now means
+    the station *level*. A station's level = its definition's Tier + one per
+    distinct `WorkbenchExtension` of its kind within
+    `WorkbenchDefinition.ExtensionRadius` (6 m) - new
+    `Gameplay/Crafting/WorkbenchExtension.cs` (registered only when placed,
+    not on build ghosts). `Workbench` recounts with the shelter check
+    (0.5 s) and notifies players in range.
+-   `PlayerCrafting.GetStationLevel(station)` / `GetUnshelteredStationLevel`
+    / `CanCraft(recipe)`; TryCraft and the crafting panel use them. The
+    requirement line reads "Requires Forge level 2" (or "... - it needs a
+    roof"). `NearbyWorkbenchTier` kept for the debug HUD.
+-   `ResourceNode`: each tool tier above the node's minimum counts as one
+    more hit (copper pick on copper ore: 2 per swing).
+-   Content (`Editor/SmithingSetup.cs`, menu **NAV/Build/Build Forge and
+    Metal Tools (Stage C)** - run MetallurgySetup first):
+    -   `ScriptableObjects/Workbenches/Forge` (needs a roof);
+    -   pieces Forge (15 rock, 6 wood, 4 copper bar, 4 charcoal; glowing
+        coals, light), Anvil (6 copper bar, 4 wood; +1 Forge) and Bellows (4
+        leather, 5 wood, 1 bone glue; +1 Forge); Tanning Rack = +1 Workbench
+        (MetallurgySetup.MakeExtension);
+    -   Copper Axe / Copper Pickaxe (tool tier 2, damage x1.6) at Forge
+        level 1, Iron Axe / Iron Pickaxe (tier 3, x2.2) at Forge level 2 -
+        placeholder looks: the stone tools' models with per-material
+        copper/iron tinted copies; the old recipes are tied to the Workbench;
+    -   Bog Iron deposit needs tool tier 2 (copper pickaxe).
+    Scene saved (PlayerBuilding and PlayerCrafting know the new pieces and
+    recipes).
+-   Verified in Play Mode (pieces placed by script): Forge + Anvil + Bellows
+    = level 3, Workbench + Tanning Rack = level 2; no roof -> level 0 with
+    the "needs a roof" level 3; with a roof copper and iron recipes
+    craftable, the stone axe not (that's a Workbench recipe, the player
+    wasn't at one); copper axe crafted; without Anvil/Bellows the forge
+    drops to 1 and the iron axe is locked; stone pickaxe can't mine bog iron,
+    copper can; copper pickaxe on copper ore takes 2 hits a swing. No
+    console messages. Test world save deleted.
+-   Not done: armour from leather, recipes for the LowPolyWeapons pack +
+    removing the temporary racks (next Stage C items); real models.
+
+### v0.1 --- 2026-10-24 (Stage C: pack weapon recipes, racks removed)
+
+-   New `Editor/WeaponRecipesSetup.cs`, menu **NAV/Build/Build Pack Weapon
+    Recipes (Stage C)** (run after WeaponPackGenerator - it rewrites
+    names/stats - and after the two other Stage C setups). Its Table picks
+    20 LowPolyWeapons models by look and gives each a tier, a name, a
+    description, real stats and a recipe (`ScriptableObjects/Recipes/Weapons`),
+    added to the scene PlayerCrafting (28 known recipes now):
+    -   Workbench L1: Wooden Club (4 wood), Wooden Shield (12 wood);
+    -   Workbench L2 (tanning rack): Bone Knife (3 bone, 1 leather), Fang
+        Spear (4 wood, 2 fang, 1 leather), Great Club (12 wood, 2 leather);
+    -   Forge L1, copper: Dagger, Sword, Mace, Spear, Shield, Hand Axe;
+    -   Forge L2, iron: Dagger, Sword, Mace, Spear, Banded Shield, Hand Axe;
+    -   Forge L3, iron: Greatsword, Battle Axe, Warhammer.
+    Metal costs: bars by size (dagger 2 ... warhammer 8) + wooden haft +
+    leather grip. Damage = class base (WeaponPackGenerator's numbers) x tier
+    (wood 0.7, bone 0.85, copper 1, iron 1.35); shields block more per tier
+    (0.70 / 0.85 / 0.92). Hand axes are axe tools: copper tier 2, iron 3.
+-   The temporary weapon racks are gone: the scene's WeaponArsenalSpawner
+    object was removed (the Dev scripts/prefab/WeaponArsenal asset are
+    still in the project, unused). The other ~135 pack weapons stay in the
+    item database (old saves load) but can't be obtained until later tiers.
+-   Verified in Play Mode: no racks in the world; at a (roofed) Forge L1 the
+    Copper Sword is craftable, crafted, equipped - 15 damage; the crafting
+    panel lists 28 recipes. No console messages. Test world save deleted.
+-   Not done: armour (next Stage C item); the crafting list is one long list
+    (no grouping by station yet); placeholder names/looks.
+
+### v0.1 --- 2026-10-24 (E works on press, not hold)
+
+-   The Interact action in `Assets/InputSystem_Actions.inputactions` still
+    had the Unity template's "Hold" interaction, so E (and the gamepad's
+    north button) only fired after being held. Interaction removed - the
+    action now performs on press. PlayerInputHandler already listens to
+    `performed`, no code change. Verified in Play Mode with a simulated tap:
+    performed once, the frame after the press, before the release.
+
+### v0.1 --- 2026-10-24 (Recipe discovery, crafting at stations, crafting panel look)
+
+-   Recipe discovery, Valheim style (`PlayerCrafting`):
+    -   recipes with level 0 (no station needed - the wooden hammer) are
+        always listed;
+    -   a station recipe appears once the player has reached that station's
+        level AND has had at least one of its ingredients (items ever in the
+        inventory are "discovered");
+    -   a station level is reached by using the station with E, and - once
+        that station kind is known - by standing by it while an upgrade
+        piece raises its level (anvil next to the forge -> iron recipes);
+    -   events RecipesChanged / RecipeUnlocked (logged "new recipe - X").
+    `_knownRecipes` is now the whole catalog; GetVisibleRecipes(station)
+    decides what the panel shows.
+-   New `Gameplay/Crafting/CraftingStationAccess.cs` on the Workbench and
+    Forge pieces (prompt "Use Workbench"/"Use Forge"): E records the station
+    level and opens the crafting panel at that station - its title is the
+    station's name and it lists the hand recipes + that station's unlocked
+    recipes. The crafting key opens it anywhere with the hand recipes only.
+    Walking out of the station's range closes it; E again toggles it.
+-   Saved with the player: `PlayerSaveData.DiscoveredItemIds` and
+    `StationLevels` (station = WorkbenchDefinition asset name).
+    SaveManager has a new optional `_playerCrafting` reference (wired).
+-   Crafting panel look: slim gold scrollbar without arrow buttons instead
+    of Unity's grey default, 34 px icons, wider list (200 px) and panel
+    (600 px), an empty-list hint.
+-   SmithingSetup now also adds CraftingStationAccess to WoodWorkbench and
+    wires CraftingUIController._interactor + SaveManager._playerCrafting.
+-   Verified in Play Mode: empty pockets + E on the workbench -> only the
+    Wood Hammer; picking up wood -> stone tools, club, shield unlocked and the
+    open panel refreshed; copper bar before ever using a forge -> nothing;
+    E on the forge -> 8 copper recipes, panel titled "Forge"; iron bar at
+    forge level 1 -> nothing, an anvil placed while standing there -> 8 iron
+    recipes; save data holds the items and BasicWorkbench:1 / Forge:2.
+    Screenshot of the panel checked. No console messages. Test saves deleted.
+-   Not done: an on-screen "New recipe" message (only a log line now).
+-   Follow-up (same day, developer's correction): the two lists never mix.
+    The crafting key lists only hand recipes (level 0); E at a station lists
+    only that station's recipes (hand recipes like the Wood Hammer are no
+    longer repeated there). Verified with real K presses by the workbench
+    (hand list only, before and after using it) and E on it (stone tools,
+    club, shield - no hammer).
+
+### v0.1 --- 2026-10-24 (Workbench roof check more forgiving)
+
+-   Developer's hut (foundations, wall, door, two roof pieces, all turned 45
+    degrees, bench near a roof edge) didn't count as sheltered. Measured in
+    their running game: 3 of the 5 upward rays hit the roof (centre and two
+    sides), 2 went past the edge - the old rule needed 4. Contributing: the
+    roof's visual overhang is 2.4 m deep but its collider 2 m.
+-   `Workbench.HasRoof`: the ray straight above the bench must hit a placed
+    piece, and 3 of 5 rays are enough (was 4 of 5, centre not special).
+-   Verified in Play Mode with an exact copy of the hut: 3/5 rays, sheltered,
+    usable level 1; a bench in the open: 0/5, not sheltered. No console
+    messages. Test world save deleted (kept the developer's 14:52 world).
+-   Not changed: the roof collider still has no overhang (making it 2.4 m
+    deep could block placing roof pieces next to each other).
+
+### v0.1 --- 2026-10-24 (Weather: rain always clears up)
+
+-   Developer's report: once rain started it hardly ever went back to clear,
+    only to heavy rain or a storm. Cause - the transition weights: from Rain
+    half the picks went to heavier rain, Heavy rain cleared only 20% of the
+    time, a Thunderstorm had no path to Clear at all, and Clear itself turned
+    to rain 55% of the time. Simulated: a rain spell lasted 8 min on average,
+    1 in 10 lasted over 17 min (24-min day), the longest 90 min.
+-   New weights and durations (WeatherDefinition assets, set directly - no
+    setup tool builds them): Clear 300-600 s (Clear 0.5 / Rain 0.5); Rain
+    90-180 s (Clear 0.65 / Heavy 0.25 / Storm 0.1); Heavy rain 60-120 s
+    (Rain 0.55 / Clear 0.3 / Storm 0.15); Storm 60-120 s (Heavy 0.5 /
+    Rain 0.5).
+-   `WeatherSystem._maxWetSeconds` (360 s): after that much rain in a row each
+    next pick takes the driest transition (storm -> rain -> clear).
+-   Verified by running the real `PickNext` 100 000 times in the editor:
+    clear 81% of the time, rain spells 3.6 min on average, longest 10.8 min.
+    Not seen in Play Mode yet. The rain-in-a-row timer is not saved (resets
+    on load).
+
+### v0.1 --- 2026-10-24 (Armour - Stage C)
+
+-   Three armour slots - head, chest, legs - Valheim style: a worn piece stays
+    in the inventory (marked like the held item), RMB in the inventory or the
+    hotbar key puts it on / takes it off, and it comes off by itself once it
+    leaves the inventory (dropped, into the gravestone on death).
+-   Armour values add up and reduce every hit after block/parry with
+    Valheim's curve (`ArmorMath`): armour below half the hit subtracts its
+    value, above that damage = hit^2 / (4 x armour).
+-   Nine pieces, recipes by tier: Leather Cap / Tunic / Trousers (Workbench
+    level 2 - tanning rack; armour 1/2/1), Copper Helm / Scale Shirt /
+    Greaves (Forge level 1; 2/4/2), Iron Shelom / Chainmail / Greaves (Forge
+    level 2 - anvil; 3/6/3). A wolf's 12-damage bite: 12 bare, 8 leather,
+    4.5 copper, 3 iron.
+-   Placeholder looks from primitives and a procedural dome, sized to the
+    dummy's mesh, shown on the character by `ArmorView` (worn models are made
+    in character space; each bone's bind rotation is recorded in Awake).
+    The shelom has a spike, nose guard and mail curtain. Icons rendered.
+-   UI: inventory shows "Armour: N" next to the weight; worn pieces are
+    highlighted like the held item (inventory and hotbar); the crafting panel
+    shows a piece's armour and slot.
+-   Save: `PlayerSaveData.WornArmorItemIds` (older saves - nothing worn).
+-   New: `Gameplay/Equipment/ArmorSlot.cs` (+ ArmorBone), `ArmorDefinition.cs`,
+    `Gameplay/Combat/ArmorMath.cs`, `Presentation/Equipment/ArmorView.cs`,
+    `Editor/ArmorSetup.cs` (NAV/Build/Build Armour (Stage C) - items, worn
+    prefabs in Prefabs/Armor, ArmorDefinitions in ScriptableObjects/Armor,
+    recipes, ArmorView on the character, saves the scene). Changed:
+    ItemDefinition (`_armor`, IsArmor), PlayerEquipment (worn slots,
+    TotalArmor, IsSlotEquipped, RestoreArmor), PlayerCombat.TakeDamage,
+    SaveGameData/SaveManager, InventoryUIController, PlayerHudController,
+    CraftingUIController, SmithingSetup.BuildRecipe now internal.
+-   Verified in Play Mode: put on all three sets - armour 4/8/12, a 12 hit
+    did 8/4.5/3; taking off/putting on the helmet; screenshots from three
+    sides with the iron set (fits the body, follows the head); autosave
+    holds the worn ids and restoring them puts the set back on; removing the
+    chainmail from the inventory took it off (armour 12 -> 6). No console
+    messages. Test save and its .bak deleted.
+-   Not done: armour has no weight/speed penalty or durability; no set
+    bonuses; no cape slot; real models (placeholders); the look-at IK turns
+    the head and helmet with the camera, as before.
+
+### v0.1 --- 2026-10-24 (Developer's pickaxe model on the Stone Pickaxe)
+
+-   `F:\Папка с моделями\кирка.fbx` copied to `Art/Models/Tools/Pickaxe.fbx`
+    (developer's Blender export, same x100 scale as the hammer): importer
+    Scale Factor 0.065 (= 0.65 m long, two-sided head 0.49 m wide), animation,
+    cameras and lights off. Handle up, origin at the handle bottom; two URP
+    Lit materials (stone head, wooden handle).
+-   `Prefabs/Item/Held/StonePickaxe_held` (new): grip 12 cm up the handle,
+    model turned 90 degrees so the head lies across +X like the axe and the
+    hammer (the swing plane); MeleeHitbox across the head. Stone Pickaxe item
+    got it as Held Prefab - before this it showed nothing in the hand.
+-   `StonePickaxe_item` (world drop) rebuilt in place: primitives replaced by
+    the model lying flat, box collider fitted. Icon rendered from the model:
+    `Art/Icons/Rendered/Icon_StonePickaxe.png` (item and its weapon).
+-   Verified in Play Mode: equipped, the model sits in the right hand
+    (`B-handProp.R`), head in the swing plane. No console messages. Test save
+    deleted.
+-   Not changed: the Copper/Iron Pickaxes still have no model in hand
+    (SmithingSetup copies the stone pickaxe's held model - re-running it now
+    would give them tinted copies of this one).
+-   Follow-up (same day, developer's request): the Copper and Iron Pickaxes
+    now use tinted copies of this model - copper and iron heads, the wooden
+    handle kept (`SmithingSetup.CopyTinted` skips the part named "Рукоядь",
+    the handle in the developer's Blender models). Untextured materials get a
+    plain metal colour instead of the multiplied tint (the dark stone colour
+    turned muddy brown when multiplied); textured ones (the LowPoly axes) are
+    tinted as before. New menu **NAV > Build > Rebuild Metal Tool Models**
+    rebuilds just the copper/iron axes and pickaxes (items, held/world
+    models, icons) without touching the forge pieces or the scene; the full
+    SmithingSetup calls the same code. Axes came out unchanged. Icons
+    checked; the in-hand model is a copy of the stone pickaxe's (checked in
+    Play Mode), not looked at separately. No console messages.
+
+### v0.1 --- 2026-10-24 (Building pieces unlock by discovery)
+
+-   Developer's report: after crafting the hammer a furnace was already in
+    the build menu; pieces must open like crafting - only after getting
+    their resources.
+-   Rule (Valheim's own rule for pieces): a piece shows in the build menu
+    once **every** material of its cost has been found (PlayerCrafting's
+    discovery - the same "items the player has had" set as recipes). "Any
+    one material" would not work here: rock is in the hammer, the kiln, the
+    bloomery and the forge alike. Optional per-piece `_unlockItems` (extra
+    items that must be found too): the Charcoal Kiln and the Bloomery are
+    made only of starting materials, so both also wait for Copper Ore.
+-   Order seen in Play Mode (new world, items given one by one): nothing ->
+    wood: walls, palisade, roof, door, workbench, chest -> rock: foundation,
+    campfire -> flint: tanning rack -> copper ore: kiln, bloomery -> copper
+    bar + charcoal: forge, anvil -> leather + bone glue: bellows. The build
+    menu rebuilds its slots on each change (15 slots with Demolish).
+    Bloomery's ore condition was added after that run and checked in the
+    editor (wood/rock/flint - hidden; + copper ore - shown).
+-   Code: `BuildingPieceDefinition` (`_unlockItems`, IsUnlocked),
+    `PlayerCrafting` (IsDiscovered, DiscoveryChanged event),
+    `PlayerBuilding` (new `_crafting` ref - wired in WorldGenTest; KnownPieces
+    now returns only discovered pieces, keeps the selected piece across
+    changes, PiecesChanged event; `_knownPieces` stays the full catalog),
+    `BuildMenuUIController` (rebuilds slots on PiecesChanged),
+    `MetallurgySetup` (sets the kiln/bloomery unlock item). No save change -
+    discovery is already saved. Test save deleted.
+
+### v0.1 --- 2026-10-24 (UI kit from the developer's mockups; HUD restyled)
+
+-   Developer's UI kit (8 sheets generated in ChatGPT from their mockups:
+    panels, title plaque/dividers, buttons, slots, input/tooltip/scrollbar,
+    bars, food slot/day sign, icons) kept as sources in
+    `Assets/NAV/Art/UI/Source~/` (not imported by Unity).
+-   `Editor/UiKitSetup.cs` - **NAV > UI > Build UI Kit Sprites**: cuts 45
+    sprites into `Art/UI/Kit` (halved, mipmaps, 9-slice borders). Six sheets
+    had the transparency checkerboard painted in - removed by a flood fill of
+    light colourless pixels from the sheet edges; edges and the golden glow
+    (hover button, selected slot) faded to semi-transparent; enclosed areas
+    cleared for the food ring and the scales icon; scrollbar split into
+    up/down caps, thumb and a track stitched around the thumb; plain buttons
+    and slots padded to the size of their glowing versions so states swap in
+    place. Also assigns weather HUD icons (new `WeatherDefinition._icon` /
+    `_nightIcon`, `GetIcon(night)`): clear - sun / moon at night, rain and
+    heavy rain - rain cloud, storm - thunderstorm.
+-   HUD (`PlayerHud.uxml/.uss`, `PlayerHudController`) in the mockup's style:
+    hotbar with ornament caps and kit slots (selected = glowing slot),
+    vertical HP bar with diamond caps, stamina bar with diamond ends, round
+    food slots whose gold ring drains as the timer (drawn with Painter2D over
+    the ring, red under 25%), birch-bark day sign "Day N · HH:MM" with the
+    weather icon (the weather name is no longer written), "[E] ..." prompt on
+    a dark plaque (hidden when empty).
+-   Verified in Play Mode (1440x810): items in the hotbar, held axe glowing,
+    HP 70, stamina part-used, cooked meat eaten - screenshot checked. After
+    it the hotbar icons and the food slot were made bigger (not re-checked
+    in Play Mode). Test save deleted.
+-   Not done yet: the font (still Unity's default - a font with Cyrillic needs
+    choosing/downloading), the panels (inventory, chest, tooltip, crafting,
+    build menu, main menu, create/load world, settings, pause, death) - next.
+
+### v0.1 --- 2026-10-24 (Kurale font; inventory, chest and crafting in the UI kit style)
+
+-   Font: **Kurale** (Google Fonts, SIL OFL - downloaded with the developer's
+    OK; licence in `Art/Fonts/Kurale-OFL.txt`), dynamic SDF font asset
+    `Art/Fonts/Kurale SDF.asset`, set for every panel in
+    `UI Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss` (`:root`). Has
+    Cyrillic (checked).
+-   `Scripts/UI/NAVTheme.uss` - shared window theme from the kit: wood window
+    (`nav-window`), title plaque on the top edge (`nav-title`), parchment area
+    (`nav-parchment`), divider, buttons with hover/pressed/disabled/danger
+    sprites (`nav-button`), item slots - empty with the ornament, filled,
+    selected/held glowing (`nav-slot`), parchment item tooltip, small weight
+    bar, kit scrollbar for any ScrollView in a window.
+-   Inventory: kit window, 6-column grid, footer with the scales icon,
+    "70 / 400 kg" (+ "Armour N" when worn) and a weight bar (red when
+    overloaded). New `ItemTooltip` (parchment card on hover: icon, name,
+    description, weight, armour or damage, "Right-click to eat/equip"),
+    used by the inventory and the container panel.
+-   Chest / gravestone panel: same window and slots, "Take All" button
+    (was "Move All"), tooltip "Drag to your inventory".
+-   Crafting: kit window titled with the station name, recipe list on the
+    wood (selected row gold-framed), details on parchment (icon in a slot,
+    name, description, divider, stats, "Requires" ingredient slots with
+    have/need, Craft button).
+-   Verified in Play Mode (screenshots): inventory with items and the held
+    axe glowing, tooltip beside the hovered slot, a chest panel with items and
+    Take All, hand crafting panel with the Wood Hammer. No console messages.
+    Note: with the editor in the background Play Mode doesn't tick
+    (runInBackground is off) - turned on only for the test run. Test save
+    deleted.
+-   Still old style: build menu, main menu, create/load world, settings,
+    pause, death, loading screen.
+
+### v0.1 --- 2026-10-24 (All remaining windows in the UI kit style)
+
+-   Build menu: kit window titled "Build", kit slots (selected glowing,
+    Demolish reddened, unaffordable dimmed), piece info on a parchment strip.
+-   Main menu (MainMenu scene): logo "NAV" set in Kurale (red, gold outline)
+    with the subtitle and a divider on the left, four tall kit buttons,
+    version (Application.version) bottom-right; plain dark background until
+    the menu art exists. Create World on parchment with kit input fields
+    (`nav-input`) and Randomize / Create World / Back. Load Game: rows like the
+    mockup - name, "Seed: N", date on the right, a gold badge for "older
+    world version" / "saved by a newer version", an X icon to delete; "No
+    saves yet" with the pine icon. Confirm dialog on parchment with Cancel
+    and a red Delete/Confirm. (`MainMenuUIController.BuildSaveList` builds
+    the new row layout; the empty-list element is a VisualElement now.)
+-   Settings: kit window, tab buttons (open tab glows), slider = small bar
+    + kit thumb, toggle = kit square (glowing when on), dropdown and key
+    buttons on the input strip, Reset / Back buttons. Dropdown popups styled
+    globally in the panel theme (they open on the panel root): dark wood,
+    gold border, gold hover, Kurale.
+-   Pause: kit window "Paused" with three buttons. Death: dark red veil, "You
+    Died" in the logo style, "Your belongings wait at your gravestone.",
+    Respawn button. Loading: logo, "Loading...", the kit's diamond bar with a
+    gold fill and the sweeping shimmer (fill/shimmer now inside a groove).
+-   Verified in Play Mode with screenshots: build menu (real controller),
+    pause, settings - Audio/Controls/Graphics tabs and a dropdown popup,
+    death screen; main menu, create world, load game with rows and the
+    delete dialog, and the loading screen as temporary UIDocuments (they live
+    in the MainMenu scene). Fixed after looking: taller buttons, save-row
+    labels overflowing, default blue dropdown highlight. The last small
+    nudge (delete X clear of the strip ornament) not re-checked. No console
+    messages. Test saves deleted.
+-   Waiting on the developer: the logo image file (the one sent in chat
+    isn't on disk) and the main menu background art.
+-   Follow-up (same day): the developer's logo image (OneDrive
+    `f2c17130-...png`, real alpha, 1774x887) copied to
+    `Art/UI/Source~/Kit_Logo.png`, cropped to its content and halved to
+    `Art/UI/Kit/Logo.png` (789x349, mipmaps) - added to the UiKitSetup table
+    as "Logo". Main menu: the logo image (420x186) replaces the text "NAV",
+    the subtitle and the divider (the subtitle is part of the image). Loading
+    screen: the logo (360x159) replaces the text. Checked by rendering both
+    panels to an off-screen texture (the developer was in Play Mode - nothing
+    shown in their game). UiKitSetup's new table entry compiles on the next
+    script refresh (not recompiled during the developer's Play Mode).
+
+### v0.1 --- 2026-10-24 (Progression tiers drafted)
+
+-   `ProjectTitle/PROGRESSION_TIERS_v0.1.md` (new, draft for the developer):
+    six tiers - 1 wood/stone (built), 2 copper (built; bronze optional),
+    3 iron (built; moves to a new Swamp biome), 4 silver (Mountains, cold,
+    cloak slot, bonus vs. "unclean" creatures), 5 bulat (Wild Field /
+    steppe, rare component, Kladenets sword), 6 sky iron (meteor sites /
+    Nav). For each: resources, biome, station levels and new upgrade pieces
+    (workbench 3-6, forge 4-6), tools, weapons, armour totals (4/8/12/~18/
+    ~26/~36), buildings, food; boss *slots* only ("Boss N" and what kind of
+    reward opens the next tier - no names or mechanics, Boss Rule). Also how
+    it maps onto what exists, an implementation order and six open
+    decisions (bronze, new biomes, 6 or 7 tiers, tier-6 name, cloak slot,
+    copper behind Boss 1).
+-   `ITEMS_AND_CRAFTING_v0.1.md` points to it (its tier table is superseded;
+    kept as a source of ideas). Roadmap Stage C "Plan all ~6 tiers" -
+    drafted, waiting on the decisions.
+-   Follow-up (same day, developer): **9 tiers instead of 6, each with its
+    own biome.** `PROGRESSION_TIERS_v0.1.md` rewritten (v0.2): 1 meadows &
+    birch groves (built), 2 dense forest - copper (built), 3 sea islands -
+    tin/bronze (+ boat), 4 swamp - iron (built; moves here), 5 mountains -
+    silver (cold, cloak slot, bonus vs. unclean), 6 black forest - black
+    steel, 7 wild steppe - bulat (Kladenets), 8 gem caverns - gems/malachite
+    (inlays, amulet slot), 9 Nav - sky iron (endgame). Armour scale
+    4/8/11/15/20/26/33/41/50; workbench levels 1-5, forge 1-8 with the
+    upgrade pieces named; ocean stays a connecting biome; one boss slot per
+    tier change + finals (fits GDD's 7-10). Changes to built content are
+    listed (iron to tier 4 = forge levels shift by one for bronze; iron
+    armour 12 -> 15; copper and bog iron move to their biomes). Confirmed
+    list and roadmap updated (new item: one biome per tier).
+-   Follow-up (same day, developer): extra building woods in the plan.
+    **Oak** (tier 2, old oaks only in the dense forest, copper axe) -> oak
+    beams for *extended* building: beams, posts, upper floors, stairs, big
+    gates, porch, carved window frames and ridges (the mockup izba), later
+    the boat. **Bog (black) oak** (tier 6, only in the black forest, steel
+    axe) -> top-tier building: terem, towers, watchtowers, carved columns
+    and arches, tent roofs; its offcuts give the charcoal for black steel.
+    Wood ladder: plain wood (base) -> oak -> bog oak. Workbench 3 (joiner's
+    bench) and 5 (carving table) tied to them. Open question 7 added (names,
+    beams made at the bench or felled as beams, more woods elsewhere).
+-   **Approved** by the developer the same day: `PROGRESSION_TIERS_v0.1.md`
+    is v1.0 - the open questions were replaced by the decisions (proposals
+    taken as made; horse in the steppe, beams at the bench vs. felled, and
+    more woods are decided when implemented). Confirmed list updated;
+    roadmap: tier planning ticked, new items "Bronze tier (3)" and "Oak
+    (tier 2)".
+
+### v0.1 --- 2026-10-24 (Bronze tier: tin, bronze, casting mould, iron shifted to tier 4)
+
+-   Per the approved `PROGRESSION_TIERS_v0.1.md` (tier 3 = bronze, iron = tier 4).
+-   **Tin:** Tin Ore, Tin Bar, Bronze Bar items (MetallurgySetup). TinOre_Rock
+    (TinDeposit, 5 hits, needs a **copper pickaxe** - tool tier 2) on the shores
+    of plains, forests and ocean flats, 0.6-4 m above the water - temporary
+    until the sea-islands biome exists (8 deposits in a test world). The
+    bloomery smelts tin ore -> tin bar. `SaveSystem.WorldGenerationVersion`
+    3 -> 4 (older worlds show "older world version").
+-   **Forge levels** (SmithingSetup): new upgrade piece **Casting Mould**
+    (rock 8, copper bar 2, wood 2; stone table with moulds and a crucible).
+    Level = 1 + distinct upgrades nearby, so the order comes from the costs:
+    mould (copper) -> anvil (now **bronze bar 5** + wood, was copper) -> bellows
+    (now + **iron bar 2**). **Bronze Bar = 2 copper bar + 1 tin bar at Forge
+    level 2.**
+-   **Tools** (tool tier = progression tier): copper 2, **bronze 3 (new: Bronze
+    Axe / Pickaxe, Forge level 2)**, iron 3 -> **4** (Forge level 2 -> 3). Bog
+    iron now needs a **bronze pickaxe** (min tool tier 2 -> 3).
+-   **Weapons** (WeaponRecipesSetup): tier Bronze (damage x1.15, block +0.04,
+    Forge level 2) - Bronze Dagger (dagger2), Sword (sword1H6), Mace
+    (hammer1H9), Spear (spear4), Shield (shield14), Hand Axe (axe1H3, tool
+    tier 3); pack models with golden fittings (the pack has no bronze-coloured
+    blades). Iron weapons Forge level 2 -> 3, iron two-handers 3 -> 4; iron hand
+    axe tool tier 3 -> 4.
+-   **Armour** (ArmorSetup): Bronze Helm (cheek + nose guards) / Cuirass /
+    Greaves 3/5/3 = 11, Forge level 2; iron raised 3/6/3 -> **4/7/4 = 15**,
+    Forge level 2 -> 3.
+-   All four setups re-run in order; scene saved.
+-   Verified in Play Mode: stone pickaxe - no tin, no bog iron; copper - tin
+    only; bronze and iron - both. Forge + casting mould = level 2, + anvil =
+    level 3; the bronze bar recipe can't be made at level 1, can at 2 (4
+    copper + 2 tin -> crafted 1 bronze, used 2 + 1). Bronze set worn (armour
+    11) with the bronze sword - screenshots. Recipes show to the player by the
+    usual discovery (after using the forge at level 2). No console messages.
+    Test save deleted.
+-   Not done: tin's own biome (sea islands) and the boat; bronze pickaxe as the
+    reward-gate is not tied to any boss yet.
+
+### v0.1 --- 2026-10-24 (Oak - tier 2: old oaks, joiner's bench, oak building set, opening gate)
+
+-   Per the approved tier plan (tier 2 = dense forest + oak, "extended
+    building"). The dense-forest biome doesn't exist yet - old oaks grow in the
+    ordinary forest for now (7 in a test world).
+-   `Editor/OakSetup.cs` - **NAV > Build > Build Oak and Joinery (Stage C)**:
+    -   **Old Oak** (`OldOak_WoodNode`): Nature Starter Kit tree03 (broad
+        trunk, round crown) with darker bark/leaves, spawned at scale 1.6-1.95
+        (14-17 m). Needs a **copper axe** (tool tier 2). Own felling chain like
+        the spruce's: Old Oak (6 hits) -> OakFallen trunk (4) -> 2 OakLogs (3
+        each) -> **Oak Wood** 3 per log (felled straight as wood - no separate
+        beam step). Stump/trunk/logs use darker copies of the pack materials.
+    -   **Joiner's Bench** (oak wood 6, wood 6, copper bar 1): workbench
+        upgrade - with the tanning rack the workbench is **level 3**.
+    -   **Oak set**, all needing the workbench at level 3 nearby: Oak Log Wall,
+        Oak Window Wall (carved frame - наличник), Oak Post, Oak Beam, Oak
+        Floor (upper storeys: rests on wall tops by its corners, takes walls on
+        top), Oak Stairs (2 m up over 2 m), **Oak Gate** (4 m double gate that
+        opens), Carved Ridge (конёк with a horse head). Placeholder primitives.
+-   New `BuildingPieceDefinition._requiredStation / _requiredStationLevel`:
+    `PlayerBuilding.IsInBuildArea` / `Workbench.AnyBuildAreaContains(pos, kind,
+    level)` (station Tier, no roof needed); placement hint and build-menu info
+    "Needs a Workbench (level 3) nearby".
+-   New `Gameplay/Building/BuildingDoor.cs` (IInteractable): E opens/closes,
+    leaves swing on hinge pivots with their colliders; not saved (loads
+    closed). The old Wood Door is still a solid slab - not changed.
+-   Pieces with child colliders get a tiny root trigger (BuildingPiece requires
+    a root collider; a full box would close the gate).
+-   Shared helpers made internal: TreeFellingSetup (felling chain parts),
+    MetallurgySetup.UpsertResource. `WorldGenerationVersion` 4 -> 5.
+-   Verified in Play Mode: stone axe - no; copper axe fells the oak (stump
+    left, trunk falls), the trunk splits into 2 logs, the logs drop 2 x 3 Oak
+    Wood. Workbench + tanning rack = level 2 - oak pieces not allowed; + joiner's
+    bench = level 3 - allowed; far away - not. Gate: "Open Oak Gate" -> leaves
+    at 95 / -95 degrees, prompt "Close Oak Gate". All pieces placed in the
+    world and looked at (screenshot). No console messages. Test saves deleted.
+-   Not done: snapping of the new pieces was not tried with the real build
+    mode (only placed by code); the dense-forest biome; the Wood Door opening.
+
+### v0.1 --- 2026-10-24 (Wood Door opens)
+
+-   Developer's request. The Wood Door was one scaled cube - a solid slab.
+    `Editor/WoodDoorSetup.cs` - **NAV > Build > Make Wood Door Open** - rebuilds
+    `Prefabs/Build/WoodDoor.prefab` in place (same GUID - doors in saves load
+    as the new one): unscaled root at the same pivot (wall centre) with the
+    same snap points in metres, a frame (two jambs + lintel) filling the
+    2 x 2 m wall slot, a 1.2 x 1.8 m plank leaf with iron straps and a handle on
+    a hinge, `BuildingDoor` (E opens/closes, swings 100 degrees, not saved).
+    Workbench wood colour instead of the old default grey. Build-menu icon
+    re-rendered. Safe to re-run.
+-   Verified in Play Mode: placed (configured as a real piece) - "Open Wood
+    Door"; a ray through the opening hits the leaf while closed, passes once
+    open; "Close Wood Door"; screenshot. No console messages. Test save
+    deleted.
+
+### v0.1 --- 2026-10-24 (Starting buildings restyled - Old Rus)
+
+-   Developer's request: the starting pieces were grey test cubes - make them
+    look Russian. `Editor/RusBuildingStyleSetup.cs` - **NAV > Build > Restyle
+    Starting Buildings (Old Rus)** - rebuilds the prefabs in place (same GUIDs,
+    so pieces in saves load with the new look):
+    -   **Wall** - a сруб: five round pine logs (slightly oval) with dark moss
+        caulking, the ends 0.18 m past the sides (рубка «в обло») so two walls
+        meeting at a corner cross like an izba.
+    -   **Foundation** - a plank floor on a log sill (окладной венец), stones
+        under the corners.
+    -   **Roof** - тёс: boards running down the old 45-degree slope in two
+        overlapping layers, a purlin, a carved valance (подзор) with diamond
+        teeth at the eave.
+    -   **Palisade** - a sharpened log (procedural cone tip, `Art/Models/LogTip`).
+    -   **Door** (`WoodDoorSetup`, now called from here; its own menu item
+        removed) - сруб logs beside and above the opening, a carved frame
+        (наличник) with a peak and a rosette on the front, a plank leaf with
+        forged strap hinges and a ring; still opens (BuildingDoor).
+-   Gameplay unchanged: the roots were scaled cubes - now unscaled, with the
+    same box collider and snap points at the same places in metres (checked:
+    foundation 2 x 0.2 x 2, wall 2 x 2 x 0.2, roof 2 x 0.2 x 2, palisade 0.15 x 2
+    x 0.15, door frame + leaf colliders 2 x 2 x 0.2; snap positions as before).
+    New parts are visual only. Materials in `Materials/Building/` (pine log,
+    log end, moss, plank, roof boards, carving). Build-menu icons re-rendered.
+-   Verified in Play Mode: a 4 x 4 m hut put together from the pieces (4
+    foundations, walls, the door, 4 roof slopes) and a palisade row -
+    screenshots. No console messages. Test save deleted.
+
+### v0.1 --- 2026-10-24 (Gable, real roof slope, door fixes)
+
+-   Developer's request: no gable piece to close the triangle under the roof,
+    and the roof should be longer so it lies on the wall logs. Plus two door
+    bugs from playtesting: E often did nothing on a door, and the player got
+    stuck in the opened doorway.
+-   **Roof slope rebuilt** (`RusBuildingStyleSetup.BuildRoof`): one slope now
+    spans a foundation (2 m run) and rises 2 m (45 deg) - two slopes over a 4 m
+    house meet in a ridge 2 m above the wall tops - and runs 0.5 m down past the
+    wall so the eave lies on the top log and hangs over it. Root on the eave
+    wall's top centre line; snap points EaveL/EaveR (a wall's top corners) and
+    RidgeL/RidgeR (turned 180 - the opposite slope snaps on facing the other
+    way). Collider: a board along the slope (child "Solid"; root has a tiny
+    trigger). **Roofs placed before this sit wrong and must be rebuilt.**
+-   **New piece: Wood Gable (фронтон)** - `WoodGable.prefab`,
+    `WoodGablePiece` (3 Wood, needs a workbench), in the piece database and the
+    player's Known Pieces (scene saved). A right triangle of logs 2 m along the
+    wall, 2 m high at -X down to nothing at +X, every log cut at 45 deg flush with
+    the roof (procedural mesh `Art/Models/GableLogs`, convex prism collider
+    `GableSolid`). Snaps on a wall top (BaseL/BaseR) like a wall on a wall; Top
+    point for stacking. Two gables per house end.
+-   **Directional pieces** (`BuildingPieceDefinition._directional`, set on roof,
+    gable, door): on snapping, the piece's front (+Z - the eave, the наличник)
+    turns towards the player instead of always taking the snap point's rotation;
+    R (two presses) turns it the other way. After that turn, the ghost point
+    now nearest the target is aligned (else the piece slid a whole span past it).
+-   **Snap tie-break** (`PlayerBuilding.TryApplySnap`): where two walls meet,
+    their top points coincide; a target point turned across the held ghost now
+    costs a little extra (`SnapTurnPenalty`), so the roof follows the wall that
+    runs the way the player faces.
+-   **Door: E did nothing** - the interaction ray starts at the camera behind
+    the player; walking up to a door put the player's own capsule first on the
+    ray, which counted as "a solid surface, nothing to use".
+    `PlayerInteractor` now skips the player's own colliders.
+-   **Door: stuck in the doorway** - the opening was 1.8 m, the player's capsule
+    1.8 m + skin. Opening now 1.9 m (`WoodDoorSetup.LeafHeight`), a thin lintel
+    beam above; the наличник top is kept low (its old peak poked through an
+    eave above the door) with three small rosettes.
+-   Roof boards: the upper layer now overlaps the lower one - no light between
+    them from inside.
+-   Verified in Play Mode: the real `TryApplySnap` on a 4 x 4 m hut - 4 slopes
+    and 4 gables all snap to the right places and directions; door found by the
+    aim ray through the player's body ("Open Wood Door"); the player walks in
+    and out through the open door; screenshots. No console errors. Test saves
+    deleted.
+-   Not done: window/stairs are not directional yet; stacked gables/slopes for
+    an 8 m house untested; snapping of the oak pieces still untested.
+-   **Fix (same day): the player still couldn't get through a roofed door.**
+    The roof slope's collider ran the full slope including the 0.5 m overhang;
+    in front of the wall the eave drops below head height (2.0 m above the
+    floor at the wall line, ~1.7 m 0.3 m out), so the player's head hit an
+    invisible board over every door under an eave. The collider now ends at the
+    wall line (ridge to wall, 2.83 m); the overhang is visual only. Applied to
+    the `WoodRoof` prefab and to the placed roofs in the running game; checked
+    by walking the CharacterController in, out and in again through the door
+    of a roofed hut. The same change is now in
+    `RusBuildingStyleSetup.BuildRoof` (made after Play Mode was exited); the
+    restyle menu re-run builds the short collider (2 x 0.1 x 2.83, low edge on
+    the wall line). No console messages.
+
+### v0.1 --- 2026-10-24 (Dense Forest biome - tier 2)
+
+-   Developer approved the plan, plus: forest and birch-grove trees x2-3, and
+    in the dense forest trees 10-15 times the player's height that shut out
+    the sun.
+-   **World generation:** `WorldGenerationSettings._denseForestBiome` +
+    `_denseForestMoistureThreshold` (0.68). `WorldGenerator.GetBiome`: land with
+    moisture at or above it is the dense forest - the wettest heart of each
+    forest, always ringed by ordinary forest. Painted, spawned and populated
+    like the others (`Biomes` enumerates it). On a test seed: ocean 19%,
+    plains 56%, forest 13%, birch groves 2%, **dense forest 10%**.
+    `SaveSystem.WorldGenerationVersion` 5 -> 6 (old worlds load with a warning;
+    gathered resources reset, terrain under buildings may differ).
+-   **`Editor/DenseForestSetup.cs`** - NAV > World > Build Dense Forest (Stage C):
+    -   **Ancient trees** - `AncientSpruce/Larch/Cedar_WoodNode`: copies of the
+        pack spruce, larch and cedar with darkened materials
+        (`Materials/Vegetation/Ancient/`), spawned at 1.45-2.4x - 18-27 m tall
+        (nearest one measured 21 m), crowns 14-20 m. Node `AncientTreeNode`
+        (copy of the ordinary tree's: same trunk/stump/log chain and drops) -
+        8 hits, copper axe at least; trunk and logs scale with the tree.
+    -   **DenseForestBiome** - dark mossy ground (`DenseForestLayer`, the forest
+        floor remapped darker/greener), height variation 0.8; ancient spruce
+        every ~7 m (density 0.8 / spacing 7) plus larches and cedars, young
+        spruce under them, old oaks, copper ore, big boulders, bog iron by the
+        water, branches/stones; the forest's decor with more ferns, logs and
+        stumps, little grass, no flowers; wolves 5 (night 9), deer 1 (night 0).
+    -   **Copper ore and old oaks now only here** - removed from the plains and
+        the forest; `MetallurgySetup` and `OakSetup` no longer put them there.
+    -   **Forest trees x2.5** (spruce 0.27 -> 0.65, larch/cedar/broadleaf
+        likewise), **birch-grove trees x2.5** (birches 0.16 -> 0.4). Absolute
+        values - re-running doesn't multiply again.
+-   Verified in Play Mode on a fresh world: 4867 resources (was ~3300), 1395
+    ancient trees, 37 oaks and 52 copper veins in the dense forest; inside it
+    the crowns close overhead and the ground is in deep shade (screenshots:
+    eye level, straight up, aerial). Editor frame time 14.5 ms (69 fps) inside
+    the dense forest vs 13.5 ms before densifying. No console errors. Test
+    saves deleted.
+-   Not done: gloom as fog/ambient light under the crowns (needs per-biome
+    atmosphere), dense-forest creatures of its own, its boss slot; an ancient
+    tree drops the same wood per log as an ordinary one (bigger logs, not more
+    of them).
+
+### v0.1 --- 2026-10-24 (Plains: sparse small trees and bushes)
+
+-   Developer: the plains were too bare - add sparse bushes and small trees.
+    `VegetationSetup` (NAV > World > Build Vegetation and Birch Grove) now gives
+    the Plains:
+    -   **small trees** (resources, choppable like any tree): the three birches
+        at 0.4-0.6x (4-6.5 m) and the round-crowned NSK tree01/02 at 0.3-0.55x
+        (~3.5-6 m), density 0.06-0.08 on an 18-20 m grid - ~570 lone trees on
+        the plains of a 1 km world. (NSK tree03/04 were tried first and dropped:
+        small, they read as bare sticks.)
+    -   **bushes**: all five NSK bushes, density 0.1 every 10 m, 0.8-1.4x (was
+        two kinds at 0.03 every 18 m).
+-   `VegetationSetup` also now writes the x2.5 forest and birch-grove tree
+    densities (it still had the old ones - re-running it would have undone
+    them). Run it before `DenseForestSetup`. WorldGenerationVersion stays 6
+    (no world was saved on the earlier v6).
+-   Verified in Play Mode: 566 small trees on the plains, 5001 resources in
+    total; eye-level and aerial screenshots. Known: from far above, the NSK
+    crowns lose their leaves (alpha-clipped leaves at distance) - from the
+    ground it isn't noticeable. Test saves deleted.
+
+### v0.1 --- 2026-10-24 (Balance: bushes by hand, 4-8 wood per tree)
+
+-   Developer: plains bushes breakable bare-handed for 1-2 wood; ordinary trees
+    4-8 wood.
+-   **Bushes** - `VegetationSetup` builds `NSK_bush02..06_WoodNode` (the five
+    NSK bushes as resource nodes: stem capsule r 0.25, `ResourceNode`) with the
+    new `ScriptableObjects/World/BushNode` definition: no tool, 2 hits, shrinks
+    when hit, drops 1 wood + 1 more at 50%. On the plains they replace the
+    walk-through decor bushes (density 0.06 every 12 m each - ~1070 per world);
+    the forest/grove keep their decor bushes. Bushes now block movement like a
+    thin stump.
+-   **Trees** - `SpruceLogNode` (the log every ordinary tree - spruce, larch,
+    cedar, broadleaf, birch, and the ancient trees - splits into, 2 per tree):
+    2 wood + 1 at 50% + 1 at 50% (+ resin at 25%) = 2-4 per log, **4-8 per
+    tree** (was a flat 6; average unchanged). `TreeFellingSetup.SetLogWood`,
+    called from its Build. Oak keeps its own (3 Oak Wood per log).
+-   Verified in Play Mode: 10 bushes hit twice with bare hands -> 2 2 2 1 1 2 2
+    2 2 1 wood; 20 trees' worth of logs hit with a stone axe -> 5-8 wood each
+    (avg 5.9). Test save deleted.
+
+### v0.1 --- 2026-10-25 (Performance: dynamic fog, chunk streaming, far-plane impostors; world 2.56 km)
+
+-   Developer: object counts keep growing, performance drops - combine dynamic
+    fog, chunk streaming and a simplified far plane (LOD/impostors); then make
+    the world 4-6x bigger. Plan approved, world 2.5 x 2.5 km (x6).
+-   **Measured before** (1 x 1 km, spawn view): 9.2 M triangles a frame, 39,400
+    GameObjects (27,700 renderers, 6,700 colliders, 5,600 resource nodes), the
+    whole world generated at once in 2.4 s, frame 6.8 ms in the Editor. Cause #1:
+    `RenderDistanceController` wasn't in the scene - far clip 1000 m, no culling
+    of trees/rocks. Two systems also fought over the fog (render distance set
+    linear fog, WeatherEffects exp2).
+-   **Stage 1 - dynamic fog.** `Presentation/Lighting/AtmosphereFog` (on the
+    WorldClock object) is the one owner of RenderSettings fog: exp2, density
+    sqrt of the sum of squares of (a) the view-distance edge - fully fogged at
+    the new **View Distance** setting (Graphics; presets 350/500/700/900 m, slider
+    250-1200; camera far clip = it), (b) weather fog, (c) the biome around the
+    camera (`BiomeDefinition._fogDensity/_fogColor`; dense forest 0.018, greener and
+    darker - eased in over 4 s), (d) morning haze after sunrise. Colour = the
+    real sky at the horizon where the camera looks (an 8 px skybox-only render
+    every 0.25 s, AsyncGPUReadback) over DayNightLighting's ambient colour
+    (`DayNightLighting.FogColor` - it no longer writes RenderSettings), times the
+    biome tint. WeatherEffects no longer touches fog. Dead
+    `RenderDistanceController/Settings` (+ asset) deleted.
+-   **Stage 2 - chunk streaming** (`WorldGenerator.Chunks.cs`, `WorldHash`,
+    `LocalNavMesh`): trees/rocks/ore/bushes/decor exist only in 64 m chunks
+    around the player (radius = the Object Draw Distance setting, 120-400 m),
+    loaded nearest-first within 3 ms a frame (a chunk fills over several frames,
+    12 nodes a step), unloaded one a frame (Destroy's real cost is deferred to the
+    end of the frame, invisible to a time budget - unloading a row at once made
+    ~100 ms spikes). Content per chunk from `WorldHash(seed, kind, cell)` -
+    order-independent; node id = chunk index * 4096 + order; gathered ids are
+    remembered when a chunk unloads, saved as before (`DepletedResourceIds`),
+    and on reload only the stump comes back. Felled trunks/logs are children of
+    their chunk. Starter items stay (ids from `int.MaxValue - 100000`). Teleports
+    (load, respawn) prime everything at once (`PrimeAround`). NavMesh: built only
+    around the player (400 m square, voxel 0.25 m, 48 m tiles, rebuilt in the
+    background after 60 m - the scene NavMeshSurface only gives agent type and
+    layers). Creatures live around the player: `CreaturePopulation._leashDistance`
+    115 m removes far ones and frees their slot at once, so the population refills
+    near the player within one check (5 s).
+-   **Stage 3 - far-plane impostors** (`WorldGenerator.Impostors.cs`,
+    `ImpostorSet`, `Shaders/NAVImpostor.shader`, `Editor/ImpostorBaker` - NAV >
+    World > Bake Tree Impostors): every tree any biome spawns (14 kinds) is baked
+    from 8 sides into an atlas (Art/Impostors, alpha coverage kept in mips so leafy
+    trees don't turn to sticks); in chunks within the view distance that aren't
+    loaded, trees are drawn as camera-facing quads picking the nearest baked view,
+    GPU-instanced (Graphics.RenderMeshInstanced), lit by the current sun/sky,
+    fogged, no shadows, no GameObjects. Same `PlaceNodes` as the real trees, gathered
+    trees skipped. The camera now draws the WorldResource layer as far as any loaded
+    chunk reaches (`WorldGenerator.ResourceDrawDistance`).
+-   **Stage 4 - world 2560 x 2560 m** (40 x 40 chunks, x6.5 area; settings
+    asset: heightmap 1025), terrain centred on the origin, alphamap and grass map
+    sized ~2.5 m a cell (1024) with grass/flowers scaled to keep the same density
+    per m^2; noise scales unchanged (same-size lakes/biomes, more of them).
+    `WorldGenerationVersion` 8 (6: dense forest; 7: per-chunk ids; 8: big world) -
+    older saves load with resources reset and a different landscape under their
+    buildings.
+-   **Measured after** (2.56 km world, View Distance 1200 = the developer's
+    setting): generation 1.28 s (vs 2.4 s for 1 km); ~21,000 GameObjects; 148
+    chunks loaded, ~19,000 impostor trees in 1,230 far chunks; 1.5-3.3 M triangles
+    looking at forest; Editor frame avg 13 ms, p95 17 ms while moving at 30 m/s
+    (streaming 0.3 ms avg / 5 ms max a frame, far plane <= 2 ms). Remaining rare
+    36-90 ms spikes are outside this code (NavMesh rebuild integration, deferred
+    destroys, GC, Editor) - to be checked in a build. Screenshots: fog horizon,
+    dense-forest gloom, impostor forests to the horizon. Test saves deleted.
+-   Known / later: NavMesh rebuild hitch (~70 ms in the Editor every 60 m);
+    Terrain is still one tile (2.56 km is fine; split if it grows); decor beyond
+    the loaded chunks isn't drawn; impostor brightness tuned by eye.
+
+### v0.1 --- 2026-10-25 (Ambience by biome, footsteps by surface)
+
+-   Developer imported two sound packs - "Nature - Essentials" (18 loops) and
+    "The Sound Guild Footsteps Volume 02" (104 steps) - and asked for biome- and
+    surroundings-matched ambience and footsteps. `Editor/AudioSetup.cs` - NAV >
+    Audio > Set Up Ambience and Footsteps - wires them (safe to re-run).
+-   **Ambience** - `Presentation/Audio/AmbienceController` (scene object
+    "Ambience"). `BiomeDefinition` got Ambience fields (day loop, night loop,
+    volume, wind loop, wind volume): plains - cicadas + calm wind; forest - birds
+    + wind in the trees; birch grove - birds + calm wind; dense forest - fewer
+    birds, stronger forest wind; water - the sea day and night. The controller
+    samples the biomes at the listener (x2) and 8 points 30 m around it, so
+    borders blend and the sea is heard from the shore; day/night cross-fade over
+    45 min around sunrise/sunset (night = the night loop: crickets); rain hushes
+    the birds/cicadas, cloud cover strengthens the wind; rain loops (calm ->
+    strong by the weather's rain rate) replace the procedural rain; rain and wind
+    drop to 45% under a roof (a building piece over the player). One looping 2D
+    source per clip, easing 1.5 s; Ambience volume setting.
+    `WeatherEffects` keeps only thunder (still procedural - the pack has none);
+    `PlaceholderWeatherAudio.CreateRainLoop` removed.
+-   **Fire** - `AmbientEmitter` (3D loop, linear falloff, starts in Start so a build
+    ghost stays silent): campfire - small fire (18 m), forge and charcoal kiln -
+    medium fire, bloomery - big fire (25 m).
+-   **Footsteps** - `FootstepAudio` on the player + `FootstepProfile` asset
+    (ScriptableObjects/Audio): a step every 0.75 m (1.05 m sprinting), louder when
+    sprinting, a landing step after > 0.25 s in the air, none while swimming;
+    surface = shallow water (wading) -> mud; a building piece -> wood; a rock node ->
+    stone (shoe on street); the terrain -> its strongest ground texture there:
+    plains/grove -> grass, forest -> the alternative grass, dense forest -> soft
+    surface, shore/sea floor -> sand. No clip twice in a row, pitch 0.92-1.08,
+    Effects volume.
+-   Imports: loops stream (Vorbis 0.6, load in background), steps mono, ADPCM,
+    decompressed on load.
+-   Verified in Play Mode: plains noon - cicadas 0.30 + calm wind 0.30; forest at
+    23:00 in rain - night 0.22 (hushed), forest wind 0.52, calm rain 0.67; shore -
+    sea + wind + cicadas blended; step surfaces: grass / alternative grass / soft /
+    mud in 0.25 m water / wood on a foundation; a placed campfire plays its loop in
+    3D, a ghost copy stays silent. No console messages. Test save deleted.
+-   Not used yet: cave (3), river, stream, waterfall (2) loops - for caves and
+    rivers when they exist. Footsteps of creatures - later.
+-   **Fix (same day): footsteps were several times too fast.** A step every
+    0.75 m walked meant ~8 steps/s when sprinting (8 m/s) - the legs take ~3.
+    `FootstepAudio` now follows the animation: a step at each heel strike - a
+    foot bone (humanoid LeftFoot/RightFoot) that came down at least 8 cm, falling
+    faster than 0.6 m/s, suddenly slows below a third of its fastest descent
+    (LateUpdate, after the Animator). Height-free on purpose: measured, the rig's
+    feet rest at different heights (left ~0.10 m, right ~0.04 m walking) and the
+    right foot plants ~0.11 m high when sprinting, so a "ground height" threshold
+    missed sprint steps. Without a humanoid rig: a step every 0.5 s (0.35 s
+    sprinting). Measured with simulated W / W+Shift: walk (2 m/s) a step every
+    ~0.4 s, sprint every ~0.25-0.3 s, in time with the legs.

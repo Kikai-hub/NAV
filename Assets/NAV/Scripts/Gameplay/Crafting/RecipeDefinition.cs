@@ -25,6 +25,9 @@ namespace NAV.Gameplay.Crafting
         [SerializeField] private int _outputAmount = 1;
 
         [Header("Workbench")]
+        [Tooltip("Which kind of station it's made at (Workbench, Forge). Empty = any station.")]
+        [SerializeField] private WorkbenchDefinition _station;
+        [Tooltip("The station level needed (base 1, +1 per upgrade piece nearby). 0 = craftable anywhere.")]
         [SerializeField] private int _requiredWorkbenchTier;
 
         public string DisplayName => string.IsNullOrWhiteSpace(_displayName) && _outputItem != null
@@ -38,6 +41,9 @@ namespace NAV.Gameplay.Crafting
         /// <summary>0 (the default) means craftable anywhere, no workbench needed - matches
         /// every recipe's behavior before this field existed.</summary>
         public int RequiredWorkbenchTier => _requiredWorkbenchTier;
+
+        /// <summary>The station kind the level applies to (null = any station).</summary>
+        public WorkbenchDefinition Station => _station;
 
         // Fully qualified, not "using NAV.Gameplay.Inventory" + bare "Inventory": this file
         // lives in the sibling namespace NAV.Gameplay.Crafting, and C# resolves an unqualified

@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: LPW_spear2
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_spear2
-  _displayName: Spear 2
-  _description: Spear from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Copper Spear
+  _description: A spear with a copper head.
   _icon: {fileID: 21300000, guid: 670b6941db575704da860eefd0aa5a92, type: 3}
   _category: 2
   _maxStackSize: 1
@@ -27,3 +26,4 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 3d3dedb37e610aa4fa4171a585be0078, type: 2}
   _heldPrefab: {fileID: 6411598465889475445, guid: 1337b12522def2f47834db6c83da17dc, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}

@@ -20,3 +20,7 @@ MonoBehaviour:
     _amount: 4
   _prefab: {fileID: 5266645979368374898, guid: 4ea4b5de11123bc438b548312a6cce7e, type: 3}
   _requiresWorkbench: 1
+  _requiredStation: {fileID: 0}
+  _requiredStationLevel: 0
+  _directional: 1
+  _unlockItems: []
