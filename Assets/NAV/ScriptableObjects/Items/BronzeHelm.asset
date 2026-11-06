@@ -19,6 +19,7 @@ MonoBehaviour:
   _category: 3
   _maxStackSize: 1
   _weight: 2.5
+  _density: 2
   _worldPrefab: {fileID: 4855870947561221564, guid: da215472339e30e409871cc440026696, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +28,6 @@ MonoBehaviour:
   _heldPrefab: {fileID: 0}
   _heldInLeftHand: 0
   _armor: {fileID: 11400000, guid: d8cb1a04cf1f30f47bfd463721f6907b, type: 2}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

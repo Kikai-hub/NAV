@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38d4318956355b948aa40fc8e4e6b54e, type: 3}
+  m_Name: HybridWorldSettings
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Generation.Hybrid.HybridWorldSettings
+  _worldRadius: 15000
+  _continentNoise:
+    Scale: 3200
+    Octaves: 4
+    Lacunarity: 2
+    Gain: 0.5
+  _detailNoise:
+    Scale: 520
+    Octaves: 3
+    Lacunarity: 2
+    Gain: 0.5
+  _detailWeight: {x: 0.18, y: 0.5}
+  _continentZoneEnd: 0.03
+  _archipelagoZoneEnd: 0.8
+  _zoneBlend: 0.01
+  _continentCoastWarp: 0.02
+  _continentReliefBase: 0.35
+  _continentMinElevation: 0.02
+  _archipelagoThreshold: {x: 0.46, y: 0.66}
+  _deepOceanElevation: -0.5
+  _landHeightScale: 220
+  _seaDepthScale: 120
+  _mountainNoise:
+    Scale: 1100
+    Octaves: 4
+    Lacunarity: 2.1
+    Gain: 0.5
+  _mountainStart: 0.52
+  _mountainHeight: 340
+  _localReliefNoise:
+    Scale: 60
+    Octaves: 3
+    Lacunarity: 2
+    Gain: 0.5
+  _localReliefHeight: 6
+  _climateBands:
+  - _biome: {fileID: 11400000, guid: bffd4ed64abf4a170d2710e46336907d, type: 2}
+    _upTo: 0.15
+    _mixBiome: {fileID: 11400000, guid: be74a3e007d6b1aba360310cd854e038, type: 2}
+    _mixShare: 0.25
+  - _biome: {fileID: 11400000, guid: 8ab6cdedf000d4d4a81350dc224aa979, type: 2}
+    _upTo: 0.27
+    _mixBiome: {fileID: 0}
+    _mixShare: 0
+  - _biome: {fileID: 11400000, guid: be74a3e007d6b1aba360310cd854e038, type: 2}
+    _upTo: 0.42
+    _mixBiome: {fileID: 0}
+    _mixShare: 0
+  - _biome: {fileID: 11400000, guid: 32e5c5f4997700649a3d8abe48948b02, type: 2}
+    _upTo: 0.5
+    _mixBiome: {fileID: 0}
+    _mixShare: 0
+  - _biome: {fileID: 11400000, guid: e65ce6e89872d324b82b3912ce9186c1, type: 2}
+    _upTo: 0.6
+    _mixBiome: {fileID: 0}
+    _mixShare: 0
+  - _biome: {fileID: 11400000, guid: 6310ec1c708272c4fa0be9729de77ccf, type: 2}
+    _upTo: 1.2
+    _mixBiome: {fileID: 0}
+    _mixShare: 0
+  _climateBorderNoise:
+    Scale: 1600
+    Octaves: 3
+    Lacunarity: 2
+    Gain: 0.5
+  _climateBorderBlur: 0.12
+  _bandMixNoise:
+    Scale: 300
+    Octaves: 3
+    Lacunarity: 2
+    Gain: 0.5
+  _northPolarBiome: {fileID: 11400000, guid: cf41d6e4dabd9ae4dbcc5983882276db, type: 2}
+  _southPolarBiome: {fileID: 11400000, guid: ce772c5d04e9be241a0adac08e1cf524, type: 2}
+  _polarStart: 0.6
+  _polarBorderBlur: 0.07
+  _heightRules:
+  - _biome: {fileID: 11400000, guid: e5bfdd4f969fed246a4d7f19e3a21ae3, type: 2}
+    _minHeight: 175
+    _maxHeight: 10000
+    _landmass: 0
+    _coverage: 1
+    _excludePolar: 0
+  - _biome: {fileID: 11400000, guid: 8d8f0bdd8cc522b46986b8dde28e5236, type: 2}
+    _minHeight: 95
+    _maxHeight: 10000
+    _landmass: 0
+    _coverage: 1
+    _excludePolar: 0
+  - _biome: {fileID: 11400000, guid: baa255d725ad0674092f6fab1a2e4a00, type: 2}
+    _minHeight: 0
+    _maxHeight: 4
+    _landmass: 2
+    _coverage: 0.5
+    _excludePolar: 1
+  _patchNoise:
+    Scale: 380
+    Octaves: 2
+    Lacunarity: 2
+    Gain: 0.5
+  _oceanBiome: {fileID: 11400000, guid: 16c0e93aaad3c3dc7c97706f0af51453, type: 2}
+  _pointsOfInterest:
+  - {fileID: 11400000, guid: 9edacbd53e57b4d4fa96999f0c2be357, type: 2}
+  - {fileID: 11400000, guid: e90e1f6f47b87344485ae7294c8d519d, type: 2}
+  - {fileID: 11400000, guid: 441ef9f5b6e528a409a07b559780181f, type: 2}
+  - {fileID: 11400000, guid: 860ef3256a00e7d4991d938ee366f58f, type: 2}
+  - {fileID: 11400000, guid: 9856aff45b5b41143a5e1d912682a959, type: 2}
+  - {fileID: 11400000, guid: 7f92bc177c702d540b5aa47ddb5a5ca0, type: 2}
+  - {fileID: 11400000, guid: 6572bc07a8ced174e8ac49c29ee0cd6e, type: 2}
+  _poiAttemptsPerPoint: 80

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a40f6099767e044ba161169a6a55ba, type: 3}
+  m_Name: SilverGreavesArmor
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.ArmorDefinition
+  _slot: 2
+  _armor: 5
+  _warmth: 0
+  _wornParts:
+  - _bone: 2
+    _prefab: {fileID: 3176890601285809210, guid: ac572c202912135419c0f285b2db44d9, type: 3}
+  - _bone: 3
+    _prefab: {fileID: 6079587063673741462, guid: 07ee4b5605426584c86b6d1ee046da1a, type: 3}
+  - _bone: 4
+    _prefab: {fileID: 631322322491120789, guid: e37c5b098428472408a3ee00b002a9d5, type: 3}
+  - _bone: 5
+    _prefab: {fileID: 6665161125894598894, guid: 7706035df08241b4e8a74d3c991a4af3, type: 3}

@@ -289,7 +289,7 @@ namespace NAV.Editor
 
         // ---- Pieces ----
 
-        private static BuildingPieceDefinition Piece(string id, string displayName, (ItemDefinition item, int amount)[] cost,
+        internal static BuildingPieceDefinition Piece(string id, string displayName, (ItemDefinition item, int amount)[] cost,
             WorkbenchDefinition requiredStation, int requiredLevel, System.Action<Transform> buildModel, System.Action<GameObject> addComponents)
         {
             string definitionPath = $"{PieceFolder}{id}Piece.asset";
@@ -347,7 +347,7 @@ namespace NAV.Editor
         }
 
         /// <summary>A visible box with its own collider (pieces are solid).</summary>
-        private static GameObject Box(Transform parent, string name, Material material, Vector3 center, Vector3 size, Vector3 euler = default)
+        internal static GameObject Box(Transform parent, string name, Material material, Vector3 center, Vector3 size, Vector3 euler = default)
         {
             GameObject part = GameObject.CreatePrimitive(PrimitiveType.Cube);
             part.name = name;
@@ -365,7 +365,7 @@ namespace NAV.Editor
             CreatureLootSetup.AddPart(parent, PrimitiveType.Cylinder, name, _oak, center, new Vector3(0f, 0f, 90f), new Vector3(radius * 2f, length * 0.5f, radius * 2f));
         }
 
-        private static void Snap(Transform parent, string name, Vector3 position, float yaw, BuildingSnapPoint.SnapKind kind)
+        internal static void Snap(Transform parent, string name, Vector3 position, float yaw, BuildingSnapPoint.SnapKind kind)
         {
             var point = new GameObject(name);
             point.transform.SetParent(parent, false);
@@ -530,7 +530,7 @@ namespace NAV.Editor
             Snap(root, "SnapPoint_BottomR", new Vector3(1f, 0f, 0f), 0f, BuildingSnapPoint.SnapKind.Edge);
         }
 
-        private static void AddGateDoor(GameObject root)
+        internal static void AddGateDoor(GameObject root)
         {
             var door = new SerializedObject(root.AddComponent<NAV.Gameplay.Building.BuildingDoor>());
             SerializedProperty leaves = door.FindProperty("_leaves");
@@ -581,7 +581,7 @@ namespace NAV.Editor
             box.size = new Vector3(2f, 1f, 0.75f);
         }
 
-        private static Material Mat(string name, Color color, float smoothness)
+        internal static Material Mat(string name, Color color, float smoothness)
         {
             string path = $"{MaterialFolder}{name}.mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);

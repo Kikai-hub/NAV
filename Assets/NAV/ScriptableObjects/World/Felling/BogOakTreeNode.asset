@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 851ded87fbe38614ab896652bfbf621f, type: 3}
+  m_Name: BogOakTreeNode
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ResourceNodeDefinition
+  _displayName: Bog Oak
+  _drops: []
+  _hitsToDeplete: 8
+  _requiredTool: 1
+  _minToolTier: 6
+  _shrinkOnHit: 0
+  _becomesPrefab: {fileID: 2571366530556828856, guid: 0f0ba3057410d054ba31b66aa1a84bcd, type: 3}
+  _leavesBehindPrefab: {fileID: 65923968508349841, guid: 3ac618a19aadbf54588dc5c2f4ae8cd6, type: 3}
+  _fallImpulse: 500

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: CookedShellfish
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: CookedShellfish
+  _displayName: Cooked Shellfish
+  _description: Mussels cooked on the fire - light, salty food that keeps you going.
+  _icon: {fileID: 21300000, guid: be8abc76502073a41b2a48bc62612a8c, type: 3}
+  _category: 4
+  _maxStackSize: 20
+  _weight: 0.2
+  _worldPrefab: {fileID: 6793513738839201167, guid: 1620a791d57f6a64eb4057265dc59c97, type: 3}
+  _food: {fileID: 11400000, guid: 1516f97757b8ecb43af0ea06ad260332, type: 2}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}

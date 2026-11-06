@@ -13,17 +13,21 @@ MonoBehaviour:
   m_Name: LPW_axe1H5
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_axe1H5
-  _displayName: Hand Axe 5
-  _description: Hand Axe from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Black Steel Hand Axe
+  _description: A broad black steel axe - for battle, and it bites the bog oaks.
   _icon: {fileID: 21300000, guid: 134ac55645aee0245b954880f90022d1, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 3
+  _density: 2
   _worldPrefab: {fileID: 5444066385166919868, guid: cf52773aa49644647b5e305abab07901, type: 3}
   _food: {fileID: 0}
   _toolType: 1
-  _toolTier: 1
+  _toolTier: 6
   _weapon: {fileID: 11400000, guid: 7bfb62509d830424b89a673ba0a99305, type: 2}
   _heldPrefab: {fileID: 6915291377205767172, guid: c42c7d12585277f4985fa30ccccf704f, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

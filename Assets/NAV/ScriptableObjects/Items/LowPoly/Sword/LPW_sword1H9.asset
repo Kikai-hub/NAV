@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_sword1H9
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_sword1H9
-  _displayName: Sword 9
-  _description: Sword from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Black Steel Sword
+  _description: A black steel sword on a bog-oak grip.
   _icon: {fileID: 21300000, guid: 25cadb87f41b65848ac54646bdffc7a4, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 3
+  _density: 2
   _worldPrefab: {fileID: 6799391721061491958, guid: 6f53267661ba794488a9ede1e06a43d7, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: cd398ae2dbd0aac49a4c9516cc3828b8, type: 2}
   _heldPrefab: {fileID: 5141378027550586267, guid: de2f92ea5f4fff04085f21121527f88d, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

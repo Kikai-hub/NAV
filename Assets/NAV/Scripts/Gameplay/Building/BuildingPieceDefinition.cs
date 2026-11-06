@@ -35,6 +35,9 @@ namespace NAV.Gameplay.Building
         [Tooltip("The piece has a front/back that matters (roof slope, gable, carved door): when it snaps, its front (+Z) turns towards the player instead of always taking the snap point's rotation; R turns it the other way.")]
         [SerializeField] private bool _directional;
 
+        [Tooltip("Placed on the water surface (its pivot at the waterline), only where the water is deep enough - a boat.")]
+        [SerializeField] private bool _floatsOnWater;
+
         [Header("Discovery")]
         [Tooltip("Items that must also have been found before this piece shows in the build menu, on top of every cost material - for pieces made only of basic materials that shouldn't be known from the start (the charcoal kiln waits for ore).")]
         [SerializeField] private List<NAV.Gameplay.Items.ItemDefinition> _unlockItems = new();
@@ -61,6 +64,9 @@ namespace NAV.Gameplay.Building
 
         /// <summary>Snapping may turn it 180 degrees to face the way the player rotated it.</summary>
         public bool Directional => _directional;
+
+        /// <summary>Goes on the water (a boat) - see PlayerBuilding.</summary>
+        public bool FloatsOnWater => _floatsOnWater;
 
         /// <summary>Valheim's rule for pieces: known once the player has had every cost material
         /// (and every Unlock Item) - discovered is PlayerCrafting.IsDiscovered.</summary>

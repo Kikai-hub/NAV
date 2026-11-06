@@ -18,6 +18,15 @@
 
         <ui:Label name="interact-prompt" class="interact-prompt" picking-mode="Ignore" />
 
+        <ui:VisualElement name="boss-bar" class="boss-bar boss-bar--hidden" picking-mode="Ignore">
+            <ui:Label name="boss-bar-name" class="boss-bar__name" picking-mode="Ignore" />
+            <ui:VisualElement class="boss-bar__groove" picking-mode="Ignore">
+                <ui:VisualElement name="boss-bar-fill" class="boss-bar__fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:Label name="omen-message" class="omen-message" picking-mode="Ignore" />
+
         <ui:VisualElement name="stamina-bar" class="stamina-bar" picking-mode="Ignore">
             <ui:VisualElement class="stamina-bar__groove" picking-mode="Ignore">
                 <ui:VisualElement name="stamina-bar-fill" class="stamina-bar__fill" picking-mode="Ignore" />

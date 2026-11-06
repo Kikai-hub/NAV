@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_spear8
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_spear8
-  _displayName: Spear 8
-  _description: Spear from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Silver Spear
+  _description: A spear with a long silver blade.
   _icon: {fileID: 21300000, guid: e724aecd4eeea01449fcb2bc5c113e8b, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 4
+  _density: 2
   _worldPrefab: {fileID: 6864230181204406993, guid: 234558fbf118e1d4caaa3dfb1475838f, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 925a0a462a85ecf4b95623b76036d0b0, type: 2}
   _heldPrefab: {fileID: 5102072133980117639, guid: 1fe60357487c514408500e7c91f46aeb, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_hammer2H6
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_hammer2H6
-  _displayName: Warhammer 6
-  _description: Warhammer from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Silver Warhammer
+  _description: A two-handed hammer with a silver head.
   _icon: {fileID: 21300000, guid: cdb305dac68494343a452285aab7185a, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 9
+  _density: 2
   _worldPrefab: {fileID: 2706172431349904505, guid: 6ab6960cf7457ca43ad3ab61e998780a, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 623a7f4a8e8bba546a8fe0f2dd292bf6, type: 2}
   _heldPrefab: {fileID: 9077283929630128776, guid: 8fc87ac6e9c9da047b4ff2c5ff24ee10, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

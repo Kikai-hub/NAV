@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_hammer2H8
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_hammer2H8
-  _displayName: Warhammer 8
-  _description: Warhammer from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Black Steel Warhammer
+  _description: A two-handed black steel hammer.
   _icon: {fileID: 21300000, guid: 0ded456e8e5b0974b9287574ecb6d7c7, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 9
+  _density: 2
   _worldPrefab: {fileID: 3969981547370079121, guid: 3678c6bbe1715b74eb99b31c962a1577, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: 616a1244546ddd84bb68a6406652b113, type: 2}
   _heldPrefab: {fileID: 7361659321371254848, guid: a2f9190e156e46f459907733f7d948c8, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

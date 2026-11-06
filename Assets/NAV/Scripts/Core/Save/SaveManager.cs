@@ -8,6 +8,7 @@ using NAV.Gameplay.Inventory;
 using NAV.Gameplay.Items;
 using NAV.Gameplay.Player;
 using NAV.Gameplay.Survival;
+using NAV.World.Encounters;
 using NAV.World.Generation;
 using NAV.World.TimeOfDay;
 using NAV.World.Weather;
@@ -51,6 +52,8 @@ namespace NAV.Core.Save
         [SerializeField] private WorldClock _worldClock;
         [Tooltip("Optional - when assigned, the current weather and its remaining time are saved/restored.")]
         [SerializeField] private WeatherSystem _weatherSystem;
+        [Tooltip("Optional - when assigned, the forest's wrath and the Leshy's kills are saved/restored.")]
+        [SerializeField] private ForestWrath _forestWrath;
         [SerializeField] private ItemDatabase _itemDatabase;
         [SerializeField] private BuildingPieceDatabase _buildingPieceDatabase;
         [Tooltip("How often this world autosaves into its own save slot (overwriting the previous autosave, never creating a second file).")]
@@ -187,6 +190,10 @@ namespace NAV.Core.Save
             }
 
             ApplyBuildings(data.Buildings);
+            if (_forestWrath != null)
+            {
+                _forestWrath.Restore(data.ForestWrath, data.LeshyDefeats, data.LeshyCooldownSeconds);
+            }
 
             SaveSystem.CurrentSaveId = data.SaveId;
             SaveSystem.CurrentSeed = data.WorldSeed;
@@ -308,7 +315,8 @@ namespace NAV.Core.Save
         /// Main Menu" (and any future manual Save button) can trigger the same thing on demand.</summary>
         public void Autosave()
         {
-            if (string.IsNullOrEmpty(SaveSystem.CurrentSaveId))
+            // A guest in someone else's online world doesn't save it (the host does).
+            if (string.IsNullOrEmpty(SaveSystem.CurrentSaveId) || SaveSystem.SavingSuspended)
             {
                 return;
             }
@@ -325,7 +333,10 @@ namespace NAV.Core.Save
                 WeatherRemainingSeconds = _weatherSystem != null ? _weatherSystem.RemainingSeconds : 0f,
                 Player = BuildPlayerData(),
                 Buildings = BuildBuildingsData(),
-                DepletedResourceIds = _worldGenerator.GetDepletedResourceIds()
+                DepletedResourceIds = _worldGenerator.GetDepletedResourceIds(),
+                ForestWrath = _forestWrath != null ? _forestWrath.Wrath : 0f,
+                LeshyDefeats = _forestWrath != null ? _forestWrath.Defeats : 0,
+                LeshyCooldownSeconds = _forestWrath != null ? _forestWrath.CooldownSeconds : 0f
             };
 
             SaveSystem.Save(data);

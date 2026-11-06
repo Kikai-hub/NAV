@@ -20,6 +20,8 @@ namespace NAV.Gameplay.Items
 
         [Header("Physical")]
         [SerializeField] private float _weight;
+        [Tooltip("Relative to water, for a dropped item: < 1 floats (wood, charcoal), > 1 sinks slowly (stone, ore, metal).")]
+        [SerializeField, Min(0.05f)] private float _density = 2f;
 
         [Header("World")]
         [SerializeField] private GameObject _worldPrefab;
@@ -43,6 +45,16 @@ namespace NAV.Gameplay.Items
         [Tooltip("Optional. Assign to make this item wearable armour (its slot, armour value and worn models) - see PlayerEquipment.")]
         [SerializeField] private ArmorDefinition _armor;
 
+        [Header("Remedy")]
+        [Tooltip("Drinking it ends poisoning (PlayerPoison) - an antidote. Not food: takes no food slot.")]
+        [SerializeField] private bool _curesPoison;
+        [Tooltip("Seconds after drinking during which no poison takes hold.")]
+        [SerializeField, Min(0f)] private float _poisonImmunitySeconds;
+
+        [Header("Ammunition")]
+        [Tooltip("Optional. Makes this item an arrow a bow can loose (PlayerArchery takes it from the inventory).")]
+        [SerializeField] private AmmoDefinition _ammo;
+
         public string Id => _id;
         public string DisplayName => _displayName;
         public string Description => _description;
@@ -50,6 +62,7 @@ namespace NAV.Gameplay.Items
         public ItemCategory Category => _category;
         public int MaxStackSize => _maxStackSize;
         public float Weight => _weight;
+        public float Density => _density;
 
         /// <summary>
         /// Prefab instantiated when this item is dropped into the world (must carry an
@@ -76,6 +89,14 @@ namespace NAV.Gameplay.Items
         /// <summary>Armour stats, or null if this item isn't worn.</summary>
         public ArmorDefinition Armor => _armor;
         public bool IsArmor => _armor != null;
+
+        /// <summary>An antidote: drunk from the inventory, cures poison (PlayerPoison).</summary>
+        public bool IsAntidote => _curesPoison;
+        public float PoisonImmunitySeconds => _poisonImmunitySeconds;
+
+        /// <summary>Arrow stats, or null if this isn't ammunition.</summary>
+        public AmmoDefinition Ammo => _ammo;
+        public bool IsAmmo => _ammo != null;
 
         private void OnValidate()
         {

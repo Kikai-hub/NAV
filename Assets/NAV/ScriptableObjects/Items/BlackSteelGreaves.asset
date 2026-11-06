@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: BlackSteelGreaves
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: BlackSteelGreaves
+  _displayName: Black Steel Greaves
+  _description: Black steel shin and knee guards over mail leggings.
+  _icon: {fileID: 21300000, guid: 08c80ff71898ae345b48bb3fc669fd1a, type: 3}
+  _category: 3
+  _maxStackSize: 1
+  _weight: 6.5
+  _density: 2
+  _worldPrefab: {fileID: 5720230050131911816, guid: 80e6eac59c5993d47b09f2836a266aba, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 11400000, guid: 55b22d0e46a9685498841128b79e385a, type: 2}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

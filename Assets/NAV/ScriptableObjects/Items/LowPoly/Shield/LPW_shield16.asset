@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_shield16
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_shield16
-  _displayName: Shield 16
-  _description: Shield from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Silver Shield
+  _description: A kite shield rimmed with silver, a charm-stone at its heart.
   _icon: {fileID: 21300000, guid: 3df110a7960c78e4e9e63342314701e7, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 6
+  _density: 2
   _worldPrefab: {fileID: 8769437693222028682, guid: 500e48847bba5c446bec1c107f0e1cc3, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: da268841036aa774c98236a8d1e8322e, type: 2}
   _heldPrefab: {fileID: 6026560304408931675, guid: 8eda156b662c4644abaca9fdab221021, type: 3}
   _heldInLeftHand: 1
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

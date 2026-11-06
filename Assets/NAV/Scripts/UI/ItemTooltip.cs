@@ -114,6 +114,11 @@ namespace NAV.UI
                 return "Right-click to eat";
             }
 
+            if (item.IsAntidote)
+            {
+                return "Right-click to drink - cures poison";
+            }
+
             return item.IsArmor || item.IsEquippable ? "Right-click to equip" : null;
         }
 

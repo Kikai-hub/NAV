@@ -23,6 +23,8 @@ namespace NAV.Presentation.Animation
                 case WeaponAttackStyle.TwoHanded: return 2;
                 case WeaponAttackStyle.Polearm: return 3;
                 case WeaponAttackStyle.Shield: return 2;
+                // Bows aren't swung - drawn and loosed (PlayerArchery, the Bow Load/Hold/Release states).
+                case WeaponAttackStyle.Bow: return 0;
                 default: return 1;
             }
         }

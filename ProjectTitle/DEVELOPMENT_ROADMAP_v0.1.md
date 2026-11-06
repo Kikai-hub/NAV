@@ -157,16 +157,17 @@ system.
 
 -   [x] Seed system
 -   [x] Deterministic random
--   [x] Terrain generation (one Unity Terrain, 2560 x 2560 m since 2026-10-25; everything on it streams in 64 m chunks around the player - see PROJECT_STATE.md 2026-10-25)
--   [x] Ocean (sea-level water plane placeholder, no waves/shader)
+-   [x] Terrain generation (2026-10-25: hybrid world, radius 15 km - square terrain tiles 512 m computed on worker threads around the player, see PROJECT_STATE.md "Hybrid world in the game"; before that one Unity Terrain 2560 m)
+-   [x] Ocean (2026-10-25: real waves - Gerstner waves shared by the shader and gameplay (NAV.Core.WaveField), LOD ocean mesh around the camera (OceanSurface), sea state from the weather, boats/swimming/floating items ride the waves (WaterBuoyancy); no underwater view yet)
 -   [x] Plains
 -   [x] Forest (ground texture only - no distinct vegetation/trees yet, see PROJECT_STATE.md)
 -   [x] Birch grove (2026-10-22 - see Stage B below)
 -   [x] Dense forest (2026-10-24 - the wettest heart of each forest: ancient trees 18-27 m with closed crowns, old oaks, copper; see Stage C)
+-   [x] **Hybrid world, radius 15 km (2026-10-25, in the game).** `World/Generation/Hybrid/` + `TerrainTiles`: two-layer noise (continents + detail), mask 0-3% solid core / 3-80% archipelago (land threshold rising outwards, big islands with mountains near the core, islets near the rim) / 80-100% deep ocean, radial climate bands with noisy borders, polar caps north (permafrost) and south (desert), height biomes (mountains on the peaks of the core and the big islands, swamps in island lowlands), POIs per chunk. Preview: NAV > World > Hybrid World > Render Preview Map. Mountains, Swamp, Permafrost, Desert are placeholder biomes (ground texture only) until their tiers.
 -   [ ] Resource distribution
 -   [ ] Vegetation distribution
 -   [x] Spawn regions (dry/flat player spawn point per seed + respawn there; creatures per biome, 30 m away from it - 2026-10-15)
--   [ ] Points of interest
+-   [~] Points of interest (2026-10-25: PoiDefinition + PoiPlacer, spawned with their chunk, trees kept clear; kinds and prefabs are placeholders from primitives - Ruins, Shrine, Shipwreck, Boss arena slot (empty, no boss))
 
 ------------------------------------------------------------------------
 
@@ -240,8 +241,10 @@ Wolf).
 
 -   [ ] Real models + animations for the boar and the wolf (2026-10-21: the
     boar is now a Deer and the wolf a Tiger stand-in from the ithappy Animals
-    pack - idle/walk/run clips, attack lunge and death roll procedural. Still
-    to do: a real wolf model, attack/hit/death animations, creature sounds)
+    pack - idle/walk/run clips, attack lunge procedural. Since 2026-11-06 every
+    creature and the player die into a physics ragdoll (CLAUDE.md "Death Rule",
+    NAV > Animation > Build Ragdolls). Still to do: a real wolf model,
+    attack/hit animations, creature sounds)
 -   [x] Line-of-sight perception; wolf packs; more dangerous night creatures
     (Done 2026-10-22 - field of view 220 deg + raycast, hears within 3 m,
     wolves alert packmates within 15 m; NightCount per biome spawn entry.
@@ -305,7 +308,12 @@ later biomes and bosses.
         old oaks and copper ore moved here only; many wolves. Also forest and
         birch-grove trees x2.5. Still to do: gloom under the crowns
         (per-biome fog/light), its own creatures, boss slot)
-    -   [ ] Sea islands (tier 3) + boat, then the rest
+    -   [x] Sea islands (tier 3) + boat (Done 2026-10-25 - round world in an endless sea, islands in the outer coastal band, tin only there, driftwood, shellfish, the ladya boat; see PROJECT_STATE.md)
+    -   [x] World ~20x: hybrid world radius 15 km, terrain tiles around the player, biome by per-point noise (Done 2026-10-25 - see Phase 9 and PROJECT_STATE.md)
+    -   [x] Swamp (tier 4) - first part done 2026-10-25; bare dead trees (primitives) (NAV > World > Build Swamp (Tier 4)): dead trees, sunken logs -> Bog Wood, reeds, hummocks, fog and sound, bog iron only here, Bog Lurker with a poisonous bite (PlayerPoison, green health bar). Bow and arrows done 2026-10-25 (Hunting Bow + wood/flint/iron arrows, Human Archer Animations FREE clips and models, PlayerArchery). Part 2 done 2026-10-25 (NAV > Build > Build Swamp Iron Age (Tier 4)): iron hinges, Iron-Bound Gate, Stake Trap, wild rosemary -> Antidote, boss 4 arena slot (empty). Still to do: real models (MODELS_FOR_3D_ARTIST 7.7), the boss itself (not designed)
+    -   [x] Mountains (tier 5) (Done 2026-10-25 - NAV > World > Build Mountains (Tier 5)): cold (PlayerCold, HeatSource, armour warmth), Snowy Peaks above 175 m, silver ore -> Smelting Furnace -> silver tools/weapons/armour (x1.5 vs the unclean), Snow Leopard -> Fur -> Loom -> Fur Hood / Fur Cloak (Cloak slot), boss 5 arena slot (empty), spawn only in the starting biome. Still to do: rockfalls, the boss itself, real models (MODELS_FOR_3D_ARTIST 7.8)
+    -   [x] Black Forest (tier 6) (Done 2026-11-06 - NAV > World > Build Black Forest (Tier 6), then Build Armour + Build Pack Weapon Recipes): own climate band 0.5-0.6 of the radius, eternal dusk (BiomeDefinition.Twilight dims the daylight), bog oaks (black steel axe) + deadfall (silver axe) -> bog oak charcoal, black ore -> black iron -> black steel bar at the Forge level 6 (Quench Tub), Carved Table = Workbench 5 with the bog-oak set (wall, carved pillar, carved arch, tent roof, black gate), black steel tools / 9 weapons / armour 7-12-7, Volkolak (нечисть, packs) + Volkolak Cloak, boss 6 arena slot (empty). Still to do: watchtowers, more terem pieces (multi-storey walls, carved porches), the boss itself, real models (MODELS_FOR_3D_ARTIST 7.9)
+    -   [ ] Then the rest (tier 7+)
 
 -   [x] Ores, smelter, bars; leather/bone processing (Phase 13 "Expand
     resources") (Done 2026-10-24 -
@@ -333,6 +341,7 @@ unlock.
 
 -   [ ] Boss framework built and proven on **one placeholder boss**: altar,
     ritual items, arena, phases, reward, unlock of the next tier
+-   [~] Boss 1 - the **Leshy** (developer's design, 2026-11-06): done - no altar, comes by the wrath of the forest + chance (ForestWrath), peaceful until provoked while the forest isn't angry, Slam/Sweep/rage roar, foot IK, ragdoll, Leshy Heartwood gates the Stone Pickaxe, HUD bar, saved wrath. Left: sounds and slam dust/shake, multiplayer sync, balance after playtests (NAV > Bosses > Build Leshy Boss)
 -   [ ] Real bosses (7--10, some from Slavic mythology, some original) -
     only once the developer designs them (bosses are NOT FINALIZED); then
     roughly one per progression tier
@@ -393,8 +402,8 @@ Only after the underlying progression is stable.
 -   [ ] Summoning altar
 -   [ ] Ritual items
 -   [ ] Boss arenas
--   [ ] Boss AI extensions
--   [ ] Boss phases
+-   [~] Boss AI extensions (ICreatureAttack, BossActor, Creature.SpeedMultiplier/TurnSpeed - 2026-11-06, Leshy)
+-   [~] Boss phases (Leshy: rage at 50% HP)
 -   [ ] Boss rewards
 -   [ ] Progression unlocks
 -   [ ] 7--10 final bosses over the full production cycle
@@ -407,18 +416,21 @@ Only after the underlying progression is stable.
 
 Target: 1--4 player cooperative multiplayer.
 
--   [ ] Choose networking technology
--   [ ] Define authority model
--   [ ] Network player state
--   [ ] Network inventory
--   [ ] Network combat
--   [ ] Network creatures
--   [ ] Network construction
--   [ ] Network containers
+Started 2026-11-06 at the developer's request (see PROJECT_STATE.md Change Log "Multiplayer").
+
+-   [x] Choose networking technology (Photon PUN 2, fixed region "eu")
+-   [x] Define authority model (each player owns their character - hits go to the owner; each machine runs the creatures around its player, nearby players share the lower actor's set; world changes as cached events)
+-   [x] Network player state (proxy avatars: position, animator, equipment, health, death ragdoll, name tag)
+-   [ ] Network inventory (each player keeps their own; dropped items / pickups not synced yet)
+-   [x] Network combat (PvP rooms: hits sent to the owner's PlayerCombat with block/parry/armour; PvE: no player damage)
+-   [x] Network creatures (copies of the owner's creatures; hits to the owner; loot on the killer's machine)
+-   [x] Network construction (build / demolish; doors and station processing not yet)
+-   [ ] Network containers (chest contents)
 -   [ ] Network boats
--   [ ] Network save/load
--   [ ] Host/join flow
--   [ ] Disconnect/reconnect handling
+-   [ ] Network save/load (the host saves the world incl. guests' builds; guests' characters not saved; online worlds are new-only - no "load save online" yet)
+-   [x] Host/join flow (Multiplayer window: server list, room + password, double click to join; Create World: Online, room, password, PvE/PvP)
+-   [ ] Disconnect/reconnect handling (leaving returns to... the game keeps running offline; host migration keeps the room)
+-   [x] Chat (Enter)
 
 ------------------------------------------------------------------------
 

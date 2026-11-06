@@ -447,6 +447,7 @@ GameObject:
   - component: {fileID: 2355819755746586873}
   - component: {fileID: 8008596140334911545}
   - component: {fileID: 7262105364232006816}
+  - component: {fileID: 5338157941491189758}
   m_Layer: 0
   m_Name: Forge
   m_TagString: Untagged
@@ -538,6 +539,19 @@ MonoBehaviour:
   _volume: 0.6
   _minDistance: 1.5
   _maxDistance: 22
+--- !u!114 &5338157941491189758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5314459184244811301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40c9b8a49669230408f3121cb78cf3ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Environment.HeatSource
+  _radius: 4
 --- !u!1 &5926754236548063284
 GameObject:
   m_ObjectHideFlags: 0

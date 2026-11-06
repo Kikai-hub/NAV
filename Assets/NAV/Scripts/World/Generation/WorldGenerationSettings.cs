@@ -51,7 +51,24 @@ namespace NAV.World.Generation
         [SerializeField] private BiomeDefinition _denseForestBiome;
         [SerializeField, Range(0f, 1f)] private float _denseForestMoistureThreshold = 0.68f;
 
+        [Header("Ocean and Islands (tier 3)")]
+        [Tooltip("Width (m) of the coastal band along the map edge in which the land slopes down into the open sea. 0 = no sea around the map.")]
+        [SerializeField, Min(0f)] private float _oceanBorder = 420f;
+        [Tooltip("The outermost metres of the map are always deep sea.")]
+        [SerializeField, Min(0f)] private float _deepSeaEdge = 110f;
+        [Tooltip("How far below sea level (0-1 of Max Height) the open sea floor lies.")]
+        [SerializeField, Range(0f, 0.5f)] private float _deepSeaDepth = 0.12f;
+        [Tooltip("Optional. Islands rising out of the open sea become this biome (sea islands, tier 3).")]
+        [SerializeField] private BiomeDefinition _islandBiome;
+        [SerializeField] private float _islandNoiseScale = 85f;
+        [Tooltip("Island noise above this raises an island; higher = fewer, smaller islands.")]
+        [SerializeField, Range(0f, 1f)] private float _islandThreshold = 0.6f;
+        [Tooltip("How high (0-1 of Max Height) above the sea the island tops rise.")]
+        [SerializeField, Range(0f, 0.5f)] private float _islandHeight = 0.14f;
+
         [Header("Grass and Flowers (terrain details)")]
+        [Tooltip("Small editor-made TerrainData every terrain tile is cloned from (NAV > World > Hybrid World > Create Tile Terrain Base). new TerrainData() draws grass as white quads in player builds.")]
+        [SerializeField] private TerrainData _tileBaseData;
         [Tooltip("Grass blade textures (white-ish masks with alpha), painted as waving terrain grass by each biome's Grass Density - each grass cell picks one at random, tinted between Healthy and Dry colour.")]
         [SerializeField] private Texture2D[] _grassTextures = new Texture2D[0];
         [SerializeField] private Color _grassHealthyColor = new(0.32f, 0.52f, 0.16f);
@@ -84,7 +101,15 @@ namespace NAV.World.Generation
         public float GroveNoiseScale => _groveNoiseScale;
         public float GroveThreshold => _groveThreshold;
         public BiomeDefinition DenseForestBiome => _denseForestBiome;
+        public float OceanBorder => _oceanBorder;
+        public float DeepSeaEdge => _deepSeaEdge;
+        public float DeepSeaDepth => _deepSeaDepth;
+        public BiomeDefinition IslandBiome => _islandBiome;
+        public float IslandNoiseScale => _islandNoiseScale;
+        public float IslandThreshold => _islandThreshold;
+        public float IslandHeight => _islandHeight;
         public float DenseForestMoistureThreshold => _denseForestMoistureThreshold;
+        public TerrainData TileBaseData => _tileBaseData;
         public Texture2D[] GrassTextures => _grassTextures;
         public Color GrassHealthyColor => _grassHealthyColor;
         public Color GrassDryColor => _grassDryColor;

@@ -10,9 +10,12 @@ namespace NAV.Presentation.Animation
     /// 0 = walk .. 1 = run) - the movement itself stays the NavMeshAgent's, the model only shows it:
     ///  - Vert/State follow the agent's real speed, and the playback speed is scaled so the feet
     ///    match the ground (Walk/Run Clip Speed = how fast each clip moves at this model's scale);
-    ///  - the pack has no attack/death clips, so those are procedural: an attack is a short lunge
-    ///    of the model toward the target (Creature.AttackPerformed), death rolls the model onto
-    ///    its side and freezes the Animator (Creature.Died).
+    ///  - the pack has no attack clips, so an attack is a procedural lunge of the model toward the
+    ///    target (Creature.AttackPerformed);
+    ///  - death (Creature.Died) hands the body to its Ragdoll (CLAUDE.md "Death Rule"): it keeps
+    ///    the speed it had and falls away from the killing blow. Activated a frame later, so the
+    ///    blow's direction (ReactToHit comes after TakeDamage) is known. Without a Ragdoll the
+    ///    old fallback rolls the model onto its side - add the prefab to Build Ragdolls instead.
     /// Presentation only - HitFeedback leaves the death fall of such a creature to this.
     /// </summary>
     public class CreatureAnimator : MonoBehaviour
@@ -41,6 +44,10 @@ namespace NAV.Presentation.Animation
         [SerializeField] private float _lungePitch = 8f;
 
         [Header("Death")]
+        [Tooltip("The body's ragdoll (NAV > Animation > Build Ragdolls). Empty = the old side roll.")]
+        [SerializeField] private Ragdoll _ragdoll;
+        [Tooltip("Speed (m/s) the killing blow pushes the corpse with, away from the attacker.")]
+        [SerializeField, Min(0f)] private float _deathPush = 2.5f;
         [SerializeField, Min(0.05f)] private float _deathRollSeconds = 0.6f;
 
         private NavMeshAgent _agent;
@@ -54,6 +61,8 @@ namespace NAV.Presentation.Animation
         private float _deathRolled;
         private float _halfWidth;
         private float _rollSide = 1f;
+        private Vector3 _lastVelocity;
+        private bool _ragdollPending;
 
         private void Awake()
         {
@@ -104,6 +113,13 @@ namespace NAV.Presentation.Animation
             _dead = true;
             _deathStart = Time.time;
             _lungeStart = -1f;
+            if (_ragdoll != null)
+            {
+                // The pose of the moment (mid-lunge too) goes into the ragdoll - next frame.
+                _ragdollPending = true;
+                return;
+            }
+
             _model.localPosition = _modelBasePosition;
             _model.localRotation = _modelBaseRotation;
             _rollSide = Random.value < 0.5f ? -1f : 1f;
@@ -116,7 +132,16 @@ namespace NAV.Presentation.Animation
         {
             if (_dead)
             {
-                TickDeath();
+                if (_ragdollPending)
+                {
+                    _ragdollPending = false;
+                    _ragdoll.Activate(_lastVelocity, _creature.LastHitDirection * _deathPush);
+                }
+                else if (_ragdoll == null)
+                {
+                    TickDeath();
+                }
+
                 return;
             }
 
@@ -126,8 +151,11 @@ namespace NAV.Presentation.Animation
 
         private void TickLocomotion()
         {
-            Vector3 velocity = _agent != null && _agent.enabled ? _agent.velocity : Vector3.zero;
+            // A network copy has no agent - its owner reports the speed.
+            Vector3 velocity = _creature.IsRemoteCopy ? _creature.RemoteVelocity
+                : _agent != null && _agent.enabled ? _agent.velocity : Vector3.zero;
             velocity.y = 0f;
+            _lastVelocity = velocity;
             float speed = velocity.magnitude;
             bool moving = speed > 0.1f;
 

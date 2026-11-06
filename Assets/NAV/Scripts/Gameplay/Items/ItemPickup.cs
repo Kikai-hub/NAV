@@ -80,6 +80,14 @@ namespace NAV.Gameplay.Items
             if (_definition != null && TryGetComponent(out Rigidbody rb))
             {
                 rb.mass = Mathf.Max(0.1f, _definition.Weight);
+
+                // In water it floats or sinks by its material (ItemDefinition.Density).
+                if (!TryGetComponent(out NAV.Gameplay.Environment.WaterBuoyancy buoyancy))
+                {
+                    buoyancy = gameObject.AddComponent<NAV.Gameplay.Environment.WaterBuoyancy>();
+                }
+
+                buoyancy.Density = _definition.Density;
             }
         }
 

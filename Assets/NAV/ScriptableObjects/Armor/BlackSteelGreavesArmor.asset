@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a40f6099767e044ba161169a6a55ba, type: 3}
+  m_Name: BlackSteelGreavesArmor
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.ArmorDefinition
+  _slot: 2
+  _armor: 7
+  _warmth: 0
+  _wornParts:
+  - _bone: 2
+    _prefab: {fileID: 1992096638364271278, guid: d7521e63704cba944b339da429c073bc, type: 3}
+  - _bone: 3
+    _prefab: {fileID: 4839276735193878149, guid: f0c5c81fbaf4c514f964fb49d0a21eb9, type: 3}
+  - _bone: 4
+    _prefab: {fileID: 5237165550252606076, guid: f0edabae0dcb46b4b98a7c1696895f10, type: 3}
+  - _bone: 5
+    _prefab: {fileID: 2441035065608497753, guid: 5b4b3b89e57f21e46989862b2e176b2b, type: 3}

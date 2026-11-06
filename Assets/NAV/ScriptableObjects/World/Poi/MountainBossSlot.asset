@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad40584356958c049984cad76544c6e8, type: 3}
+  m_Name: MountainBossSlot
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Generation.Hybrid.PoiDefinition
+  _id: MountainBossSlot
+  _displayName: Boss arena slot - tier 5 (Mountains)
+  _prefab: {fileID: 1736998184909746947, guid: be8725c2940cbb742947005ca3717124, type: 3}
+  _mapColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+  _count: 1
+  _priority: 20
+  _allowedBiomes:
+  - {fileID: 11400000, guid: 8d8f0bdd8cc522b46986b8dde28e5236, type: 2}
+  - {fileID: 11400000, guid: e5bfdd4f969fed246a4d7f19e3a21ae3, type: 2}
+  _requiresLand: 1
+  _heightRange: {x: 100, y: 10000}
+  _radialRange: {x: 0, y: 0.85}
+  _exclusionRadius: 600
+  _sameKindRadius: 0
+  _clearRadius: 16

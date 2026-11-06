@@ -19,11 +19,11 @@ namespace NAV.Editor
     /// </summary>
     internal static class CreatureModelSetup
     {
-        private const string PackPrefabs = "Assets/ithappy/Animals_FREE/Prefabs/";
+        internal const string PackPrefabs = "Assets/ithappy/Animals_FREE/Prefabs/";
         private const string CreaturePrefabs = "Assets/NAV/Prefabs/Creatures/";
         private const string CreatureDefinitions = "Assets/NAV/ScriptableObjects/Creatures/";
 
-        private struct Animal
+        internal struct Animal
         {
             public string Prefab;
             public string Definition;
@@ -95,7 +95,7 @@ namespace NAV.Editor
             Debug.Log("CreatureModelSetup: Tiger (Forest Wolf) and Deer models applied.");
         }
 
-        private static void ConfigureDefinition(string path, Animal animal)
+        internal static void ConfigureDefinition(string path, Animal animal)
         {
             var definition = AssetDatabase.LoadAssetAtPath<CreatureDefinition>(path);
             if (definition == null)
@@ -117,7 +117,7 @@ namespace NAV.Editor
             EditorUtility.SetDirty(definition);
         }
 
-        private static void BuildPrefab(string path, Animal animal)
+        internal static void BuildPrefab(string path, Animal animal)
         {
             GameObject root = PrefabUtility.LoadPrefabContents(path);
             try

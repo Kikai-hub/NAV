@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03c65689563f32a86fba83b1bfea7e4, type: 3}
+  m_Name: VolkolakCloakRecipe
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Crafting.RecipeDefinition
+  _displayName: 
+  _ingredients:
+  - _item: {fileID: 11400000, guid: f918b7147a9a299479b259b6aeb4bc91, type: 2}
+    _amount: 3
+  - _item: {fileID: 11400000, guid: 80172acca73ff63458f0fa61869134c3, type: 2}
+    _amount: 2
+  _outputItem: {fileID: 11400000, guid: 69cf4867ff5982d4b808e4bed3925014, type: 2}
+  _outputAmount: 1
+  _station: {fileID: 11400000, guid: 88076d6efe864874a13bb414e213afdb, type: 2}
+  _requiredWorkbenchTier: 4

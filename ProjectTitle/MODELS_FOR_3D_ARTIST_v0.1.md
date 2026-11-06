@@ -455,6 +455,62 @@ Iron splinted greaves with knee cops
 
 ---
 
+### 7.6 Морские острова (тир 3) — P1
+
+| Объект | Сейчас | Размер / привязка | Промт (+ стилевой блок) |
+|---|---|---|---|
+| **Ладья** — `Ladya` (лодка) | **примитивы** (P1) | ~6 × 1.8 м, мачта ~4 м; pivot — **на ватерлинии** в центре; место гребца в середине; трюм-сундук у кормы — **отдельный объект** | `Old Slavic ladya boat: clinker-built wooden hull 6 m, raised bow and stern, carved horse-head prow, single mast with a square red-and-white striped sail, oars, a small chest at the stern` |
+| **Плавник** — `Driftwood` | бревно Wood Pack, выбеленное (P1) | 2.6 × 0.4 м, лежит на песке, pivot в центре | `Bleached grey driftwood log lying on a beach, smooth weathered wood, broken branch stubs` |
+| **Ракушки** — `Shellfish` (предмет на земле) | **примитивы** (P1) | ~0.25 м | `Small cluster of dark blue mussels with pearly insides` |
+| **Жареные ракушки** — `CookedShellfish` | **примитивы** (P1) | ~0.25 м | `Cooked mussels, shells open, orange meat` |
+
+### 7.7 Топь (тир 4) — P1
+
+| Объект | Сейчас | Размер / привязка | Промт (+ стилевой блок) |
+|---|---|---|---|
+| **Сухостой (мёртвое дерево без листвы)** — `DeadTree_A`, `DeadTree_B`, `DeadTree_C` | **примитивы**: кривой ствол из цилиндров, голые сучья с развилками, обломанная верхушка (P1) | 4–11 м, pivot у корня; рубится любым топором за 4 удара (без падения ствола) → дерево + пень | `Dead leafless tree standing in a bog: grey crooked trunk with a snapped-off top, bare twisted branches, peeling bark, moss at the base; 3 variants (tall straight, forked, short bent)` |
+| **Топляк** — `SunkenLog` | бревно Wood Pack, чёрное (P1) | 3.2 × 0.55 м, наполовину в грязи, pivot в центре; рубится бронзовым топором и лучше | `Black waterlogged log half sunk in swamp mud, slimy bark, moss and duckweed on it` |
+| **Болотное дерево** — `BogWood` (предмет на земле) | **примитивы** (P1) | ~0.5 м чурбак | `Short piece of black resinous bog oak, dark red-brown cut face with resin drops` |
+| **Камыш с рогозом** — `Reeds` (декор) | **примитивы**: палочки и капсулы (P1) | куст ~1 м в ширину, 1.1–2 м высотой | `Clump of swamp reeds and cattails, thin green and straw-yellow stalks, brown cattail heads` |
+| **Кочка** — `Hummock` (декор) | **примитивы** (P1) | ~0.9 × 0.4 м | `Mossy swamp tussock with a tuft of sedge on top` |
+| **Охотничий лук** — `HuntingBow` | лук из пака Kevin Iglesias *Human Archer Animations FREE* (P2 — модель хорошая, заменить при желании на древнерусский) | ~1.9 м; **риг лука из пака**: кости `B-bowLimb01/02`, концы `B-bowTip01/02`, `B-nockPoint`, точка полного натяжения `AnchorPoint`; держится в `B-handProp.L` | `Old Slavic composite recurve bow of black bog oak, horn tips, leather-wrapped grip, carved knotwork on the limbs` |
+| **Стрелы** — `WoodArrow`, `FlintArrow`, `IronArrow` | стрела из того же пака, перекрашена по виду (P2) | 1 м по +Y (хвост в 0, остриё вверху), в игре ×0.8 | `Three arrows side by side: fire-hardened wooden point, knapped flint head, forged iron bodkin; birch shafts, grey goose fletching` |
+| **Окованные ворота** — `IronBoundGate` (постройка) | **примитивы** (P1) | 4.7 × 2.85 м, две створки на шарнирах (`HingeL/HingeR` — оси вращения у столбов), pivot снизу по центру | `Heavy Old Slavic double gate of black bog oak planks, three wrought-iron bands, rows of iron studs, long strap hinges, iron caps on the posts` |
+| **Ловушка с кольями** — `StakeTrap` (постройка) | **примитивы** (P1) | 2 × 2 м, колья ~0.8 м; ничего твёрдого — звери ходят по ней | `Square frame of dark logs bristling with sharpened stakes, iron-tipped, leaning outwards` |
+| **Багульник** — `WildRosemary` (растёт в Топи, подбирается) | **примитивы** (P1) | ~0.25 м | `Small marsh shrub (wild rosemary / Labrador tea): leathery dark-green leaves, clusters of tiny white flowers` |
+| **Противоядие** — `Antidote` | **примитивы** (P1) | ~0.2 м | `Small round clay flask with a cork, a sprig of herbs tied to the neck` |
+| **Железная петля** — `IronHinge` | **примитивы** (P1) | ~0.3 м | `Wrought-iron strap hinge with a pin` |
+| **Болотная тварь** — `BogLurker` (существо) | собака ithappy, перекрашена в болотно-зелёный (P1) | ~1.3 м длиной, ~1 м в холке; Generic-риг, анимации как у зверей (§9.2) + укус с ядом | `Fairy-tale Slavic swamp beast: low lanky dog-like creature with slimy olive-green skin, matted reeds and moss on its back, glowing yellow eyes, venomous fangs` |
+
+### 7.8 Горы (тир 5) — P1
+
+| Объект | Сейчас | Размер / привязка | Промт (+ стилевой блок) |
+|---|---|---|---|
+| **Снежный барс** — `SnowLeopard` (существо) | тигр ithappy с бледной перекрашенной текстурой (P1) | ~1.8 м длиной; Generic-риг, анимации как у зверей (§9.2) | `Snow leopard: long thick pale-grey fur with dark rosettes, very long fluffy tail, powerful low build` |
+| **Серебряная жила** — `SilverOre_Rock` | **примитивы**: камень с серебристыми гранями (P1) | ~1.5 м; добывается железной киркой и лучше | `Grey mountain rock with veins of native silver and frost on it` |
+| **Серебряная руда / слиток** — `SilverOre`, `SilverBar` | **примитивы** (P1) | ~0.3 м | `Lump of silver ore in grey rock; a small cast silver ingot` |
+| **Мех** — `Fur` | **примитивы**: шкура с пятнами (P1) | ~0.35 м | `Folded snow-leopard pelt, pale fur with dark spots` |
+| **Плавильный горн** — `SmeltingFurnace` (постройка, улучшение кузницы) | **примитивы**: ярусная глиняная печь (P1) | ~1.4 × 3 м | `Tall Old Slavic clay smelting furnace with a stone base, bellows port and a chimney, glowing mouth` |
+| **Ткацкий станок** — `Loom` (постройка, улучшение верстака) | **примитивы**: рама с нитями (P1) | ~1.3 × 1.6 м | `Upright wooden warp-weighted loom with clay weights and a half-woven cloth` |
+| **Меховой капюшон / плащ** — `FurHood`, `FurCloak` | **примитивы** на кости персонажа (P1) | плащ — новый слот Cloak, крепится к груди/плечам | `Deep fur hood; heavy fur cloak with a bronze clasp, pale spotted fur` |
+| **Серебряный доспех** — `SilverHelm`, `SilverCuirass`, `SilverGreaves` | **примитивы** поверх кольчуги (P1) | как железный набор | `Old Rus silver-faced armour: tall helm with nose guard and aventail, scale cuirass, greaves` |
+| **Серебряное оружие и инструменты** | модели пака LowPoly, посеребрённый материал (P2) | как у прочих тиров | — |
+
+### 7.9 Чернолесье (тир 6) — P1
+
+| Объект | Сейчас | Размер / привязка | Промт (+ стилевой блок) |
+|---|---|---|---|
+| **Волколак** — `Volkolak` (существо, нечисть) | тигр ithappy, текстура перекрашена в чёрный с красными отметинами (P1) | ~2.4 м длиной, крупнее волка; Generic-риг, анимации как у зверей (§9.2) | `Volkolak, a Slavic werewolf-beast: huge black wolf with a hunched back, ragged mane, glowing ember eyes, faint red scars` |
+| **Морёный дуб** — `BogOak_WoodNode` + стадии рубки (`BogOakFallen`, `BogOakLog`, `BogOakStump`) | дуб NSK tree03 с почти чёрной корой и серо-оливковой кроной (P1) | как старый дуб, спавн ×1.5–2.1; стадии — как у дуба (§7.2) | `Ancient blackened oak, bark black as coal, twisted limbs, sparse dead grey-olive leaves` |
+| **Бурелом морёного дуба** — `BogOakDeadfall` | бревно пака + ветки, чёрный материал (P1) | ~3.4 м, лежит на земле | `Fallen black oak boughs half sunk in moss` |
+| **Чёрная жила** — `BlackOre_Rock` | **примитивы**: тёмный камень с чёрно-красными гранями (P1) | ~1.5 м; серебряной киркой и лучше | `Dark rock with veins of black metal and a dull red glint` |
+| **Ресурсы** — `BlackOre`, `BlackIron`, `BogOakWood`, `BogOakKnots`, `BogOakCharcoal`, `BlackSteelBar`, `VolkolakPelt` | **примитивы** (P1) | ~0.3 м | `Black ore lump; spongy black iron bloom; black oak planks; twisted black knots; glossy black charcoal; black steel ingot; coarse black pelt with red marks` |
+| **Закалочный чан** — `QuenchTub` (улучшение кузницы → 6) | **примитивы**: бочка с тёмной водой и клещами (P1) | ~1 × 0.9 м | `Bog-oak quench barrel bound with iron hoops, dark water, smith's tongs on the rim` |
+| **Резной стол** — `CarvedTable` (улучшение верстака → 5) | **примитивы**: стол с резными ногами, резцы (P1) | ~1.8 × 0.9 м | `Heavy black-oak carving table with carved legs, chisels, mallet and a half-carved solar panel` |
+| **Морёный набор** — `BogOakWall`, `CarvedPillar`, `CarvedArch`, `TentRoof`, `BlackGate` | **примитивы** (P1) | стена 2×2 м; столб 4 м; арка 2 м; шатёр 4.5×4.5×3.4 м над комнатой 4×4; ворота 4 м | `Old Rus terem pieces in black bog oak with pale carvings: log wall, tall carved pillar, carved arch, tall tent (shatyor) roof with a finial, gate with black iron bands` |
+| **Чёрностальной доспех** — `BlackSteelHelm`, `BlackSteelCuirass`, `BlackSteelGreaves`; **плащ волколака** — `VolkolakCloak` | **примитивы** поверх кольчуги (P1) | как железный набор; плащ — слот Cloak | `Black steel Rus armour: tall shelom with an eye mask, plate cuirass over mail, greaves; black wolf-pelt cloak` |
+| **Чёрностальное оружие и инструменты** | тёмные модели пака LowPoly; топор/кирка — перекрашенные каменные (P2) | как у прочих тиров | — |
+
 ## 8. Не модели, но тоже из ассетов (для полноты)
 
 | Что | Ассет | Примечание |
@@ -530,6 +586,7 @@ run** (у тигра ещё «редкий idle»). **Атаки и смерти
 | Объект | Что двигается | Точка вращения |
 |---|---|---|
 | Дверь `WoodDoor` | створка, открывается на ~100° | вертикальная ось на левом краю проёма, низ створки |
+| Ладья `Ladya` | вся лодка качается на воде (физика); парус пока не анимирован (позже — поднят/спущен); крышка трюма | pivot на ватерлинии; парус и крышка трюма — отдельными объектами |
 | Ворота `OakGate` | две створки, по 95° в разные стороны | вертикальные оси на внешних краях |
 | Сундук `WoodChest` | крышка | горизонтальная ось вдоль задней кромки |
 | Рудные жилы, камни | уменьшаются при каждом ударе, затем исчезают | pivot в центре основания |

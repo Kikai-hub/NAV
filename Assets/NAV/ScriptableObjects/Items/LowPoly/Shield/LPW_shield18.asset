@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_shield18
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_shield18
-  _displayName: Shield 18
-  _description: Shield from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Black Steel Shield
+  _description: Bog-oak boards under rows of black steel studs.
   _icon: {fileID: 21300000, guid: 2a0daff9cd0260140b131ee9c83562ba, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 6
+  _density: 2
   _worldPrefab: {fileID: 6808084596125986447, guid: 7c822acdf7bedf64b964879b5ff46544, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: eff3d78cf62dd5b4f9a967128eefea43, type: 2}
   _heldPrefab: {fileID: 4005421100494454740, guid: 4ae245ff26c3ba749885e5401672d76a, type: 3}
   _heldInLeftHand: 1
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

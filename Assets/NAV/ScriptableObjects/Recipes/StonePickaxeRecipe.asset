@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Crafting.RecipeDefinition
   _displayName: Stone Pickaxe
   _ingredients:
-  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+  - _item: {fileID: 11400000, guid: 0713ce997fecbc941b1ffc42acb2a35b, type: 2}
     _amount: 3
   - _item: {fileID: 11400000, guid: f2d88055de27ac542a3af0c4f14ee684, type: 2}
     _amount: 3

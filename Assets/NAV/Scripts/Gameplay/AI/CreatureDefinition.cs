@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using NAV.Gameplay.Combat;
 using NAV.Gameplay.Items;
 
 namespace NAV.Gameplay.AI
@@ -17,11 +18,17 @@ namespace NAV.Gameplay.AI
         [Header("Identity")]
         [SerializeField] private string _displayName;
         [SerializeField] private bool _isHostile;
+        [Tooltip("Нечисть (the unclean): silver weapons hurt it more (WeaponDefinition.UncleanDamageMultiplier).")]
+        [SerializeField] private bool _isUnclean;
+        [Tooltip("What a hit on it sounds and looks like (flesh for animals, wood for a living tree).")]
+        [SerializeField] private HitSurface _surface = HitSurface.Flesh;
 
         [Header("Stats")]
         [SerializeField] private float _maxHealth = 30f;
         [SerializeField] private float _moveSpeed = 3.5f;
         [SerializeField] private float _chaseSpeedMultiplier = 1.4f;
+        [Tooltip("How fast it turns to face its target when attacking (degrees/s). 0 = at once (animals); a heavy boss turns slowly.")]
+        [SerializeField, Min(0f)] private float _turnSpeed;
 
         [Header("Perception")]
         [SerializeField] private float _detectionRadius = 8f;
@@ -38,6 +45,9 @@ namespace NAV.Gameplay.AI
         [SerializeField] private float _attackDamage = 10f;
         [SerializeField] private float _attackRange = 2f;
         [SerializeField] private float _attackCooldown = 1.5f;
+        [Tooltip("Poison a bite leaves (damage over Poison Seconds, on top of Attack Damage). 0 = not poisonous.")]
+        [SerializeField, Min(0f)] private float _poisonDamage;
+        [SerializeField, Min(0.5f)] private float _poisonSeconds = 8f;
 
         [Header("Hit Reaction")]
         [Tooltip("Seconds the creature stops moving and can't attack after taking a melee hit.")]
@@ -61,6 +71,9 @@ namespace NAV.Gameplay.AI
         /// <summary>Hostile creatures chase/attack on sight; neutral creatures only flee once
         /// actually damaged.</summary>
         public bool IsHostile => _isHostile;
+        public bool IsUnclean => _isUnclean;
+        public HitSurface Surface => _surface;
+        public float TurnSpeed => _turnSpeed;
         public float MaxHealth => _maxHealth;
         public float MoveSpeed => _moveSpeed;
         public float ChaseSpeedMultiplier => _chaseSpeedMultiplier;
@@ -72,6 +85,8 @@ namespace NAV.Gameplay.AI
         public float AttackDamage => _attackDamage;
         public float AttackRange => _attackRange;
         public float AttackCooldown => _attackCooldown;
+        public float PoisonDamage => _poisonDamage;
+        public float PoisonSeconds => _poisonSeconds;
         public float StaggerSeconds => _staggerSeconds;
         public float KnockbackDistance => _knockbackDistance;
         public float PatrolRadius => _patrolRadius;

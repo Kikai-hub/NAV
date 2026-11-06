@@ -13,17 +13,21 @@ MonoBehaviour:
   m_Name: LPW_axe2H3
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_axe2H3
-  _displayName: Battle Axe 3
-  _description: Battle Axe from the LowPoly Weapons Pack. Placeholder stats - no
-    materials, tier or recipe yet.
+  _displayName: Black Steel Battle Axe
+  _description: A great black steel battle axe.
   _icon: {fileID: 21300000, guid: c163d877ece5b36499924c449faf7199, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 8
+  _density: 2
   _worldPrefab: {fileID: 3262945172135595157, guid: ca676575d9cc4624ba3759b0bbb30f78, type: 3}
   _food: {fileID: 0}
   _toolType: 1
-  _toolTier: 1
+  _toolTier: 6
   _weapon: {fileID: 11400000, guid: 5b1bba4b4db76934e881271613dcd2af, type: 2}
   _heldPrefab: {fileID: 7100982414087393642, guid: c756eaaa62ba7814cab2ba1f5afc02c9, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

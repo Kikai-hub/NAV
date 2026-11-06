@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: BlackSteelPickaxe
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: BlackSteelPickaxe
+  _displayName: Black Steel Pickaxe
+  _description: A black steel pickaxe for what lies deeper still.
+  _icon: {fileID: 21300000, guid: 4232d6aed30690d46b417d0a9cfad3cd, type: 3}
+  _category: 1
+  _maxStackSize: 1
+  _weight: 3
+  _density: 2
+  _worldPrefab: {fileID: 3956927629918530904, guid: 53db6d5a93b775b4aa886b27d08422aa, type: 3}
+  _food: {fileID: 0}
+  _toolType: 2
+  _toolTier: 6
+  _weapon: {fileID: 11400000, guid: db6a8eb2dd05fef47999490ced946d10, type: 2}
+  _heldPrefab: {fileID: 9108963905179644478, guid: abf6d269f30ccdf4b8f2154ab1a90f85, type: 3}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

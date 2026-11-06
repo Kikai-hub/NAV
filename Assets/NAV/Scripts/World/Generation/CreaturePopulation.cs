@@ -39,6 +39,10 @@ namespace NAV.World.Generation
         private readonly Dictionary<BiomeCreatureSpawn, float> _nextRespawn = new();
         private float _nextCheck;
 
+        /// <summary>Multiplayer: another player near this one runs the creatures here
+        /// (NAV.Network.NetworkCreatureSync) - this machine spawns none while it's set.</summary>
+        public static bool SpawningSuppressed { get; set; }
+
         private void OnEnable()
         {
             if (_worldGenerator == null)
@@ -79,7 +83,7 @@ namespace NAV.World.Generation
 
         private void Update()
         {
-            if (UnityEngine.Time.time < _nextCheck || !_worldGenerator.HasCreatureWorld)
+            if (UnityEngine.Time.time < _nextCheck || !_worldGenerator.HasCreatureWorld || SpawningSuppressed)
             {
                 return;
             }

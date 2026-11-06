@@ -29,6 +29,9 @@ namespace NAV.Gameplay.Player
         [Tooltip("Optional - only present once build mode exists on this player.")]
         [SerializeField] private PlayerBuilding _building;
 
+        [Tooltip("How far in front of where the player fell the gravestone stands (m). The body falls back as a ragdoll (PlayerRagdoll) - on the spot itself it would land on the stone.")]
+        [SerializeField, Min(0f)] private float _gravestoneOffset = 1f;
+
         private PlayerHealth _health;
         private Vector3 _respawnPosition;
         private Quaternion _respawnRotation;
@@ -99,7 +102,10 @@ namespace NAV.Gameplay.Player
                 return;
             }
 
-            Gravestone.Spawn(_gravestonePrefab, transform.position, transform.rotation, gravestoneContents);
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            Vector3 position = transform.position + (forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.zero) * _gravestoneOffset;
+            Gravestone.Spawn(_gravestonePrefab, position, transform.rotation, gravestoneContents);
         }
 
         /// <summary>Overrides where Respawn puts the player (default: the scene start position

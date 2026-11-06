@@ -284,7 +284,8 @@ namespace NAV.Gameplay.Combat
             }
 
             WeaponDefinition weapon = EquippedWeapon;
-            if (weapon == null || Time.time < _nextAttackTime)
+            // A bow isn't swung - PlayerArchery draws and looses it.
+            if (weapon == null || weapon.IsRanged || Time.time < _nextAttackTime)
             {
                 return;
             }
@@ -412,13 +413,20 @@ namespace NAV.Gameplay.Combat
             away = away.sqrMagnitude > 0.0001f ? away.normalized : transform.forward;
 
             IDamageable damageable = collider.GetComponentInParent<IDamageable>();
+            // Another player in a PvE room: the swing passes through, no hit at all.
+            if (damageable is IRemoteProxy otherPlayer && !otherPlayer.CanBeHitByPlayers)
+            {
+                return;
+            }
+
             if (damageable != null && !ReferenceEquals(damageable, this))
             {
                 if (damageable.IsAlive && _struckThisSwing.Add(damageable))
                 {
-                    damageable.TakeDamage(weapon.Damage);
+                    float damage = weapon.DamageAgainst(damageable, weapon.Damage);
+                    damageable.TakeDamage(damage);
                     (damageable as IHitReactive)?.ReactToHit(away);
-                    Debug.Log($"{name} hit {collider.name} for {weapon.Damage} with {weapon.DisplayName}.", this);
+                    Debug.Log($"{name} hit {collider.name} for {damage} with {weapon.DisplayName}.", this);
                     HitLanded?.Invoke(new MeleeHitInfo(collider, point, direction, away, weapon, surface, true, true, !damageable.IsAlive));
                 }
 
@@ -432,6 +440,14 @@ namespace NAV.Gameplay.Combat
                 Debug.Log($"{name} struck {collider.name} with {weapon.DisplayName}.", this);
                 HitLanded?.Invoke(new MeleeHitInfo(collider, point, direction, away, weapon, surface, counted, false, false));
             }
+        }
+
+        /// <summary>An arrow the player loosed hit something (ArrowProjectile) - raised as
+        /// HitLanded like a melee contact, so hit particles, sounds and the target's flinch work
+        /// the same.</summary>
+        public void ReportProjectileHit(MeleeHitInfo hit)
+        {
+            HitLanded?.Invoke(hit);
         }
 
         /// <summary>

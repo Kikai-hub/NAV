@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: StonePickaxe
   _displayName: Stone Pickaxe
-  _description: A crude stone pickaxe, the Tier 1 ore-mining tool. Placeholder Tier
-    1 content - not final.
+  _description: A stone pickaxe head on a haft of the Leshy's heartwood - ordinary
+    wood splits on stone. The first tool for ore.
   _icon: {fileID: 21300000, guid: 4d1be04821c7b194d88bba88d9594d65, type: 3}
   _category: 1
   _maxStackSize: 1
   _weight: 3
+  _density: 2
   _worldPrefab: {fileID: 5841127046712746839, guid: c9e550b8b09742f49bf0fa76fb82e1aa, type: 3}
   _food: {fileID: 0}
   _toolType: 2
@@ -28,3 +29,6 @@ MonoBehaviour:
   _heldPrefab: {fileID: 2859336502276956822, guid: a921d158cf711184392721ce91a6c8b4, type: 3}
   _heldInLeftHand: 0
   _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

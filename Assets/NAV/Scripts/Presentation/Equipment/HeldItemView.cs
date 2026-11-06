@@ -24,7 +24,8 @@ namespace NAV.Presentation.Equipment
     {
         private static readonly int HitActiveHash = Animator.StringToHash("HitActive");
 
-        [SerializeField] private PlayerEquipment _equipment;
+        [Tooltip("What the character holds: the player's PlayerEquipment, or a network avatar's mirror (any IEquipmentView).")]
+        [SerializeField] private MonoBehaviour _equipment;
         [Tooltip("Bone the held model is parented to - B-handProp.R on the Kevin Iglesias rig.")]
         [SerializeField] private Transform _handSocket;
         [Tooltip("Bone for items held in the left hand (ItemDefinition.HeldInLeftHand - shields) - B-handProp.L.")]
@@ -32,6 +33,7 @@ namespace NAV.Presentation.Equipment
         [Tooltip("Radius of the fist hit spheres around the hand sockets.")]
         [SerializeField, Min(0.01f)] private float _fistRadius = 0.15f;
 
+        private IEquipmentView _view;
         private GameObject _heldInstance;
         private MeleeHitbox _heldHitbox;
         private ItemDefinition _shownItem;
@@ -77,33 +79,34 @@ namespace NAV.Presentation.Equipment
                 }
             }
 
-            if (_equipment == null || _handSocket == null)
+            _view = _equipment as IEquipmentView;
+            if (_view == null || _handSocket == null)
             {
-                Debug.LogError($"{nameof(HeldItemView)} on '{name}' is missing a required reference (Equipment/Hand Socket).", this);
+                Debug.LogError($"{nameof(HeldItemView)} on '{name}' is missing a required reference (Equipment - an IEquipmentView / Hand Socket).", this);
                 enabled = false;
             }
         }
 
         private void OnEnable()
         {
-            if (_equipment != null)
+            if (_view != null)
             {
-                _equipment.Changed += Refresh;
+                _view.Changed += Refresh;
                 Refresh();
             }
         }
 
         private void OnDisable()
         {
-            if (_equipment != null)
+            if (_view != null)
             {
-                _equipment.Changed -= Refresh;
+                _view.Changed -= Refresh;
             }
         }
 
         private void Refresh()
         {
-            ItemDefinition item = _equipment.MainHand;
+            ItemDefinition item = _view.MainHand;
             if (item == _shownItem && (_heldInstance != null || item == null || item.HeldPrefab == null))
             {
                 return;

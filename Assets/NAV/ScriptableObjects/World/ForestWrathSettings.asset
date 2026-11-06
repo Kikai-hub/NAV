@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adc0e6a2fb7a27f48bff8014a830adff, type: 3}
+  m_Name: ForestWrathSettings
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Encounters.ForestWrathSettings
+  _bossPrefab: {fileID: 8815750883366499331, guid: 44bff6e8c21635541b145b7fb49daf93, type: 3}
+  _wrathBiomes:
+  - {fileID: 11400000, guid: bffd4ed64abf4a170d2710e46336907d, type: 2}
+  - {fileID: 11400000, guid: be74a3e007d6b1aba360310cd854e038, type: 2}
+  - {fileID: 11400000, guid: 8ab6cdedf000d4d4a81350dc224aa979, type: 2}
+  - {fileID: 11400000, guid: 32e5c5f4997700649a3d8abe48948b02, type: 2}
+  _wrathPerTree: 1
+  _maxWrath: 30
+  _guaranteedWrath: 24
+  _decayPerMinute: 0.15
+  _chanceBiomes:
+  - {fileID: 11400000, guid: be74a3e007d6b1aba360310cd854e038, type: 2}
+  - {fileID: 11400000, guid: 8ab6cdedf000d4d4a81350dc224aa979, type: 2}
+  - {fileID: 11400000, guid: 32e5c5f4997700649a3d8abe48948b02, type: 2}
+  _checkIntervalSeconds: 30
+  _baseChance: 0.004
+  _wrathChance: 0.08
+  _nightChanceMultiplier: 2
+  _omenSeconds: 15
+  _spawnDistance: {x: 26, y: 40}
+  _leaveDistance: 110
+  _cooldownAfterDefeatMinutes: 30
+  _cooldownAfterEscapeMinutes: 8
+  _wrathKeptAfterEscape: 0.6
+  _wrathOmens:
+  - Fraction: 0.35
+    Text: The forest is watching you.
+  - Fraction: 0.7
+    Text: Branches creak behind your back. The forest is angry.
+  _arrivalOmen: The forest has fallen silent...
+  _arrivalText: The Leshy has come for you!
+  _defeatText: The Leshy is dead. The forest grows quiet.
+  _escapeText: The Leshy has gone back into the thicket.

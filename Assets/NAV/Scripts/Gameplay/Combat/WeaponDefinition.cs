@@ -36,6 +36,15 @@ namespace NAV.Gameplay.Combat
         [Tooltip("FALLBACK only (see Hit Window Start) - seconds after the attack starts when the hitbox stops dealing hits.")]
         [SerializeField, Min(0f)] private float _hitWindowEnd = 0.35f;
 
+        [Tooltip("Damage multiplier against нечисть (IUncleanTarget - CreatureDefinition Is Unclean). Silver weapons 1.5, everything else 1.")]
+        [SerializeField, Min(0f)] private float _uncleanDamageMultiplier = 1f;
+
+        [Header("Ranged (bows - Weapon Class Bow)")]
+        [Tooltip("Seconds from starting to draw to a full draw. A loose before that flies slower and hits softer.")]
+        [SerializeField, Min(0.05f)] private float _drawSeconds = 0.9f;
+        [Tooltip("Arrow speed (m/s) at full draw.")]
+        [SerializeField, Min(1f)] private float _projectileSpeed = 50f;
+
         [Header("Block / Parry")]
         [SerializeField, Range(0f, 1f)] private float _blockDamageReduction = 0.5f;
         [SerializeField] private float _blockStaminaCostPerHit = 10f;
@@ -50,6 +59,19 @@ namespace NAV.Gameplay.Combat
         public float AttackStaminaCost => _attackStaminaCost;
         public WeaponAttackStyle AttackStyle => _attackStyle;
         public float AttackAnimationSpeed => _attackAnimationSpeed;
+        public float UncleanDamageMultiplier => _uncleanDamageMultiplier;
+
+        /// <summary>The weapon's damage against this target (more against нечисть for silver).</summary>
+        public float DamageAgainst(object target, float baseDamage)
+        {
+            return target is IUncleanTarget unclean && unclean.IsUnclean ? baseDamage * _uncleanDamageMultiplier : baseDamage;
+        }
+
+        /// <summary>A bow: drawn and loosed by PlayerArchery (arrows from the inventory) instead of
+        /// swung by PlayerCombat. Damage = the bow's Damage + the arrow's.</summary>
+        public bool IsRanged => _weaponClass == WeaponClass.Bow;
+        public float DrawSeconds => _drawSeconds;
+        public float ProjectileSpeed => _projectileSpeed;
 
         /// <summary>Seconds after the attack starts that its hitbox (MeleeHitbox / fist)
         /// deals damage on contact - from HitWindowStart to HitWindowEnd.</summary>

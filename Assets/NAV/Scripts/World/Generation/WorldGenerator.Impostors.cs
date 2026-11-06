@@ -145,7 +145,7 @@ namespace NAV.World.Generation
 
         private void DrawFarPlane()
         {
-            if (!Application.isPlaying || _impostors == null || _biomeMap == null)
+            if (!Application.isPlaying || _impostors == null || _tiles == null)
             {
                 return;
             }
@@ -160,8 +160,8 @@ namespace NAV.World.Generation
                 _impostorQuad = BuildImpostorQuad();
             }
 
-            var bounds = new Bounds(_terrain.transform.position + new Vector3(_settings.Width, _settings.MaxHeight, _settings.Length) * 0.5f,
-                new Vector3(_settings.Width, _settings.MaxHeight * 4f, _settings.Length));
+            float diameter = WorldRadius * 2f;
+            var bounds = new Bounds(WorldCentre, new Vector3(diameter, _tiles.HeightRange * 4f, diameter));
             foreach (KeyValuePair<Material, List<Matrix4x4>> pair in _drawLists)
             {
                 var parameters = new RenderParams(pair.Key)

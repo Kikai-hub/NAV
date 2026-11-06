@@ -36,7 +36,7 @@ namespace NAV.World.Generation
         public const float CreatureAreaRadius = 100f;
 
         [Header("Streaming")]
-        [Tooltip("Who the world streams around - the player. Camera.main when empty.")]
+        [Tooltip("Who the world streams around. Empty = the PlayerMotor in the scene (else Camera.main).")]
         [SerializeField] private Transform _streamTarget;
 
         private class Chunk
@@ -115,22 +115,21 @@ namespace NAV.World.Generation
             ResetImpostors();
         }
 
-        private int ChunksX => Mathf.CeilToInt(_settings.Width / ChunkSize);
-        private int ChunksZ => Mathf.CeilToInt(_settings.Length / ChunkSize);
+        // Chunk coordinates run from -ChunkOffset to ChunkOffset - 1 on both axes (the world is
+        // centred on the origin); ids number them from 0.
+        private int ChunkOffset => Mathf.CeilToInt(WorldRadius / ChunkSize) + 2;
 
-        private Vector2Int ChunkAt(Vector3 position)
-        {
-            Vector3 origin = _terrain.transform.position;
-            return new Vector2Int(Mathf.FloorToInt((position.x - origin.x) / ChunkSize), Mathf.FloorToInt((position.z - origin.z) / ChunkSize));
-        }
+        private int ChunkIndex(Vector2Int c) => (c.y + ChunkOffset) * (ChunkOffset * 2) + (c.x + ChunkOffset);
 
-        private bool IsInWorld(Vector2Int c) => c.x >= 0 && c.y >= 0 && c.x < ChunksX && c.y < ChunksZ;
+        private static Vector2Int ChunkAt(Vector3 position) => new(Mathf.FloorToInt(position.x / ChunkSize), Mathf.FloorToInt(position.z / ChunkSize));
 
-        private Vector3 ChunkCentre(Vector2Int c)
-        {
-            Vector3 origin = _terrain.transform.position;
-            return new Vector3(origin.x + (c.x + 0.5f) * ChunkSize, 0f, origin.z + (c.y + 0.5f) * ChunkSize);
-        }
+        // Nothing grows past the rim - deep sea.
+        private bool IsInWorld(Vector2Int c) => FlatDistance(ChunkCentre(c), WorldCentre) <= WorldRadius + ChunkSize;
+
+        private static Vector3 ChunkCentre(Vector2Int c) => new((c.x + 0.5f) * ChunkSize, 0f, (c.y + 0.5f) * ChunkSize);
+
+        /// <summary>How far around the player terrain tiles stand: the view distance and a tile.</summary>
+        private static float TileRadius => GameSettings.Current.EffectiveViewDistance + TerrainTiles.TileSize;
 
         private static float FlatDistance(Vector3 a, Vector3 b)
         {
@@ -167,13 +166,14 @@ namespace NAV.World.Generation
         /// world.</summary>
         public void PrimeAround(Vector3 position)
         {
-            if (_biomeMap == null || _terrain == null)
+            if (_tiles == null)
             {
                 return;
             }
 
             _streamCentre = position;
             _primed = true;
+            _tiles.CompleteAround(position, TileRadius);
             float radius = StreamRadius;
             Vector2Int centre = ChunkAt(position);
             int reach = Mathf.CeilToInt(radius / ChunkSize) + 1;
@@ -230,14 +230,18 @@ namespace NAV.World.Generation
 
         private void StreamUpdate()
         {
-            if (!Application.isPlaying || _biomeMap == null || _localNav == null)
+            if (!Application.isPlaying || _tiles == null || _localNav == null)
             {
                 return;
             }
 
             if (_streamTarget == null)
             {
-                _streamTarget = UnityEngine.Camera.main != null ? UnityEngine.Camera.main.transform : null;
+                // The player itself, not the camera: the camera catches up with a teleport only in
+                // LateUpdate, after the player has already taken a step onto ground not built yet.
+                var player = FindAnyObjectByType<NAV.Gameplay.Player.PlayerMotor>();
+                _streamTarget = player != null ? player.transform
+                    : UnityEngine.Camera.main != null ? UnityEngine.Camera.main.transform : null;
                 if (_streamTarget == null)
                 {
                     return;
@@ -262,7 +266,10 @@ namespace NAV.World.Generation
                 RefreshFarChunks(position);
                 RebuildLoadQueue(position, radius);
                 UnloadFarChunks(position, radius);
+                _tiles.Request(position, TileRadius);
             }
+
+            _tiles.Update();
 
             // Loading and unloading share a few milliseconds per frame: a chunk fills in over
             // several frames, and a row of chunks left behind is destroyed a couple at a time.
@@ -411,11 +418,9 @@ namespace NAV.World.Generation
         private void PlaceNodes(Vector2Int c, List<NodePlacement> results)
         {
             results.Clear();
-            Vector3 origin = _terrain.transform.position;
             float minX = c.x * ChunkSize;
             float minZ = c.y * ChunkSize;
-            float seaHeight = origin.y + _settings.SeaLevel * _settings.MaxHeight;
-            int chunkIndex = c.y * ChunksX + c.x;
+            int chunkIndex = ChunkIndex(c);
             int localIndex = 0;
             int biomeIndex = 0;
 
@@ -445,18 +450,17 @@ namespace NAV.World.Generation
                     {
                         for (int ix = ix0; ix < ix1; ix++)
                         {
-                            float localX = (ix + WorldHash.Value(_seed, kind, ix, iz, 0)) * cell;
-                            float localZ = (iz + WorldHash.Value(_seed, kind, ix, iz, 1)) * cell;
-                            if (localX >= _settings.Width || localZ >= _settings.Length
-                                || !ReferenceEquals(BiomeAtLocal(localX, localZ), biome)
-                                || WorldHash.Value(_seed, kind, ix, iz, 2) > spawn.Density)
+                            float x = (ix + WorldHash.Value(_seed, kind, ix, iz, 0)) * cell;
+                            float z = (iz + WorldHash.Value(_seed, kind, ix, iz, 1)) * cell;
+                            if (WorldHash.Value(_seed, kind, ix, iz, 2) > spawn.Density
+                                || !ReferenceEquals(_tiles.BiomeAt(x, z), biome)
+                                || IsClearedForPoi(c, x, z))
                             {
                                 continue;
                             }
 
-                            var position = new Vector3(origin.x + localX, 0f, origin.z + localZ);
-                            position.y = origin.y + _terrain.SampleHeight(position);
-                            float aboveWater = position.y - seaHeight;
+                            var position = new Vector3(x, GroundHeight(x, z), z);
+                            float aboveWater = position.y - SeaLevel;
                             if (aboveWater < spawn.HeightAboveWater.x || aboveWater > spawn.HeightAboveWater.y)
                             {
                                 continue;
@@ -490,6 +494,7 @@ namespace NAV.World.Generation
 
             var placements = new List<NodePlacement>();
             PlaceNodes(c, placements);
+            SpawnPointsOfInterest(c, chunk.Root.transform);
             yield return true;
 
             int sinceYield = 0;
@@ -526,7 +531,7 @@ namespace NAV.World.Generation
 
                 for (int e = 0; e < biome.DecorSpawns.Count; e++)
                 {
-                    LoadDecor(biome, biome.DecorSpawns[e], DecorKindOffset + biomeIndex * 256 + e, minX, minZ, chunk.Root.transform);
+                    LoadDecor(c, biome, biome.DecorSpawns[e], DecorKindOffset + biomeIndex * 256 + e, minX, minZ, chunk.Root.transform);
                     yield return true;
                 }
             }
@@ -534,14 +539,13 @@ namespace NAV.World.Generation
 
         /// <summary>Decor (bushes, mushrooms, stumps, logs, pebbles) the same way, no ids - not
         /// gatherable, not saved. Walk-through unless Keep Colliders.</summary>
-        private void LoadDecor(BiomeDefinition biome, BiomeDecorSpawn spawn, int kind, float minX, float minZ, Transform parent)
+        private void LoadDecor(Vector2Int c, BiomeDefinition biome, BiomeDecorSpawn spawn, int kind, float minX, float minZ, Transform parent)
         {
             if (spawn.Prefab == null || spawn.Density <= 0f || spawn.MinSpacing <= 0f)
             {
                 return;
             }
 
-            Vector3 origin = _terrain.transform.position;
             float cell = spawn.MinSpacing;
             int ix0 = Mathf.CeilToInt(minX / cell);
             int ix1 = Mathf.CeilToInt((minX + ChunkSize) / cell);
@@ -551,17 +555,16 @@ namespace NAV.World.Generation
             {
                 for (int ix = ix0; ix < ix1; ix++)
                 {
-                    float localX = (ix + WorldHash.Value(_seed, kind, ix, iz, 0)) * cell;
-                    float localZ = (iz + WorldHash.Value(_seed, kind, ix, iz, 1)) * cell;
-                    if (localX >= _settings.Width || localZ >= _settings.Length
-                        || WorldHash.Value(_seed, kind, ix, iz, 2) > spawn.Density
-                        || !ReferenceEquals(BiomeAtLocal(localX, localZ), biome))
+                    float x = (ix + WorldHash.Value(_seed, kind, ix, iz, 0)) * cell;
+                    float z = (iz + WorldHash.Value(_seed, kind, ix, iz, 1)) * cell;
+                    if (WorldHash.Value(_seed, kind, ix, iz, 2) > spawn.Density
+                        || !ReferenceEquals(_tiles.BiomeAt(x, z), biome)
+                        || IsClearedForPoi(c, x, z))
                     {
                         continue;
                     }
 
-                    var position = new Vector3(origin.x + localX, 0f, origin.z + localZ);
-                    position.y = origin.y + _terrain.SampleHeight(position);
+                    var position = new Vector3(x, GroundHeight(x, z), z);
                     GameObject instance = Instantiate(spawn.Prefab, position, Quaternion.Euler(0f, WorldHash.Value(_seed, kind, ix, iz, 3) * 360f, 0f), parent);
                     instance.transform.localScale *= Mathf.Lerp(spawn.MinScale, spawn.MaxScale, WorldHash.Value(_seed, kind, ix, iz, 4));
                     if (!spawn.KeepColliders)
@@ -577,14 +580,6 @@ namespace NAV.World.Generation
                     SetLayer(instance);
                 }
             }
-        }
-
-        private BiomeDefinition BiomeAtLocal(float localX, float localZ)
-        {
-            int heightRes = _biomeMap.GetLength(0);
-            int hx = Mathf.Clamp(Mathf.RoundToInt(localX / _settings.Width * (heightRes - 1)), 0, heightRes - 1);
-            int hz = Mathf.Clamp(Mathf.RoundToInt(localZ / _settings.Length * (heightRes - 1)), 0, heightRes - 1);
-            return _biomeMap[hz, hx];
         }
 
         private void SetLayer(GameObject instance)
@@ -610,6 +605,63 @@ namespace NAV.World.Generation
             {
                 DestroyImmediate(target);
             }
+        }
+
+        /// <summary>The id of a spawned resource node (in a loaded chunk) - multiplayer sends a
+        /// node gathered here to the other machines by it.</summary>
+        public bool TryGetNodeId(GameObject node, out int id)
+        {
+            foreach (Chunk chunk in _chunks.Values)
+            {
+                foreach (KeyValuePair<int, GameObject> entry in chunk.Nodes)
+                {
+                    if (entry.Value == node)
+                    {
+                        id = entry.Key;
+                        return true;
+                    }
+                }
+            }
+
+            id = -1;
+            return false;
+        }
+
+        /// <summary>A node gathered on another machine: gone here too, without drops (its
+        /// leftover - a stump - stays); in a chunk that isn't loaded it just won't spawn.</summary>
+        public void RemoveNode(int id)
+        {
+            foreach (Chunk chunk in _chunks.Values)
+            {
+                for (int i = 0; i < chunk.Nodes.Count; i++)
+                {
+                    if (chunk.Nodes[i].Key != id)
+                    {
+                        continue;
+                    }
+
+                    GameObject instance = chunk.Nodes[i].Value;
+                    if (instance != null)
+                    {
+                        var node = instance.GetComponent<NAV.Gameplay.Items.ResourceNode>();
+                        GameObject leftoverPrefab = node != null && node.Definition != null ? node.Definition.LeavesBehindPrefab : null;
+                        if (leftoverPrefab != null)
+                        {
+                            GameObject leftover = Instantiate(leftoverPrefab, instance.transform.position, instance.transform.rotation, instance.transform.parent);
+                            leftover.transform.localScale = Vector3.Scale(leftover.transform.localScale, instance.transform.localScale);
+                            SetLayer(leftover);
+                        }
+
+                        Destroy(instance);
+                        chunk.Nodes[i] = new KeyValuePair<int, GameObject>(id, null);
+                        _drawListsDirty = true;
+                    }
+
+                    return;
+                }
+            }
+
+            _depleted.Add(id);
         }
 
         /// <summary>Ids of gathered nodes: remembered from unloaded chunks, the loaded chunks'

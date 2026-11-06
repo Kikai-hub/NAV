@@ -175,6 +175,8 @@ namespace NAV.Editor
             AddToDatabase(database, allItems);
             SaveArsenal(racks);
             AssetDatabase.SaveAssets();
+            // Bladed weapons: the fist right under the guard (the pack pivots aren't at the guard).
+            WeaponGripFitter.FitAll();
             ItemIconRenderer.RenderIcons(allItems);
             AssetDatabase.SaveAssets();
             Debug.Log($"{nameof(WeaponPackGenerator)}: generated {allItems.Count} weapons in {Classes.Length} classes, {racks.Count} arsenal racks.");

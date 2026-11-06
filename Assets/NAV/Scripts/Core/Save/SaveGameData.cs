@@ -46,6 +46,12 @@ namespace NAV.Core.Save
         /// WorldGenerator.GetDepletedResourceIds) - skipped when the world is regenerated on
         /// load. Like the terrain itself, only valid while generation settings are unchanged.</summary>
         public List<int> DepletedResourceIds = new();
+
+        /// <summary>The forest's wrath (ForestWrath), how many times the Leshy was killed and the
+        /// seconds before he can come again. 0 in saves from before 2026-11-06.</summary>
+        public float ForestWrath;
+        public int LeshyDefeats;
+        public float LeshyCooldownSeconds;
     }
 
     [Serializable]

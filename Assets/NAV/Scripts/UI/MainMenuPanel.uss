@@ -56,6 +56,7 @@
 
 .create-world-field {
     margin-bottom: 14px;
+    flex-shrink: 0;
 }
 
 .create-world-field__label {
@@ -95,6 +96,181 @@
     width: 170px;
     height: 50px;
     font-size: 14px;
+}
+
+/* --- Create World: online options --- */
+
+.create-world-online-toggle {
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.create-world-online-toggle > .unity-label {
+    color: rgb(62, 38, 18);
+    font-size: 16px;
+    -unity-font-style: bold;
+    min-width: 90px;
+}
+
+.create-world-online {
+    display: none;
+    flex-shrink: 0;
+}
+
+.create-world-online__row {
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.create-world-online__half {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: 6px;
+}
+
+.create-world-pvp {
+    flex-shrink: 0;
+    margin-bottom: 6px;
+}
+
+.create-world-pvp > .unity-radio-button-group__container,
+.create-world-pvp #unity-radio-button-group__container {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.create-world-pvp .unity-radio-button > .unity-label,
+.create-world-pvp .unity-radio-button__label {
+    color: rgb(62, 38, 18);
+    font-size: 14px;
+}
+
+.create-world-status {
+    color: rgb(120, 40, 20);
+    font-size: 14px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+
+/* --- Multiplayer: server list --- */
+
+.multiplayer-panel {
+    width: 680px;
+    display: none;
+    height: 640px;
+    max-height: 94%;
+}
+
+.multiplayer-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.multiplayer-row__label {
+    width: 120px;
+    font-size: 16px;
+}
+
+.multiplayer-row__input {
+    flex-grow: 1;
+}
+
+.multiplayer-list-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+
+.multiplayer-list-header__title {
+    font-size: 17px;
+    -unity-font-style: bold;
+}
+
+.multiplayer-small-button {
+    min-width: 0;
+    width: 130px;
+    height: 40px;
+    font-size: 13px;
+}
+
+.room-list {
+    flex-grow: 1;
+    margin-bottom: 8px;
+}
+
+.room-list-empty {
+    -unity-text-align: middle-center;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.room-list-item {
+    flex-direction: row;
+    align-items: center;
+    height: 58px;
+    margin-bottom: 5px;
+    padding-left: 18px;
+    padding-right: 18px;
+    background-image: url("../../Art/UI/Kit/InputField.png");
+    -unity-slice-left: 26;
+    -unity-slice-right: 44;
+    -unity-slice-top: 14;
+    -unity-slice-bottom: 14;
+    -unity-slice-scale: 0.7px;
+}
+
+.room-list-item:hover {
+    -unity-background-image-tint-color: rgb(255, 222, 160);
+}
+
+.room-list-item--selected {
+    -unity-background-image-tint-color: rgb(255, 200, 120);
+}
+
+.room-list-item__info {
+    flex-grow: 1;
+}
+
+.room-list-item__name {
+    color: rgb(240, 228, 200);
+    font-size: 16px;
+    -unity-font-style: bold;
+    margin: 0;
+    padding: 0;
+}
+
+.room-list-item__details {
+    color: rgb(196, 178, 146);
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+}
+
+.room-list-item__players {
+    color: rgb(222, 206, 172);
+    font-size: 14px;
+}
+
+.multiplayer-status {
+    -unity-text-align: middle-center;
+    font-size: 14px;
+    white-space: normal;
+    min-height: 20px;
+}
+
+.multiplayer-buttons {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.multiplayer-button {
+    min-width: 0;
+    width: 200px;
+    margin: 0 6px;
 }
 
 /* --- Load Game --- */

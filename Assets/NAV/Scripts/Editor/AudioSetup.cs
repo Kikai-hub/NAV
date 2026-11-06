@@ -149,6 +149,7 @@ namespace NAV.Editor
                 ("ForestBiome", Steps("Footstep_Grass_Alternative_")),
                 ("DenseForestBiome", Steps("Footstep_Soft_Surface_")),
                 ("OceanBiome", Steps("Footstep_Sand_")),
+                ("SeaIslandsBiome", Steps("Footstep_Sand_")),
             };
 
             var serialized = new SerializedObject(profile);

@@ -15,18 +15,9 @@ MonoBehaviour:
   _displayName: Ocean
   _terrainLayer: {fileID: 8574412962073106934, guid: 6237060958b8f7b429743ec9c5270d07, type: 2}
   _isWater: 1
+  _mapColor: {r: 0.12, g: 0.3, b: 0.52, a: 1}
   _heightVariation: 0.15
-  _resourceSpawns:
-  - _prefab: {fileID: 5822155337055520264, guid: 2bc89edf1f8ea8e4b8abebdff9dbe3d5, type: 3}
-    _density: 0.18
-    _minSpacing: 12
-    _scale: {x: 0.7, y: 1.1}
-    _heightAboveWater: {x: 0.1, y: 1.8}
-  - _prefab: {fileID: 1176642649903770046, guid: 993c6d14c01eb5f44897fad73d9c52f3, type: 3}
-    _density: 0.08
-    _minSpacing: 16
-    _scale: {x: 0.8, y: 1.15}
-    _heightAboveWater: {x: 0.6, y: 3}
+  _resourceSpawns: []
   _decorSpawns:
   - _prefab: {fileID: 7726922578587425720, guid: 2e12139c0ee03c44f8538d5e505a0942, type: 3}
     _density: 0.04

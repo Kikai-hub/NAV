@@ -29,6 +29,10 @@ namespace NAV.Gameplay.Building
         public BuildingPieceDefinition Definition => _definition;
         public IReadOnlyList<BuildingSnapPoint> SnapPoints => _snapPoints;
 
+        /// <summary>Which piece this is across the network (multiplayer: who built it + a count);
+        /// 0 for a piece no network session knows. Runtime only.</summary>
+        public long NetworkId { get; set; }
+
         /// <summary>True for a real placed piece (not a ghost preview).</summary>
         public bool IsPlaced => _definition != null && AllPieces.Contains(this);
 

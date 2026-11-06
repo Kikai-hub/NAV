@@ -26,6 +26,8 @@ namespace NAV.UI
         [SerializeField] private LoadingScreenUIController _loadingScreen;
         [Tooltip("Optional - the Settings window; without it the Settings button is hidden.")]
         [SerializeField] private SettingsUIController _settings;
+        [Tooltip("Optional - the online parts (Multiplayer window, Create World's Online toggle); without it the Multiplayer button is hidden.")]
+        [SerializeField] private MultiplayerMenuUIController _multiplayer;
 
         private UIDocument _document;
         private VisualElement _root;
@@ -125,6 +127,17 @@ namespace NAV.UI
             _confirmConfirmButton.clicked += HandleConfirmClicked;
             _confirmCancelButton.clicked += HideConfirmDialog;
 
+            var multiplayerButton = documentRoot.Q<Button>("multiplayer-button");
+            if (multiplayerButton != null && _multiplayer == null)
+            {
+                multiplayerButton.style.display = DisplayStyle.None;
+                var onlineToggle = documentRoot.Q<VisualElement>("online-toggle");
+                if (onlineToggle != null)
+                {
+                    onlineToggle.style.display = DisplayStyle.None;
+                }
+            }
+
             ShowMainMenuPanel();
         }
 
@@ -138,6 +151,27 @@ namespace NAV.UI
             _mainMenuPanel.style.display = DisplayStyle.Flex;
             _createWorldPanel.style.display = DisplayStyle.None;
             _loadGamePanel.style.display = DisplayStyle.None;
+        }
+
+        /// <summary>Back to the title buttons (the Multiplayer window's Back).</summary>
+        public void ShowMainMenu() => ShowMainMenuPanel();
+
+        /// <summary>Hides this controller's panels (the Multiplayer window opens over them).</summary>
+        public void HideAllPanels()
+        {
+            _mainMenuPanel.style.display = DisplayStyle.None;
+            _createWorldPanel.style.display = DisplayStyle.None;
+            _loadGamePanel.style.display = DisplayStyle.None;
+        }
+
+        /// <summary>Starts a new game from a name and a seed - the Create World button, and the
+        /// online flow once a room is created or joined (its seed from the room).</summary>
+        public void LaunchNewGame(string worldName, int seed)
+        {
+            SaveSystem.PendingLoadSaveId = null;
+            SaveSystem.PendingNewGameName = worldName;
+            SaveSystem.PendingNewGameSeed = seed;
+            StartLoadingGameScene();
         }
 
         private void ShowCreateWorldPanel()
@@ -159,10 +193,14 @@ namespace NAV.UI
             string worldName = string.IsNullOrWhiteSpace(_worldNameField.value) ? "New World" : _worldNameField.value.Trim();
             int seed = ResolveSeed(_worldSeedField.value);
 
-            SaveSystem.PendingLoadSaveId = null;
-            SaveSystem.PendingNewGameName = worldName;
-            SaveSystem.PendingNewGameSeed = seed;
-            StartLoadingGameScene();
+            if (_multiplayer != null && _multiplayer.OnlineChosen)
+            {
+                // Online: the room is opened first; the world loads once it exists.
+                _multiplayer.HostWorld(worldName, seed);
+                return;
+            }
+
+            LaunchNewGame(worldName, seed);
         }
 
         /// <summary>A blank/whitespace seed field means "keep it random" - rolls a fresh one. A

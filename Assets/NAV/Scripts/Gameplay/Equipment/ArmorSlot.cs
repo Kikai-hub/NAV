@@ -5,7 +5,9 @@ namespace NAV.Gameplay.Equipment
     {
         Head,
         Chest,
-        Legs
+        Legs,
+        // Over the shoulders (tier 5): fur cloaks keep the mountain cold off (ArmorDefinition.Warmth).
+        Cloak
     }
 
     /// <summary>Character bone a worn armour model is attached to (ArmorView maps these to the

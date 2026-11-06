@@ -5,6 +5,7 @@
         <ui:VisualElement name="main-menu-panel" class="main-menu-panel">
             <ui:VisualElement name="main-menu-logo" class="main-menu-logo" picking-mode="Ignore" />
             <ui:Button name="play-button" text="Play" class="main-menu-button nav-button" />
+            <ui:Button name="multiplayer-button" text="Multiplayer" class="main-menu-button nav-button" />
             <ui:Button name="load-button" text="Load" class="main-menu-button nav-button" />
             <ui:Button name="settings-button" text="Settings" class="main-menu-button nav-button" />
             <ui:Button name="quit-button" text="Quit" class="main-menu-button nav-button" />
@@ -23,8 +24,50 @@
                     <ui:Button name="randomize-seed-button" text="Randomize" class="create-world-seed-row__randomize nav-button" />
                 </ui:VisualElement>
             </ui:VisualElement>
+            <ui:Toggle name="online-toggle" label="Online" class="create-world-online-toggle" />
+            <ui:VisualElement name="online-options" class="create-world-online">
+                <ui:VisualElement class="create-world-online__row">
+                    <ui:VisualElement class="create-world-field create-world-online__half">
+                        <ui:Label text="Room Name" class="create-world-field__label" />
+                        <ui:TextField name="host-room-name-field" class="create-world-field__input nav-input" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="create-world-field create-world-online__half">
+                        <ui:Label text="Password" class="create-world-field__label" />
+                        <ui:TextField name="host-room-password-field" password="true" class="create-world-field__input nav-input" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:RadioButtonGroup name="host-pvp-choice" choices="PvE - no player damage,PvP - players can fight" value="0" class="create-world-pvp" />
+            </ui:VisualElement>
+            <ui:Label name="create-world-status" class="create-world-status" />
             <ui:Button name="create-world-button" text="Create World" class="create-world-button nav-button" />
             <ui:Button name="create-world-back-button" text="Back" class="create-world-back-button nav-button" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="multiplayer-panel" class="multiplayer-panel nav-window">
+            <ui:Label text="Multiplayer" class="nav-title" />
+            <ui:VisualElement class="multiplayer-row">
+                <ui:Label text="Your name" class="multiplayer-row__label nav-text" />
+                <ui:TextField name="nickname-field" class="multiplayer-row__input nav-input" />
+            </ui:VisualElement>
+            <ui:VisualElement class="multiplayer-list-header">
+                <ui:Label text="Servers" class="multiplayer-list-header__title nav-text" />
+                <ui:Button name="refresh-rooms-button" text="Refresh" class="multiplayer-small-button nav-button" />
+            </ui:VisualElement>
+            <ui:ScrollView name="room-list" class="room-list" />
+            <ui:Label name="room-list-empty" text="No open servers yet" class="room-list-empty nav-text" />
+            <ui:VisualElement class="multiplayer-row">
+                <ui:Label text="Room" class="multiplayer-row__label nav-text" />
+                <ui:TextField name="join-room-name-field" class="multiplayer-row__input nav-input" />
+            </ui:VisualElement>
+            <ui:VisualElement class="multiplayer-row">
+                <ui:Label text="Password" class="multiplayer-row__label nav-text" />
+                <ui:TextField name="join-room-password-field" password="true" class="multiplayer-row__input nav-input" />
+            </ui:VisualElement>
+            <ui:Label name="multiplayer-status" class="multiplayer-status nav-text" />
+            <ui:VisualElement class="multiplayer-buttons">
+                <ui:Button name="multiplayer-back-button" text="Back" class="multiplayer-button nav-button" />
+                <ui:Button name="join-room-button" text="Connect" class="multiplayer-button nav-button" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <ui:VisualElement name="load-game-panel" class="load-game-panel nav-window">

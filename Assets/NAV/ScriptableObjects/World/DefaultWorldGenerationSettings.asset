@@ -31,6 +31,14 @@ MonoBehaviour:
   _groveThreshold: 0.62
   _denseForestBiome: {fileID: 11400000, guid: 32e5c5f4997700649a3d8abe48948b02, type: 2}
   _denseForestMoistureThreshold: 0.68
+  _oceanBorder: 420
+  _deepSeaEdge: 110
+  _deepSeaDepth: 0.12
+  _islandBiome: {fileID: 11400000, guid: 6310ec1c708272c4fa0be9729de77ccf, type: 2}
+  _islandNoiseScale: 120
+  _islandThreshold: 0.55
+  _islandHeight: 0.14
+  _tileBaseData: {fileID: 15600000, guid: 6c9e01ecbc0ece848aa392e29354de49, type: 2}
   _grassTextures:
   - {fileID: 2800000, guid: 05ed0acf5c943924592e92895a6ddd28, type: 3}
   - {fileID: 2800000, guid: a5afa522eb551e04285e6d9e885e279f, type: 3}

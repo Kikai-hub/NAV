@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_hammer1H10
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_hammer1H10
-  _displayName: Mace 10
-  _description: Mace from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Black Steel Mace
+  _description: A heavy black steel head - it dents what silver only scratches.
   _icon: {fileID: 21300000, guid: ccc41a350c795234eb44352a60a78c69, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 4
+  _density: 2
   _worldPrefab: {fileID: 7716458791827755355, guid: 6f707058c692f5349bc1aed3c6b2d4ff, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: e9bac7bffef97474ea0882c36ff81c19, type: 2}
   _heldPrefab: {fileID: 4684147037328381654, guid: e0a273f47617a2546ad811d609045e75, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

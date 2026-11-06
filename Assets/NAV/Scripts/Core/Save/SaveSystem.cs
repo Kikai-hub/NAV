@@ -35,7 +35,7 @@ namespace NAV.Core.Save
         /// bump this. Older saves then still load, but SaveManager treats their depleted resource
         /// ids as invalid and lifts the player back onto the ground, and the Load list warns that
         /// buildings may be out of place.</summary>
-        public const int WorldGenerationVersion = 8; // 2: birch groves (2026-10-22); 3: copper and bog iron ore (2026-10-24); 4: tin ore (2026-10-24); 5: old oaks (2026-10-24); 6: dense forest, ancient trees, denser forests, small trees and bushes on the plains (2026-10-24); 7: chunk streaming - per-chunk node ids (2026-10-25); 8: world 2.56 x 2.56 km, centred (2026-10-25)
+        public const int WorldGenerationVersion = 14; // 2: birch groves (2026-10-22); 3: copper and bog iron ore (2026-10-24); 4: tin ore (2026-10-24); 5: old oaks (2026-10-24); 6: dense forest, ancient trees, denser forests, small trees and bushes on the plains (2026-10-24); 7: chunk streaming - per-chunk node ids (2026-10-25); 8: world 2.56 x 2.56 km, centred (2026-10-25); 9: round world in an endless sea, sea islands, tin only there (2026-10-25); 10: hybrid world - radius 15 km, continents + archipelagos, terrain tiles, sea level Y 0 (2026-10-25); 11: swamp content - bog iron only in the swamp, dead trees, sunken logs (2026-10-25); 12: wild rosemary in the swamp, swamp boss slot POI (2026-10-25); 13: mountains - silver veins, snowy peaks above 175 m, snow leopards (2026-10-25); 14: black forest - a climate band between the dense forest and the sea islands, bog oaks, black ore, volkolaks (2026-11-06)
 
         /// <summary>Set by MainMenuUIController's Load list before loading the gameplay scene;
         /// null means "start a new game instead". SaveManager reads and immediately clears this
@@ -58,6 +58,11 @@ namespace NAV.Core.Save
         public static string CurrentSaveId { get; set; }
 
         public static int CurrentSeed { get; set; }
+
+        /// <summary>True while playing as a guest in another player's online world - SaveManager
+        /// then writes nothing (the world and its save belong to the host). Set by
+        /// NAV.Network.NetworkGameManager, cleared when the session ends.</summary>
+        public static bool SavingSuspended { get; set; }
         public static string CurrentWorldName { get; set; }
 
         private static string SaveFolder => Path.Combine(Application.persistentDataPath, SaveFolderName);

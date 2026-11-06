@@ -15,6 +15,7 @@ MonoBehaviour:
   _displayName: Birch Grove
   _terrainLayer: {fileID: 8574412962073106934, guid: b56436fb7a3e9cc44b518597819d1599, type: 2}
   _isWater: 0
+  _mapColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
   _heightVariation: 0.45
   _resourceSpawns:
   - _prefab: {fileID: 2853830331436078175, guid: d6059cbdf4e5cd94095fac209d22a962, type: 3}

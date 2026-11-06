@@ -27,10 +27,13 @@ namespace NAV.Gameplay.Equipment
     {
         [SerializeField] private ArmorSlot _slot;
         [SerializeField, Min(0f)] private float _armor = 1f;
+        [Tooltip("Protection from the cold (PlayerCold): the worn pieces add up; a fur cloak 1, a fur hood 0.5. A biome's Cold above the total chills the player.")]
+        [SerializeField, Min(0f)] private float _warmth;
         [SerializeField] private List<ArmorWornPart> _wornParts = new();
 
         public ArmorSlot Slot => _slot;
         public float Armor => _armor;
+        public float Warmth => _warmth;
         public IReadOnlyList<ArmorWornPart> WornParts => _wornParts;
     }
 }

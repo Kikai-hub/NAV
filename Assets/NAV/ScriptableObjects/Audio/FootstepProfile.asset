@@ -58,6 +58,16 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 4b0aff07ea8aab141962a8dfe0fbed02, type: 3}
     - {fileID: 8300000, guid: dfc73d508072d2641b53ee44c06a4ba9, type: 3}
     - {fileID: 8300000, guid: 185c08c0472583142a80472b01f2e1ea, type: 3}
+  - Layer: {fileID: 8574412962073106934, guid: 69524395206b1914bbded8bd0c6196b8, type: 2}
+    Clips:
+    - {fileID: 8300000, guid: 5eb7ee985c2493b48826d645569e2e5c, type: 3}
+    - {fileID: 8300000, guid: dc6b86e9bdcba814bb3079f70d898f39, type: 3}
+    - {fileID: 8300000, guid: 3e4761d98a2e6ae4a962b2e0b9f376de, type: 3}
+    - {fileID: 8300000, guid: 5d8d8966e97189e499620d64bf528145, type: 3}
+    - {fileID: 8300000, guid: e5a9f62497e6f014eb77c3b5702a7e1a, type: 3}
+    - {fileID: 8300000, guid: 4b0aff07ea8aab141962a8dfe0fbed02, type: 3}
+    - {fileID: 8300000, guid: dfc73d508072d2641b53ee44c06a4ba9, type: 3}
+    - {fileID: 8300000, guid: 185c08c0472583142a80472b01f2e1ea, type: 3}
   _wood:
   - {fileID: 8300000, guid: 03d7e27db02c5f64fa03f1b414fa96cb, type: 3}
   - {fileID: 8300000, guid: f0261db310ab74f408b955664cbd3491, type: 3}

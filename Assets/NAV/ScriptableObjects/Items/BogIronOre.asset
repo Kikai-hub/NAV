@@ -19,6 +19,7 @@ MonoBehaviour:
   _category: 0
   _maxStackSize: 30
   _weight: 1
+  _density: 4
   _worldPrefab: {fileID: 270410102863918416, guid: a0baa59b70fd8b8468c7939b1114cce6, type: 3}
   _food: {fileID: 0}
   _toolType: 0

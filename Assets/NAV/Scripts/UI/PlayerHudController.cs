@@ -70,6 +70,14 @@ namespace NAV.UI
         private readonly List<float> _foodFractions = new();
         private VisualElement _hotbarContainer;
         private VisualElement _healthFill;
+        // Found on the health's object - optional (no poison, no tint).
+        private PlayerPoison _poison;
+        // Found on the health's object - optional (frost tint, "Cold" line).
+        private PlayerCold _cold;
+        // Found on the combat's object - optional (bow draw on the crosshair, arrow count).
+        private PlayerArchery _archery;
+        private float _noArrowsUntil;
+        private const float NoArrowsMessageSeconds = 1.5f;
         private VisualElement _staminaBar;
         private VisualElement _staminaFill;
         private VisualElement _crosshair;
@@ -131,6 +139,23 @@ namespace NAV.UI
             }
 
             _health.Changed += RefreshHealth;
+            _poison = _health.GetComponent<PlayerPoison>();
+            _cold = _health.GetComponent<PlayerCold>();
+            if (_cold != null)
+            {
+                _cold.Changed += RefreshHealth;
+            }
+
+            _archery = _combat.GetComponent<PlayerArchery>();
+            if (_archery != null)
+            {
+                _archery.NoAmmo += HandleNoArrows;
+            }
+            if (_poison != null)
+            {
+                _poison.Changed += RefreshHealth;
+            }
+
             _playerInventory.Inventory.Changed += RefreshHotbar;
             if (_equipment != null)
             {
@@ -162,6 +187,21 @@ namespace NAV.UI
             if (_health != null)
             {
                 _health.Changed -= RefreshHealth;
+            }
+
+            if (_poison != null)
+            {
+                _poison.Changed -= RefreshHealth;
+            }
+
+            if (_archery != null)
+            {
+                _archery.NoAmmo -= HandleNoArrows;
+            }
+
+            if (_cold != null)
+            {
+                _cold.Changed -= RefreshHealth;
             }
 
             if (_playerInventory != null && _playerInventory.Inventory != null)
@@ -212,9 +252,30 @@ namespace NAV.UI
                 // ("Needs a workbench nearby", ...), instead of an [E] prompt.
                 prompt = _building.PlacementHint;
             }
+            else if (_interactor.CurrentInteractable != null)
+            {
+                prompt = $"[E] {_interactor.CurrentPrompt}";
+            }
+            else if (_archery != null && Time.time < _noArrowsUntil)
+            {
+                prompt = "No arrows";
+            }
+            else if (_archery != null && _archery.HasBow && _archery.CurrentAmmo != null)
+            {
+                // Which arrows the bow will loose, and how many are left.
+                prompt = $"{_archery.CurrentAmmo.DisplayName} x{_archery.AmmoCount}";
+            }
+            else if (_cold != null && _cold.State == PlayerCold.ColdState.Freezing)
+            {
+                prompt = "Freezing! Find a fire or a warm cloak";
+            }
+            else if (_cold != null && _cold.State == PlayerCold.ColdState.Cold)
+            {
+                prompt = "Cold - find a fire or a warm cloak";
+            }
             else
             {
-                prompt = _interactor.CurrentInteractable != null ? $"[E] {_interactor.CurrentPrompt}" : null;
+                prompt = null;
             }
 
             if (prompt == _lastPrompt)
@@ -415,6 +476,10 @@ namespace NAV.UI
         {
             float fraction = _health.MaxHealth > 0f ? Mathf.Clamp01(_health.CurrentHealth / _health.MaxHealth) : 0f;
             _healthFill.style.height = Length.Percent(fraction * 100f);
+            bool poisoned = _poison != null && _poison.IsPoisoned;
+            _healthFill.EnableInClassList("health-bar__fill--poisoned", poisoned);
+            // Poison's green wins when both - it's the one to deal with first (an antidote).
+            _healthFill.EnableInClassList("health-bar__fill--freezing", !poisoned && _cold != null && _cold.State == PlayerCold.ColdState.Freezing);
         }
 
         private void RefreshStamina()
@@ -486,6 +551,15 @@ namespace NAV.UI
             {
                 _crosshairRing.EnableInClassList($"crosshair--{candidate}", candidate == state);
             }
+
+            // Drawing a bow: the ring closes in as the draw fills.
+            float ringScale = _archery != null && _archery.IsDrawing ? Mathf.Lerp(1.8f, 0.6f, _archery.DrawProgress) : 1f;
+            _crosshairRing.style.scale = new Scale(new Vector3(ringScale, ringScale, 1f));
+        }
+
+        private void HandleNoArrows()
+        {
+            _noArrowsUntil = Time.time + NoArrowsMessageSeconds;
         }
     }
 }

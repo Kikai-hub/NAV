@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
+  m_Name: IronBoundGatePiece
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: IronBoundGatePiece
+  _displayName: Iron-Bound Gate
+  _icon: {fileID: 21300000, guid: fd49db84fe621614c8283041848630e9, type: 3}
+  _cost:
+  - _item: {fileID: 11400000, guid: 19e3644ae1b6b2744be1d0a43365c767, type: 2}
+    _amount: 8
+  - _item: {fileID: 11400000, guid: af90607c4ce551e4a941134f1dd1097a, type: 2}
+    _amount: 4
+  _prefab: {fileID: 2138941660329846183, guid: 3a9a172b779579a40b4708ab9a292769, type: 3}
+  _requiresWorkbench: 1
+  _requiredStation: {fileID: 11400000, guid: 88076d6efe864874a13bb414e213afdb, type: 2}
+  _requiredStationLevel: 3
+  _directional: 0
+  _floatsOnWater: 0
+  _unlockItems: []

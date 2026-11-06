@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Equipment.ArmorDefinition
   _slot: 2
   _armor: 4
+  _warmth: 0
   _wornParts:
   - _bone: 2
     _prefab: {fileID: 1691042021781857419, guid: 59e18ab84299c9047b12c200f28fcb31, type: 3}

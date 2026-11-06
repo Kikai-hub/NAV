@@ -146,9 +146,7 @@ namespace NAV.Editor
             GameObject tinRock = BuildOreRock("TinOre_Rock", "TinDeposit", "Tin Vein", 5,
                 new[] { (tinOre, 2, 1f), (tinOre, 1, 0.5f), (rock, 2, 1f) }, null, new[] { cassiterite, tin });
             SetMinToolTier("TinDeposit", 2);
-            UpsertResource("PlainsBiome", tinRock, 0.04f, 20f, new Vector2(0.8f, 1.15f), new Vector2(0.8f, 4f));
-            UpsertResource("ForestBiome", tinRock, 0.04f, 20f, new Vector2(0.8f, 1.15f), new Vector2(0.8f, 4f));
-            UpsertResource("OceanBiome", tinRock, 0.08f, 16f, new Vector2(0.8f, 1.15f), new Vector2(0.6f, 3f));
+            // Tin lives only on the sea islands (tier 3) - SeaIslandsSetup places it there.
 
             // Copper lives only in the dense forest (tier 2) - DenseForestSetup places it there
             // (this used to put it on the plains and forest hills).
@@ -209,8 +207,13 @@ namespace NAV.Editor
 
         // ---- Items ----
 
-        private static void Shard(Transform root, Material material, Vector3 position, Vector3 size, float yaw)
+        internal static void Shard(Transform root, Material material, Vector3 position, Vector3 size, float yaw)
         {
+            if (_shard == null)
+            {
+                _shard = AssetDatabase.LoadAssetAtPath<Mesh>(ShardMeshPath);
+            }
+
             var part = new GameObject("Lump");
             part.transform.SetParent(root, false);
             part.transform.localPosition = position;
@@ -220,7 +223,7 @@ namespace NAV.Editor
             part.AddComponent<MeshRenderer>().sharedMaterial = material;
         }
 
-        private static void Ingot(Transform root, Material material)
+        internal static void Ingot(Transform root, Material material)
         {
             // A rough bar: a long block with a narrower top.
             CreatureLootSetup.AddPart(root, PrimitiveType.Cube, "Base", material, new Vector3(0f, 0.035f, 0f), Vector3.zero, new Vector3(0.26f, 0.07f, 0.11f));
@@ -232,7 +235,7 @@ namespace NAV.Editor
             return AssetDatabase.LoadAssetAtPath<ItemDefinition>($"{ItemFolder}/{id}.asset");
         }
 
-        private static Material Mat(string name, Color color, float smoothness, float metallic)
+        internal static Material Mat(string name, Color color, float smoothness, float metallic)
         {
             string path = $"{MaterialFolder}/{name}.mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -254,9 +257,15 @@ namespace NAV.Editor
 
         /// <summary>A flint-rock copy (same rock model, collider, LODs) with its own deposit
         /// definition, an optional tint and metal lumps stuck on its surface.</summary>
-        private static GameObject BuildOreRock(string prefabName, string definitionName, string displayName, int hits,
+        internal static GameObject BuildOreRock(string prefabName, string definitionName, string displayName, int hits,
             (ItemDefinition item, int amount, float chance)[] drops, Material tint, Material[] veins)
         {
+            // Also called from other setups (MountainSetup) - the shard mesh for the veins may not be loaded yet.
+            if (_shard == null)
+            {
+                _shard = AssetDatabase.LoadAssetAtPath<Mesh>(ShardMeshPath);
+            }
+
             string definitionPath = $"{NodeFolder}/{definitionName}.asset";
             var definition = AssetDatabase.LoadAssetAtPath<ResourceNodeDefinition>(definitionPath);
             if (definition == null)
@@ -357,7 +366,7 @@ namespace NAV.Editor
             }
         }
 
-        private static void SetMinToolTier(string definitionName, int tier)
+        internal static void SetMinToolTier(string definitionName, int tier)
         {
             var definition = AssetDatabase.LoadAssetAtPath<ResourceNodeDefinition>($"{NodeFolder}/{definitionName}.asset");
             var serialized = new SerializedObject(definition);
@@ -397,7 +406,7 @@ namespace NAV.Editor
 
         // ---- Stations ----
 
-        private struct StationRecipe
+        internal struct StationRecipe
         {
             public ItemDefinition Input;
             public int InputAmount;
@@ -406,12 +415,12 @@ namespace NAV.Editor
             public float Seconds;
         }
 
-        private static StationRecipe Recipe(ItemDefinition input, int inputAmount, ItemDefinition output, int outputAmount, float seconds)
+        internal static StationRecipe Recipe(ItemDefinition input, int inputAmount, ItemDefinition output, int outputAmount, float seconds)
         {
             return new StationRecipe { Input = input, InputAmount = inputAmount, Output = output, OutputAmount = outputAmount, Seconds = seconds };
         }
 
-        private static BuildingPieceDefinition BuildStation(string id, string displayName, (ItemDefinition item, int amount)[] cost,
+        internal static BuildingPieceDefinition BuildStation(string id, string displayName, (ItemDefinition item, int amount)[] cost,
             StationRecipe[] recipes, ItemDefinition fuel, int fuelPerItem, int inputCapacity, int fuelCapacity,
             System.Action<Transform, GameObject, GameObject> buildModel)
         {

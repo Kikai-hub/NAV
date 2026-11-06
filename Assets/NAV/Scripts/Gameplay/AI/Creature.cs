@@ -41,7 +41,7 @@ namespace NAV.Gameplay.AI
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(SphereCollider))]
-    public class Creature : MonoBehaviour, IDamageable, IHitReactive, IHitSurface
+    public class Creature : MonoBehaviour, IDamageable, IHitReactive, IHitSurface, IUncleanTarget
     {
         [SerializeField] private CreatureDefinition _definition;
 
@@ -86,7 +86,63 @@ namespace NAV.Gameplay.AI
         public bool IsEngaged => _state == CreatureState.Chase || _state == CreatureState.Attack;
 
         public float CurrentHealth { get; private set; }
-        public HitSurface Surface => HitSurface.Flesh;
+
+        /// <summary>What a hit on it sounds like - flesh for animals, wood for the Leshy.</summary>
+        public HitSurface Surface => _definition != null ? _definition.Surface : HitSurface.Flesh;
+
+        /// <summary>Multiplies every movement speed (a boss's rage). 1 = the definition's speeds.</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
+
+        /// <summary>A hostile creature that, for now, leaves everyone alone (the Leshy while the
+        /// forest isn't angry): it wanders and neither notices nor hunts anything until it is
+        /// provoked - hit, or Provoke called (felling trees before its eyes).</summary>
+        public bool IsPeaceful { get; private set; }
+
+        /// <summary>A peaceful creature was provoked and turns hostile.</summary>
+        public event System.Action Provoked;
+
+        // Hostile right now: by its nature and not (still) peaceful.
+        private bool Hostile => _definition.IsHostile && !IsPeaceful;
+
+        /// <summary>Makes a hostile creature peaceful until provoked (it drops any hunt).</summary>
+        public void MakePeaceful()
+        {
+            if (!_definition.IsHostile || !IsAlive)
+            {
+                return;
+            }
+
+            IsPeaceful = true;
+            _target = null;
+            _targetTransform = null;
+            if (_state == CreatureState.Chase || _state == CreatureState.Attack)
+            {
+                EnterReturn();
+            }
+        }
+
+        /// <summary>Ends the peace: it turns on the given target (or whoever is near it).</summary>
+        public void Provoke(IDamageable target, Transform targetTransform)
+        {
+            if (!IsPeaceful || !IsAlive)
+            {
+                return;
+            }
+
+            IsPeaceful = false;
+            Provoked?.Invoke();
+            if (target != null && targetTransform != null && target.IsAlive)
+            {
+                Notice(target, targetTransform, false);
+            }
+            else if (_candidate != null && _candidateTransform != null && _candidate.IsAlive)
+            {
+                Notice(_candidate, _candidateTransform, false);
+            }
+        }
+
+        // Optional ICreatureAttack on the same object (bosses) - replaces the instant bite.
+        private ICreatureAttack _customAttack;
 
         /// <summary>True for a moment after a melee hit - the creature neither moves on its own
         /// nor attacks (see ReactToHit).</summary>
@@ -95,6 +151,77 @@ namespace NAV.Gameplay.AI
         public bool IsAlive => CurrentHealth > 0f;
         public CreatureState State => _state;
         public CreatureDefinition Definition => _definition;
+        public bool IsUnclean => _definition != null && _definition.IsUnclean;
+
+        /// <summary>Horizontal direction of the last hit that reached ReactToHit (zero if none) -
+        /// the death ragdoll falls away from the killing blow.</summary>
+        public Vector3 LastHitDirection { get; private set; }
+
+        // ---- Multiplayer (NAV.Network.NetworkCreatureSync) ----
+
+        /// <summary>Which creature this is across the network (owner's actor * 100000 + count); 0 offline.</summary>
+        public int NetworkId { get; set; }
+
+        /// <summary>True for a copy of a creature another machine runs: no AI, no NavMesh agent;
+        /// moved by the network; hits on it go to its owner (RemoteDamageRequested).</summary>
+        public bool IsRemoteCopy { get; private set; }
+
+        /// <summary>A copy's ground velocity as its owner reports it (CreatureAnimator's walk/run).</summary>
+        public Vector3 RemoteVelocity { get; set; }
+
+        /// <summary>Who dealt the killing blow when it wasn't this machine's player (the network
+        /// sets it with TakeDamageFrom) - then no loot drops here; the killer's machine drops it.</summary>
+        public object KilledBy { get; private set; }
+
+        /// <summary>A hit landed on a copy - the network sends it to the owner.</summary>
+        public event System.Action<Creature, float> RemoteDamageRequested;
+
+        private object _damageSource;
+
+        /// <summary>Turns this instance into a copy of another machine's creature.</summary>
+        public void MakeRemoteCopy(int networkId)
+        {
+            NetworkId = networkId;
+            IsRemoteCopy = true;
+            _agent.enabled = false;
+            GetComponent<SphereCollider>().enabled = false;
+            All.Remove(this);
+        }
+
+        /// <summary>Damage from another machine's player (the owner side of a copy's hit).</summary>
+        public void TakeDamageFrom(float amount, object source)
+        {
+            _damageSource = source;
+            TakeDamage(amount);
+            _damageSource = null;
+        }
+
+        /// <summary>The owner says this copy died: the same death here (ragdoll), loot only if
+        /// this machine's player killed it.</summary>
+        public void DieAsCopy(bool dropLoot)
+        {
+            if (!IsAlive)
+            {
+                return;
+            }
+
+            CurrentHealth = 0f;
+            _state = CreatureState.Dead;
+            Died?.Invoke();
+            if (dropLoot && !_hasDroppedLoot)
+            {
+                _hasDroppedLoot = true;
+                SpawnLoot();
+            }
+
+            Destroy(gameObject, _despawnDelaySeconds);
+        }
+
+        /// <summary>The owner's creature attacked - the copy plays the same lunge.</summary>
+        public void PlayAttackAsCopy()
+        {
+            AttackPerformed?.Invoke();
+        }
 
         /// <summary>Fires when an attack lands its damage - for the attack animation/sound.</summary>
         public event System.Action AttackPerformed;
@@ -113,6 +240,7 @@ namespace NAV.Gameplay.AI
 
             _agent = GetComponent<NavMeshAgent>();
             _agent.speed = _definition.MoveSpeed;
+            _customAttack = GetComponent<ICreatureAttack>();
 
             SphereCollider detector = GetComponent<SphereCollider>();
             detector.isTrigger = true;
@@ -120,12 +248,26 @@ namespace NAV.Gameplay.AI
 
             CurrentHealth = _definition.MaxHealth;
             _spawnPosition = transform.position;
+            if (CreatingRemoteCopy)
+            {
+                // A network copy: no AI, and its agent never touches this machine's NavMesh.
+                IsRemoteCopy = true;
+                _agent.enabled = false;
+                detector.enabled = false;
+                return;
+            }
+
             EnterPatrol();
         }
 
+        /// <summary>Set by the network while it instantiates a copy of another machine's
+        /// creature, so Awake starts it as a copy (no patrol, no agent).</summary>
+        public static bool CreatingRemoteCopy { get; set; }
+
         private void Update()
         {
-            if (!IsAlive)
+            // A copy of another machine's creature is moved by the network, not by its own AI.
+            if (!IsAlive || IsRemoteCopy)
             {
                 return;
             }
@@ -133,6 +275,17 @@ namespace NAV.Gameplay.AI
             if (_staggerTimer > 0f)
             {
                 TickStagger();
+                return;
+            }
+
+            // Committed to its own action (a boss's blow or roar): it stands where it is.
+            if (_customAttack != null && _customAttack.IsBusy)
+            {
+                if (_agent.hasPath)
+                {
+                    _agent.ResetPath();
+                }
+
                 return;
             }
 
@@ -151,7 +304,11 @@ namespace NAV.Gameplay.AI
 
         private void OnEnable()
         {
-            All.Add(this);
+            // Copies aren't this machine's creatures - population counts and pack alerts skip them.
+            if (!IsRemoteCopy)
+            {
+                All.Add(this);
+            }
         }
 
         private void OnDisable()
@@ -165,7 +322,9 @@ namespace NAV.Gameplay.AI
 
             // Other creatures are ignored entirely: with several spawned per biome, a wolf's
             // detection radius would otherwise pull it into fights with every wolf/boar nearby.
-            if (damageable == null || damageable is Creature)
+            // Remote players' avatars are fair game (their bites go to their owner); copies of
+            // creatures run on another machine (IsRemoteCopy) don't hunt at all.
+            if (damageable == null || damageable is Creature || IsRemoteCopy)
             {
                 return;
             }
@@ -174,7 +333,7 @@ namespace NAV.Gameplay.AI
             // in Update). A neutral one only needs to know where the threat is, to flee from it.
             _candidate = damageable;
             _candidateTransform = other.transform;
-            if (!_definition.IsHostile)
+            if (!Hostile)
             {
                 _target = damageable;
                 _targetTransform = other.transform;
@@ -204,7 +363,7 @@ namespace NAV.Gameplay.AI
 
         private void TickPerception()
         {
-            if (!_definition.IsHostile || _candidate == null || _target != null || !CanStartChase || Time.time < _nextSightCheck)
+            if (!Hostile || _candidate == null || _target != null || !CanStartChase || Time.time < _nextSightCheck)
             {
                 return;
             }
@@ -277,7 +436,7 @@ namespace NAV.Gameplay.AI
         /// <summary>A packmate spotted something: join the hunt if not busy already.</summary>
         public void Alert(IDamageable target, Transform targetTransform)
         {
-            if (!IsAlive || !_definition.IsHostile || !CanStartChase || target == null || !target.IsAlive)
+            if (!IsAlive || !Hostile || !CanStartChase || target == null || !target.IsAlive)
             {
                 return;
             }
@@ -297,14 +456,14 @@ namespace NAV.Gameplay.AI
         {
             Vector2 offset = Random.insideUnitCircle * _definition.PatrolRadius;
             Vector3 destination = _spawnPosition + new Vector3(offset.x, 0f, offset.y);
-            _agent.speed = _definition.MoveSpeed;
+            _agent.speed = _definition.MoveSpeed * SpeedMultiplier;
             _agent.SetDestination(destination);
             _stateTimer = 0f;
         }
 
         private void TickPatrol()
         {
-            if (_definition.IsHostile && _target != null)
+            if (Hostile && _target != null)
             {
                 EnterChase();
                 return;
@@ -325,7 +484,7 @@ namespace NAV.Gameplay.AI
         private void EnterChase()
         {
             _state = CreatureState.Chase;
-            _agent.speed = _definition.MoveSpeed * _definition.ChaseSpeedMultiplier;
+            _agent.speed = _definition.MoveSpeed * _definition.ChaseSpeedMultiplier * SpeedMultiplier;
         }
 
         private void TickChase()
@@ -373,10 +532,39 @@ namespace NAV.Gameplay.AI
 
             FaceTowards(_lastKnownTargetPosition);
 
+            if (_customAttack != null)
+            {
+                // Its own telegraphed blow - once it has turned to face the target.
+                if (Time.time >= _nextAttackTime && IsFacing(_lastKnownTargetPosition, CustomAttackFacingDegrees)
+                    && _customAttack.TryBeginAttack(_target, _targetTransform))
+                {
+                    _nextAttackTime = Time.time + _definition.AttackCooldown;
+                    AttackPerformed?.Invoke();
+                }
+
+                return;
+            }
+
             if (Time.time >= _nextAttackTime)
             {
                 _nextAttackTime = Time.time + _definition.AttackCooldown;
-                _target.TakeDamage(_definition.AttackDamage);
+                if (_target is IRemoteProxy remotePlayer)
+                {
+                    // Another machine's player: its owner takes the bite (and the poison).
+                    remotePlayer.TakeCreatureDamage(_definition.AttackDamage, _definition.PoisonDamage, _definition.PoisonSeconds);
+                }
+                else
+                {
+                    _target.TakeDamage(_definition.AttackDamage);
+                }
+
+                // A poisonous bite: the poison works whether or not the hit was blocked - a
+                // shield stops teeth, not venom on them (keeps it simple; revisit with real fights).
+                if (!(_target is IRemoteProxy) && _definition.PoisonDamage > 0f && _targetTransform != null && _targetTransform.GetComponentInParent<IPoisonable>() is IPoisonable poisonable)
+                {
+                    poisonable.ApplyPoison(_definition.PoisonDamage, _definition.PoisonSeconds);
+                }
+
                 AttackPerformed?.Invoke();
                 Debug.Log($"{name} attacked for {_definition.AttackDamage}.", this);
             }
@@ -387,14 +575,14 @@ namespace NAV.Gameplay.AI
         private void EnterSearch()
         {
             _state = CreatureState.Search;
-            _agent.speed = _definition.MoveSpeed;
+            _agent.speed = _definition.MoveSpeed * SpeedMultiplier;
             _agent.SetDestination(_lastKnownTargetPosition);
             _stateTimer = 0f;
         }
 
         private void TickSearch()
         {
-            if (_definition.IsHostile && _target != null)
+            if (Hostile && _target != null)
             {
                 EnterChase();
                 return;
@@ -415,13 +603,13 @@ namespace NAV.Gameplay.AI
         private void EnterReturn()
         {
             _state = CreatureState.Return;
-            _agent.speed = _definition.MoveSpeed;
+            _agent.speed = _definition.MoveSpeed * SpeedMultiplier;
             _agent.SetDestination(_spawnPosition);
         }
 
         private void TickReturn()
         {
-            if (_definition.IsHostile && _target != null)
+            if (Hostile && _target != null)
             {
                 EnterChase();
                 return;
@@ -438,7 +626,7 @@ namespace NAV.Gameplay.AI
         private void EnterFlee(Vector3 threatPosition)
         {
             _state = CreatureState.Flee;
-            _agent.speed = _definition.MoveSpeed * _definition.ChaseSpeedMultiplier;
+            _agent.speed = _definition.MoveSpeed * _definition.ChaseSpeedMultiplier * SpeedMultiplier;
 
             Vector3 away = transform.position - threatPosition;
             away.y = 0f;
@@ -471,20 +659,43 @@ namespace NAV.Gameplay.AI
             return !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance;
         }
 
+        private const float CustomAttackFacingDegrees = 25f;
+
+        /// <summary>Turns to face a point - at once, or at the definition's TurnSpeed (a heavy
+        /// boss swings round slowly, so a target can get behind it).</summary>
         private void FaceTowards(Vector3 worldPosition)
         {
             Vector3 facing = worldPosition - transform.position;
             facing.y = 0f;
-            if (facing.sqrMagnitude > 0.001f)
+            if (facing.sqrMagnitude <= 0.001f)
             {
-                transform.rotation = Quaternion.LookRotation(facing);
+                return;
             }
+
+            Quaternion look = Quaternion.LookRotation(facing);
+            transform.rotation = _definition.TurnSpeed > 0f
+                ? Quaternion.RotateTowards(transform.rotation, look, _definition.TurnSpeed * SpeedMultiplier * Time.deltaTime)
+                : look;
+        }
+
+        private bool IsFacing(Vector3 worldPosition, float degrees)
+        {
+            Vector3 facing = worldPosition - transform.position;
+            facing.y = 0f;
+            return facing.sqrMagnitude <= 0.001f || Vector3.Angle(transform.forward, facing) <= degrees;
         }
 
         public void TakeDamage(float amount)
         {
             if (amount <= 0f || !IsAlive)
             {
+                return;
+            }
+
+            if (IsRemoteCopy)
+            {
+                // Its owner's machine decides (and answers with DieAsCopy).
+                RemoteDamageRequested?.Invoke(this, amount);
                 return;
             }
 
@@ -497,7 +708,14 @@ namespace NAV.Gameplay.AI
                 return;
             }
 
-            if (_definition.IsHostile)
+            // A peaceful creature that is hit is provoked - it turns on whoever is near it.
+            if (IsPeaceful)
+            {
+                IsPeaceful = false;
+                Provoked?.Invoke();
+            }
+
+            if (Hostile)
             {
                 if (_state != CreatureState.Chase && _state != CreatureState.Attack)
                 {
@@ -525,12 +743,13 @@ namespace NAV.Gameplay.AI
         /// KnockbackDistance along the swing, and the next attack waits until it's over.</summary>
         public void ReactToHit(Vector3 direction)
         {
+            direction.y = 0f;
+            LastHitDirection = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
             if (!IsAlive || _definition.StaggerSeconds <= 0f)
             {
                 return;
             }
 
-            direction.y = 0f;
             _knockbackVelocity = direction.sqrMagnitude > 0.0001f
                 ? direction.normalized * (2f * _definition.KnockbackDistance / _definition.StaggerSeconds)
                 : Vector3.zero;
@@ -561,9 +780,11 @@ namespace NAV.Gameplay.AI
             _agent.ResetPath();
             _agent.enabled = false;
             Debug.Log($"{name} defeated.", this);
+            KilledBy = _damageSource;
             Died?.Invoke();
 
-            if (!_hasDroppedLoot)
+            // Killed by another machine's player: the loot drops on their machine instead.
+            if (!_hasDroppedLoot && KilledBy == null)
             {
                 _hasDroppedLoot = true;
                 SpawnLoot();
@@ -589,7 +810,7 @@ namespace NAV.Gameplay.AI
 
                 // On a slope the scattered point can be inside the hill - small drops (fangs)
                 // would then fall through the terrain. Start them just above the ground there.
-                Terrain terrain = Terrain.activeTerrain;
+                Terrain terrain = TerrainUnder(spawnPosition);
                 if (terrain != null)
                 {
                     float ground = terrain.transform.position.y + terrain.SampleHeight(spawnPosition) + LootGroundClearance;
@@ -601,6 +822,22 @@ namespace NAV.Gameplay.AI
 
                 ItemPickup.SpawnInWorld(drop.Item, drop.Amount, spawnPosition, Quaternion.identity, impulse);
             }
+        }
+
+        // The ground is several terrain tiles - the one whose square holds the point.
+        private static Terrain TerrainUnder(Vector3 point)
+        {
+            foreach (Terrain terrain in Terrain.activeTerrains)
+            {
+                Vector3 origin = terrain.transform.position;
+                Vector3 size = terrain.terrainData.size;
+                if (point.x >= origin.x && point.z >= origin.z && point.x < origin.x + size.x && point.z < origin.z + size.z)
+                {
+                    return terrain;
+                }
+            }
+
+            return null;
         }
 
         private void OnValidate()

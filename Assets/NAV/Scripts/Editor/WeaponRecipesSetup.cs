@@ -26,7 +26,7 @@ namespace NAV.Editor
         private const string Recipes = "Assets/NAV/ScriptableObjects/Recipes/Weapons/";
         private const string Workbenches = "Assets/NAV/ScriptableObjects/Workbenches/";
 
-        private enum Tier { Wood, Bone, Copper, Bronze, Iron }
+        private enum Tier { Wood, Bone, Copper, Bronze, Iron, Silver, BlackSteel }
 
         private sealed class Entry
         {
@@ -72,6 +72,27 @@ namespace NAV.Editor
             new() { Model = "sword2H1", Name = "Iron Greatsword", Tier = Tier.Iron, Forge = true, Level = 4, Description = "A two-handed iron sword." },
             new() { Model = "axe2H1", Name = "Iron Battle Axe", Tier = Tier.Iron, Forge = true, Level = 4, Description = "A great two-handed axe." },
             new() { Model = "hammer2H4", Name = "Iron Warhammer", Tier = Tier.Iron, Forge = true, Level = 4, Description = "A crushing two-handed hammer." },
+            // Silver (tier 5, Forge level 5 - the smelting furnace): the bright, white-steel models;
+            // silver bites the unclean (x1.5 against нечисть - ApplyWeapon).
+            new() { Model = "sword1H4", Name = "Silver Sword", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A bright silver-faced blade. Нечисть fears it." },
+            new() { Model = "hammer1H8", Name = "Silver Mace", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A mace with a silver head - it breaks the unclean." },
+            new() { Model = "spear8", Name = "Silver Spear", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A spear with a long silver blade." },
+            new() { Model = "shield16", Name = "Silver Shield", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A kite shield rimmed with silver, a charm-stone at its heart." },
+            new() { Model = "axe1H4", Name = "Silver Hand Axe", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A double-bitted silver hand axe - for battle and for trees." },
+            new() { Model = "sword2H2", Name = "Silver Greatsword", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A two-handed silver sword." },
+            new() { Model = "axe2H5", Name = "Silver Battle Axe", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A great silver battle axe." },
+            new() { Model = "hammer2H6", Name = "Silver Warhammer", Tier = Tier.Silver, Forge = true, Level = 5, Description = "A two-handed hammer with a silver head." },
+            // Black steel (tier 6, Forge level 6 - the quench tub): the dark, heavy models, hafts
+            // of bog oak (BlackForestSetup makes the bars and the wood first).
+            new() { Model = "dagger6", Name = "Black Steel Dagger", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A dark, thin blade quenched in the black forest's water." },
+            new() { Model = "sword1H9", Name = "Black Steel Sword", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A black steel sword on a bog-oak grip." },
+            new() { Model = "hammer1H10", Name = "Black Steel Mace", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A heavy black steel head - it dents what silver only scratches." },
+            new() { Model = "spear6", Name = "Black Steel Spear", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A long bog-oak shaft with a black steel head." },
+            new() { Model = "shield18", Name = "Black Steel Shield", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "Bog-oak boards under rows of black steel studs." },
+            new() { Model = "axe1H5", Name = "Black Steel Hand Axe", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A broad black steel axe - for battle, and it bites the bog oaks." },
+            new() { Model = "sword2H5", Name = "Black Steel Greatsword", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A wide two-handed blade of black steel." },
+            new() { Model = "axe2H3", Name = "Black Steel Battle Axe", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A great black steel battle axe." },
+            new() { Model = "hammer2H8", Name = "Black Steel Warhammer", Tier = Tier.BlackSteel, Forge = true, Level = 6, Description = "A two-handed black steel hammer." },
         };
 
         // Class base stats - the same numbers WeaponPackGenerator writes (copper = 1x).
@@ -94,7 +115,9 @@ namespace NAV.Editor
             Tier.Bone => 0.85f,
             Tier.Copper => 1f,
             Tier.Bronze => 1.15f,
-            _ => 1.35f,
+            Tier.Iron => 1.35f,
+            Tier.Silver => 1.55f,
+            _ => 1.8f,
         };
 
         // Shields: better tiers block more (capped below 100%).
@@ -104,7 +127,9 @@ namespace NAV.Editor
             Tier.Bone => -0.1f,
             Tier.Copper => 0f,
             Tier.Bronze => 0.04f,
-            _ => 0.07f,
+            Tier.Iron => 0.07f,
+            Tier.Silver => 0.1f,
+            _ => 0.13f,
         };
 
         [MenuItem("NAV/Build/Build Pack Weapon Recipes (Stage C)")]
@@ -117,6 +142,11 @@ namespace NAV.Editor
             ItemDefinition copperBar = Item("CopperBar");
             ItemDefinition ironBar = Item("IronBar");
             ItemDefinition bronzeBar = Item("BronzeBar");
+            // Optional until the mountains exist (MountainSetup) - the silver entries are skipped without it.
+            ItemDefinition silverBar = Item("SilverBar");
+            // Optional until the black forest exists (BlackForestSetup) - those entries are skipped without them.
+            ItemDefinition blackSteelBar = Item("BlackSteelBar");
+            ItemDefinition bogOak = Item("BogOakWood");
             ItemDefinition bone = Item("Bone");
             ItemDefinition fang = Item("Fang");
             if (forge == null || copperBar == null || leather == null)
@@ -156,8 +186,22 @@ namespace NAV.Editor
                 ApplyItem(item, entry);
                 ApplyWeapon(item.Weapon, entry, weaponClass);
 
-                ItemDefinition bar = entry.Tier == Tier.Iron ? ironBar : entry.Tier == Tier.Bronze ? bronzeBar : copperBar;
-                (ItemDefinition, int)[] cost = Cost(weaponClass, entry.Tier, bar, wood, leather, bone, fang);
+                if ((entry.Tier == Tier.Silver && silverBar == null) || (entry.Tier == Tier.BlackSteel && (blackSteelBar == null || bogOak == null)))
+                {
+                    continue;
+                }
+
+                ItemDefinition bar = entry.Tier switch
+                {
+                    Tier.BlackSteel => blackSteelBar,
+                    Tier.Silver => silverBar,
+                    Tier.Iron => ironBar,
+                    Tier.Bronze => bronzeBar,
+                    _ => copperBar,
+                };
+                // Tier 6+ hafts and grips are bog oak (PROGRESSION_TIERS_v0.1.md).
+                ItemDefinition haft = entry.Tier == Tier.BlackSteel ? bogOak : wood;
+                (ItemDefinition, int)[] cost = Cost(weaponClass, entry.Tier, bar, haft, leather, bone, fang);
                 RecipeDefinition recipe = BuildRecipe($"{entry.Model}Recipe", item, entry.Forge ? forge : workbench, entry.Level, cost);
                 if (crafting != null)
                 {
@@ -185,7 +229,15 @@ namespace NAV.Editor
             // Hand axes are also axes for trees: tool tier = progression tier (copper 2, bronze 3, iron 4).
             if (item.ToolType != ToolType.None)
             {
-                serialized.FindProperty("_toolTier").intValue = entry.Tier == Tier.Iron ? 4 : entry.Tier == Tier.Bronze ? 3 : entry.Tier == Tier.Copper ? 2 : 1;
+                serialized.FindProperty("_toolTier").intValue = entry.Tier switch
+                {
+                    Tier.BlackSteel => 6,
+                    Tier.Silver => 5,
+                    Tier.Iron => 4,
+                    Tier.Bronze => 3,
+                    Tier.Copper => 2,
+                    _ => 1,
+                };
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -203,6 +255,7 @@ namespace NAV.Editor
             serialized.FindProperty("_displayName").stringValue = entry.Name;
             serialized.FindProperty("_damage").floatValue = Mathf.Round(stats.damage * DamageScale(entry.Tier) * 10f) / 10f;
             serialized.FindProperty("_blockDamageReduction").floatValue = Mathf.Clamp(stats.block + BlockBonus(entry.Tier), 0.1f, 0.95f);
+            serialized.FindProperty("_uncleanDamageMultiplier").floatValue = entry.Tier == Tier.Silver ? 1.5f : 1f;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(weapon);
         }

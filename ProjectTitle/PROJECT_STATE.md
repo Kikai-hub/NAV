@@ -65,6 +65,9 @@ Unity implementation has not yet been finalized.
 -   Resources are not infinitely regenerated
 -   1--4 player cooperative multiplayer is the long-term target
 -   MVP is single-player
+-   **Networking: Photon PUN 2** (developer, 2026-11-06 - started early at their request): rooms = online
+    worlds (name, password, PvE/PvP), proxy avatars for remote players, world changes as cached events,
+    creatures run by the nearest player's machine. App Id in PhotonServerSettings, fixed region "eu".
 -   NPCs are not part of the initial version
 -   7--10 bosses planned for the full game
 -   Bosses are intentionally not finalized
@@ -135,7 +138,13 @@ Unity implementation has not yet been finalized.
 
 ## Boss Status
 
-**NOT FINALIZED**
+**Boss 1 defined by the developer (2026-11-06): the Leshy (Леший) - built.** No altar: the first
+and only boss met by chance in the forest ("wrath of the forest + chance", ForestWrath); while the forest
+isn't angry he is peaceful until provoked. Killing him
+is mandatory: his Leshy Heartwood is in the Stone Pickaxe recipe (the first pickaxe, the way to ore).
+See Change Log 2026-11-06 "Leshy boss".
+
+The other bosses are **NOT FINALIZED**.
 
 Do not create final boss content yet.
 
@@ -160,6 +169,37 @@ altar + ritual items; - bosses tied to progression.
 ------------------------------------------------------------------------
 
 ## Technical Debt
+
+-   **Leshy (2026-11-06):** the developer's rigged FBX is a bare Mixamo skeleton (no mesh), so the
+    textured mesh is skinned to it by `LeshyModelSetup` with automatic weights (nearest bone by
+    body region + surface smoothing) - good enough in the preview sheets, but not painted by hand;
+    the hands/fingers got few vertices of their own. Rebuilding the weights needs the textured
+    FBX copied back to `Assets/_TempLeshySource/LeshySource.fbx` (deleted after the build). No foot
+    IK in the clips themselves (crouches match the hip drop to the knee bend); in game `LegGrounding`
+    plants the feet. Leshy boss (2026-11-06): NOT synced in multiplayer (a guest near the host gets
+    no encounter - ForestWrath.EncountersSuppressed - but the host's Leshy isn't shown on the
+    guest); a Leshy on the way / in a fight is not saved (wrath, kills, cooldown are); no sounds
+    (roar, creak, slam) and no dust/shake on the slam yet; balance (650 HP, slam 40, sweep 25, 2.1 m/s
+    enraged) set on paper, tried only with fists. Old saves keep a Stone Pickaxe made the old way.
+
+-   **Hero model (2026-11-05):** textured since 2026-11-06 (see Change Log). The rigged FBX has no
+    material of its own, so `Hero_Body.mat` is set on `Player/Hero/Hero_BodyMesh` in the scene (a
+    prefab-instance override) - a new instance of `Hero.fbx` comes in with URP's default Lit.
+    The rig has one finger chain per hand (Index1-3 carries all four fingers, no thumb); since
+    2026-11-06 `HandGrip` poses it (see Change Log), the sockets sit in its ring
+    (NAV > Animation > Setup Hero Hand Grip - re-run after changing the curl). The bow's string hand
+    and unarmed punches still use the animator's hand layers (no fist when punching). Armour pieces were
+    fitted on the dummy's proportions. `PlayerCombatAnimatorSetup.BakeModelPath` still bakes on the
+    dummy model (editor tool, fine while clips stay Humanoid).
+
+-   **Black Forest (2026-11-06):** the eternal dusk is applied by `AtmosphereFog` on top of what
+    `DayNightLighting` wrote that frame (it relies on running after it - DefaultExecutionOrder 100);
+    if another script starts writing the sun/ambient later in the frame, move the twilight into
+    `DayNightLighting`. The bog-oak pieces' snap points copy the oak set's (wall 2x2, pillar like a
+    post, arch like a beam); the tent roof's corner/side snaps were not tried on real walls. The
+    whole chain (deadfall -> knots -> kiln -> charcoal; ore -> furnace -> black iron -> Forge 6) was
+    built and checked as data, not crafted by hand in play. The volkolak is the tiger model; the
+    Black Gate's black steel bands barely show on the black wood.
 
 -   **Old saves vs. world-generation changes (deferred 2026-10-21, until closer
     to game-ready):** saves hold only the seed; the terrain is regenerated on
@@ -268,7 +308,35 @@ altar + ritual items; - bosses tied to progression.
 
 ## Current Next Step
 
-**Status as of 2026-10-18 (read this first - it supersedes the
+**Where we stopped - 2026-10-25 (read this first).** Done in the last session (details in the
+Change Log entries of 2026-10-25): hybrid world radius 15 km in the game (terrain tiles around the
+player; core 0-3%, archipelago 3-80% with big mountain islands, ocean 80-100%; forest copses 1:3 in the
+plains band; POIs with placeholder prefabs), real water (Gerstner waves shared by shader and physics,
+LOD ocean mesh, sea state by weather, boats/swimming/floating items on the waves). All of it is
+**uncommitted** - the developer tests in the game first. WorldGenerationVersion is 10.
+
+**Tier 4 - the Swamp, part 1 done (2026-10-25, uncommitted, WorldGenerationVersion 11):** dead
+trees, sunken logs -> Bog Wood, reeds, hummocks, fog/sound, bog iron only here, Bog Lurker with a
+poisonous bite (PlayerPoison). Bow and arrows, iron hinges, Iron-Bound Gate, Stake Trap, Antidote and the boss 4 slot done the same
+day - **tier 4 is complete** (placeholder models; the boss is not designed).
+
+**Tier 5 - the Mountains done (2026-10-25, uncommitted, WorldGenerationVersion 13):** cold
+(PlayerCold, HeatSource, warmth on armour), Snowy Peaks above 175 m, silver ore -> Smelting Furnace ->
+silver tools/weapons/armour (x1.5 vs the unclean), Snow Leopard -> Fur -> Loom -> Fur Hood / Fur Cloak
+(new Cloak slot), boss 5 slot, spawn only in the starting biome. Not done: rockfalls, the boss, real
+models. **Next:** the developer's playtest of tiers 4-5, then tier 6 (PROGRESSION_TIERS_v0.1.md).
+
+**Tier 6 - the Black Forest done (2026-11-06, uncommitted, WorldGenerationVersion 14):** its own climate band (0.5-0.6 of
+the radius, between the dense forest and the sea islands), eternal dusk (biome twilight dims the daylight), bog oaks (black
+steel axe) and their deadfall (silver axe) -> bog oak charcoal, black ore -> black iron -> black steel at the Forge level 6
+(Quench Tub), Carved Table (Workbench 5) and the bog-oak set (wall, pillar, arch, tent roof, black gate), black steel tools,
+9 weapons and armour 7/12/7, the Volkolak (нечисть) and its cloak, boss 6 slot. Placeholder models. Not done: watchtowers and
+terem pieces beyond these five, the boss. **Next:** the developer's playtest of tiers 4-6 (and the new hero), then tier 7
+(the Wild Field) or the Stage D boss framework.
+Other open items: Stage A playthrough by the developer; Stage D boss framework on one placeholder
+boss; wood porch for tier 1; sky polish; new Slavic creatures.
+
+**Status as of 2026-10-18 (it supersedes the
 2026-10-15 status below).** Phases 0--8 are essentially done; every step of
 the Vertical Slice loop exists in `WorldGenTest`. The agreed order of work
 from here is in `DEVELOPMENT_ROADMAP_v0.1.md`, "Production Order from here":
@@ -5465,3 +5533,682 @@ re-checked anyway - works.
     missed sprint steps. Without a humanoid rig: a step every 0.5 s (0.35 s
     sprinting). Measured with simulated W / W+Shift: walk (2 m/s) a step every
     ~0.4 s, sprint every ~0.25-0.3 s, in time with the legs.
+
+### v0.1 --- 2026-10-25 (Tier 3: round world in an endless sea, sea islands, the ladya)
+
+-   Developer approved tier 3, variant A (ocean around the map with islands),
+    then: make the world round with the eternal ocean at its edge (done here),
+    and enlarge it ~20x if needed (next step - needs a tiled terrain, see below).
+-   **Round world, endless sea** (`WorldGenerator.ShapeCoast`,
+    `WorldGenerationSettings` "Ocean and Islands"): distance in from the circle
+    inscribed in the map; within `OceanBorder` (420 m) the land slopes into the
+    sea, the outer `DeepSeaEdge` (110 m) and the square's corners are deep sea
+    (`DeepSeaDepth` 0.12 = 7 m). The sea plane is 5x the map - water to the horizon.
+    `NAV.Core.WorldWater` publishes sea height, world centre and radius for gameplay.
+-   **Sea islands** - in the outer half of the coastal band an island noise
+    (scale 120, threshold 0.55) raises islands from the sea floor on a smoothstep
+    (gentle beaches, ~18 deg average at the waterline; island ground uses the same
+    height variation as the sea - a different one stepped the shore into 10 m cliffs
+    on the first try), up to `IslandHeight` 0.14 (8 m) above the sea. Test seed:
+    53 islands, 27 over 40 m, the biggest ~130 m; land 41% of the map.
+    **`Editor/SeaIslandsSetup.cs`** (NAV > World > Build Sea Islands (Tier 3)):
+    SeaIslandsBiome - stony-sandy ground (`SeaIslandsLayer`, UNS dirt remapped),
+    spruces and cedars, boulders, bushes, **tin ore only here** (removed from plains,
+    forest and lake shores; MetallurgySetup no longer places it), **Driftwood** (a
+    bleached log on the beach - any axe, 2 hits, 2-3 wood), **Shellfish** (pickup on
+    the shore) -> **Cooked Shellfish** on the campfire spit (8 s; food: +14 health,
+    +28 stamina, 0.8/s regen, 12 min); sea + strong wind ambience, light sea haze,
+    sand footsteps. No creatures.
+-   **The ladya** (`Gameplay/Vehicles/Boat.cs`, `Editor/BoatSetup.cs` - NAV > Build >
+    Build Ladya (Boat)): a building piece at the joiner's bench (workbench level 3) -
+    10 oak, 10 wood, 6 resin, 4 leather; placed on water only
+    (`BuildingPieceDefinition._floatsOnWater` - the ghost sits at the waterline,
+    needs 0.6 m of water, hint "Place it on deeper water"). Rigidbody with 6 float
+    points (buoyancy + damping of the bobbing only - damping all motion first braked
+    it to 0.7 m/s), keel grip, slight drag, a gentle swell. E on the hull boards
+    (player parented to the seat, motor/collider/interactor off); W/S row (3.5 m/s),
+    A/D turn, Sprint sets the sail (8 m/s); E gets off onto land beside the boat, or
+    into the water. Pushed back 250 m past the world's edge. A 12-slot hold
+    (StorageContainer) at the stern. Placeholder model from primitives (planked
+    hull, horse-head prow, striped sail, oars). Saved like any building piece.
+-   Verified in Play Mode: islands generated and shot from the water (beach, trees,
+    boulders); tin/driftwood/shellfish only on islands (12/8/17 in the loaded
+    chunks); the boat floats level (tilt < 1 deg), sails 44 m in 6.7 s (8 m/s),
+    turns ~120 deg in 5 s, the player gets off onto the island; shellfish recipe on
+    the campfire. No console errors. Test saves deleted.
+-   `WorldGenerationVersion` 9. Not done: sea creatures, storms with waves (flat
+    water), boss 3 slot; boat while dead/loaded mid-sail just leaves you in the
+    water. **Next: the ~20x world** - one Unity Terrain can't hold ~11.5 km
+    (heights + alphamaps ~1 GB): needs terrain tiles generated around the player
+    and the biome map replaced by a per-point noise function.
+
+### v0.1 --- 2026-10-25 (Hybrid world generator core: continents, archipelagos, climate, POI)
+
+Developer asked for a hybrid world: round, radius 15 km, continents in the middle, island
+archipelagos around them, deep ocean at the rim; radial climate zones with blurred borders, polar
+caps north/south, height-bound biomes, POIs with checks. This milestone is the **pure generation
+core and a map preview** - the running game still uses the 2.56 km terrain (WorldGenerator).
+
+**How it works** (`Scripts/World/Generation/Hybrid/`, namespace `NAV.World.Generation.Hybrid`):
+- `NoiseField` / `NoiseLayer` - seeded fBm Perlin (octaves, lacunarity, gain), ridged variant.
+- `HybridWorldShape.Sample(x, z)` -> `WorldPoint` (height in metres from sea level, elevation,
+  zone, on island, polar, biome). A pure function, no arrays - any spot of the 30 km world in any order.
+  1. Land value = continent noise (scale 3.2 km) and detail noise (520 m) mixed; the detail share grows
+     from 18% (continent zone) to 50% (archipelago) - coasts fray into islets.
+  2. Mask: continent weight from the radius **warped by the noise** (bays/peninsulas, not a circle);
+     inside, land is guaranteed (min elevation); in the archipelago zone land needs a threshold that
+     climbs 0.45 -> 0.64 outwards (fewer, smaller islands); from 80% to the rim everything sinks into
+     deep ocean (-60 m).
+  3. Height: elevation x 220 m; ridged mountains up to +340 m only where the continent noise is high,
+     only on continents.
+  4. Biome order: ocean -> height rules (first match: Mountains >= 95 m on continents; Swamp <= 4 m
+     on islands, 50% patchy, not in polar caps) -> polar caps (|z|/R >= 0.6 +- noise: north Permafrost,
+     south Desert) -> climate bands by noisy radius (Plains 15%, Birch Grove 27%, Forest 42%,
+     Dense Forest 60%, Sea Islands beyond).
+- `HybridWorldSettings` (asset `ScriptableObjects/World/HybridWorldSettings.asset`) - every number above.
+- `ClimateBand`, `HeightBiomeRule` (BiomeRules.cs) - data for steps 3-4.
+- `PoiDefinition` (assets in `ScriptableObjects/World/Poi/`) + `PoiPlacer`: deterministic random tries
+  per kind (priority order), keeps a spot only if on land, in height range, allowed biome, and no POI
+  within max(both Exclusion Radius) / Same Kind Radius (grid lookup). Placeholder kinds: Boss arena
+  slot x8 (empty slot - no boss), Shrine x25, Shipwreck x30, Ruins x60.
+- `BiomeDefinition` got `_mapColor` (map/preview colour).
+- New placeholder biomes: Mountains, Swamp, Permafrost, Desert (tinted plains ground, no content).
+
+**Tools:** NAV > World > Hybrid World > Create Assets (re-runnable); Render Preview Map -> 
+`ProjectTitle/HybridWorld_Preview.png` + log stats. Seed 1337: continent zone 82% land, archipelago
+20%, ocean 0.1%; highest 245 m; 1024^2 samples in ~0.7 s, POIs in ~10 ms.
+
+**Known limits / next:** not wired into the game. Integration needs terrain tiles streamed around the
+player (one Unity Terrain can't hold 30 km), WorldGenerator chunks/impostors/creatures/spawn reading
+`HybridWorldShape`, POI prefabs per chunk, WorldGenerationVersion bump (old saves' worlds change).
+Polar caps only touch archipelago islands at these settings (continents end before |z|/R 0.6).
+
+### v0.1 --- 2026-10-25 (Hybrid world in the game: terrain tiles around the player)
+
+The hybrid world (previous entry) now **is** the game world. WorldGenerationVersion **10**: older
+saves load into the new world (gathered resources reset, the player lifted onto the ground; their
+buildings stay at their old coordinates).
+
+**Shape after developer feedback:** solid core only 0-3% of the radius (~450 m), then the archipelago
+3-80% (land threshold 0.46 -> 0.66: large islands near the core, smaller and rarer outwards), 80-100%
+deep ocean. Mountains are no longer continent-only: ridges rise wherever the continent noise is high,
+so the big islands get mountains too (rule Mountains >= 95 m, any landmass). Seed 1337: archipelago 14%
+land, mountains 4.4% of land, highest 283 m.
+
+**How it runs:**
+- `TerrainTiles` (new): 512 m Unity Terrains, heightmap 257 (2 m), ground/grass maps 256. Heights,
+  biomes, ground layers (only the ones the tile uses) and grass/flowers are computed on worker
+  threads (`Task.Run`); the main thread builds one TerrainData per frame. Tiles within view distance
+  + 512 m; removed one per frame beyond +1 tile. Edge samples are shared - no seams. The computed
+  samples answer `HeightAt` / `BiomeAt` (triangle-exact like the terrain); where no tile exists yet
+  they sample the shape directly. Sea level = world Y 0, world centre = origin.
+- `HybridWorldShape` is now thread-safe: own `Perlin2D` (Mathf.PerlinNoise is an engine call),
+  settings copied in the constructor, no Unity `==` on worker threads. Local relief (60 m bumps,
+  +-6 m x biome Height Variation, faded out at the shore) added. ~1.5 us per sample.
+- `WorldGenerator` rewritten around it: no single terrain / biome array any more; the scene Terrain
+  is only a template (material, pixel error, collider material) and is hidden. Chunks use world
+  coordinates (ids by `ChunkIndex`), PlaceNodes/LoadDecor read `_tiles`, impostors' bounds = world.
+  `[DefaultExecutionOrder(-100)]` + streams around the PlayerMotor (not the camera): after a teleport
+  the ground is built before the player's first step (the camera follows only in LateUpdate - the
+  player fell under a not-yet-built tile in the first test).
+- POIs (`WorldGenerator.Poi`): placed once per Generate, spawned/destroyed with their chunk, trees and
+  decor keep `PoiDefinition.ClearRadius` (14 m) free. Placeholder prefabs from primitives
+  (`Prefabs/World/Poi/`): Ruins, Shrine, Shipwreck (any low island shore, 15), Boss arena slot (ring of
+  menhirs, no boss).
+- Placeholder biomes textured from ADG ground_vol1: Mountains ground7 (grey stone, Height Variation 1),
+  Swamp ground5 (0.1), Permafrost ground3, Desert ground2.
+- `Creature` loot uses the terrain tile under the point (Terrain.activeTerrain is just any tile).
+
+**Measured (editor):** start ~32 tiles; walking at 30 m/s across tiles: 8.8 ms average frame, no
+hitches from tiles (stream step <= 8 ms); a far teleport (load/respawn) builds ~37 tiles at once in
+~1.3 s.
+
+**Known / debt:** WorldGenerationSettings still has the old single-terrain fields (Width, heightmap,
+island noise...) - unused now, kept so the older setup scripts compile; old buildings in pre-v10 saves
+may float or sink. Water is one huge plane (world-space shader). Mountains are rounded ridges, no cliffs.
+
+### v0.1 --- 2026-10-25 (Forest copses in the plains band)
+
+Developer: the first (central) zone looked empty - mix ordinary forest into the plains, 1 forest : 3
+plains. `ClimateBand` got an optional **Mix Biome** + **Mix Share**: inside the band, patches of a
+dedicated noise (`HybridWorldSettings.BandMixNoise`, ~300 m patches) at or above a level become the mix
+biome. The level is read off a sorted sample of that noise (fBm bunches around 0.5, so "1 - share"
+would give far less than the share). Plains band: Forest, 0.25 -> measured 23.8% forest within 2 km of
+the centre (seed 1337). Any other band can get a mix the same way (NAV > World > Hybrid World > Create
+Assets sets the plains one). No save-version bump needed beyond v10 (same day, not released).
+
+### v0.1 --- 2026-10-25 (Real water: Gerstner waves, LOD ocean mesh, buoyancy)
+
+Developer: the water should look and behave like real water (waves etc.).
+
+- **`NAV.Core.WaveField`** (new, static): 4 Gerstner waves (direction, wavelength, amplitude,
+  steepness; speed from deep-water dispersion sqrt(g/k)). `Displacement(x, z)` and `HeightAt(x, z)`
+  (3 fixed-point steps undo the sideways motion). Each wave fades out from 7x to 14x its wavelength
+  away from the camera (`FadeCentre`) - the far mesh is too coarse for short waves, so they aren't
+  physical there either. `Intensity` = the weather's sea state. Level clock - waves stop in pause.
+- **`OceanSurface`** (new, on the Water plane; added by NAV > World > Build Water): configures
+  WaveField (default calm swell 42 m/0.32 m, 21 m/0.16 m, 11 m/0.07 m, 6 m/0.035 m), feeds the same
+  numbers to the shader as globals (`_NAVWave*`) every frame, and draws the sea as 6 clipmap LOD
+  rings around the camera (128x128 cells, 1 m -> 32 m, ~2 km), snapped in 32 m steps (no vertex
+  swimming); the plane's renderer is switched off in Play Mode (kept in the editor).
+- **`NAV/Water` shader**: vertex displacement with the same Gerstner formula (ring-edge morphing ->
+  no cracks), analytic wave normals + the old detail normal maps, sky reflection from the reflection
+  probe dimmed by the ambient light (night water no longer mirrors the day sky), light through the
+  backlit crests (`_ScatterColor`), whitecaps on the crests (`_CrestFoam`), `_WaveDisplacement` 0 for
+  still water.
+- **`WaterBody`**: `Endless` and `Has Waves`; `TryGetSurface` now returns the wavy surface - swimming
+  (PlayerMotor), the camera clearance and ripples ride the waves with no changes of their own.
+- **`Boat`**: float points sample WaveField instead of the old fake swell (`_swellHeight` removed) -
+  the ladya pitches and rolls on the drawn waves.
+- **`WaterBuoyancy`** (new): Archimedes lift on the submerged part + water drag for any Rigidbody.
+  Dropped items get it with `ItemDefinition.Density` (new field, default 2 = sinks slowly; Wood 0.6,
+  Oak Wood 0.75, Charcoal 0.5 float; stone 2.5, ore 4, bars 7-8); felled trunks float (0.65).
+- **Weather**: `WeatherDefinition.SeaState` (Clear 1, Rain 1.5, Heavy Rain 2, Thunderstorm 2.8);
+  the sea follows a change slowly (0.05 per second).
+
+Known: no underwater view (camera stays above), no shore-wave breaking (the shoreline just moves
+with the waves), the sea beyond ~2 km isn't drawn (far clip is <= 1.26 km anyway).
+
+### v0.1 --- 2026-10-25 (Tier 4 - the Swamp, part 1: biome content and poison)
+
+PROGRESSION_TIERS tier 4 (Топь). The hybrid world already makes the Swamp in island lowlands; it
+now has content. **NAV > World > Build Swamp (Tier 4)** (`Editor/SwampSetup.cs`, re-runnable):
+- **Bare dead trees** (developer: trees without leaves) `Prefabs/World/Swamp/DeadTree_A/B/C` - primitives
+  (crooked trunk, forked bare branches, snapped top), `DeadTreeNode`: any axe, 4 hits, 3-5 wood, spruce
+  stump left (no falling trunk). They replaced the first pass's recoloured spruces/larches (deleted):
+  a few live spruces remain.
+- Sunken logs (`SunkenLog`, bronze axe+, 4 hits) -> **Bog Wood** (new item `BogWood`, density 0.9 -
+  floats low; in DefaultItemDatabase) + resin 35%.
+- Bog iron now **only** in the swamp (removed from Plains, Forest, Dense Forest, Ocean), 0.2 / 12 m on
+  wet ground.
+- Decor: reeds with cattails, mossy hummocks (primitives), mushroom patches.
+- Biome: fog 0.026 green-grey (~80 m), grass 0.55, stream trickle by day, crickets at night.
+- **Bog Lurker** (`Prefabs/Creatures/BogLurker`, `BogLurkerCreature`): the ithappy dog tinted swamp
+  green (placeholder), HP 50, bite 8 + **poison 24 over 8 s**, chases ~4.8 m/s; 3 by day, 6 at night.
+- **Poison** (new): `IPoisonable` (Combat) + `PlayerPoison` (on the Player): damage over time through
+  PlayerHealth each second (regen paused); a new dose keeps the stronger rate and the longer time
+  (no endless stacking); ends on death. `CreatureDefinition.PoisonDamage/PoisonSeconds` - Creature
+  applies it after each bite (blocked or not - kept simple). HUD: the health bar turns swamp green
+  while poisoned (`health-bar__fill--poisoned`).
+- Iron armour was already 4/7/4 (tier plan) - no change.
+- WorldGenerationVersion **11** (biome resource lists changed -> node ids).
+
+Checked in Play Mode: swamp ~540 m from the centre (seed of that run), 3 lurkers, 160 dead trees,
+32 sunken logs in range; an unarmoured player standing still was bitten down to 3.6 HP - poison ticks,
+bar green. Next for tier 4: bow + arrows, iron hinges/gates/traps, an antidote, Bog Wood recipes,
+boss 4 slot. Models for the artist: MODELS_FOR_3D_ARTIST 7.7.
+
+### v0.1 --- 2026-10-25 (Tier 4 - the bow and arrows)
+
+PROGRESSION_TIERS tier 4 "лук и стрелы". Ranged combat is a new system:
+- **Data:** `WeaponClass.Bow`, `WeaponAttackStyle.Bow`; `WeaponDefinition` Ranged block (`DrawSeconds`,
+  `ProjectileSpeed`, `IsRanged`); new `AmmoDefinition` (damage, flying prefab, recover chance);
+  `ItemDefinition.Ammo` / `IsAmmo`; `PlayerInputHandler.AttackHeld`.
+- **`PlayerArchery`** (on the Player): bow in hand + LMB held = draw (0..1 over Draw Seconds; needs
+  stamina and arrows - the first arrow stack in the inventory), release = loose (a release before 15% is
+  a fumble), RMB/block cancels. Arrow from chest height toward the camera ray's hit (250 m), speed and
+  damage scale with the draw (min 35% / 30%); damage = bow + arrow. Body faces the aim while drawing.
+  `PlayerCombat` ignores Attack for ranged weapons; `ReportProjectileHit` raises HitLanded (impact
+  effects/sounds/flinch as for melee).
+- **`ArrowProjectile`**: own ballistics (gravity, air drag, heavy drag in water), ray per frame from the
+  last position (no tunnelling), skips the shooter; hits an IDamageable -> damage + flinch, arrow gone;
+  hits anything else -> sticks (parented) and with the ammo's Recover Chance becomes a **`StuckArrow`**
+  (E picks it up; trigger collider; gone after 3 min), else breaks.
+- **Animation (Kevin Iglesias "Human Archer Animations FREE", imported by the developer):** baked like
+  the melee clips (hip-yaw twist curve so the side-on archer shoots where the character faces):
+  Stance Bow (Upper Body) / Full Bow (Full Stance), Bow Load (speed = clip length / Draw Seconds via
+  `BowDrawSpeed`) -> Bow Hold (loop) -> Bow Release on `BowRelease`; `BowDrawing` off without a release
+  eases back. `PlayerAnimator` drives them; its aim bend for a bow uses the true angle to the crosshair
+  target (250 m, no swing gain, +-60 deg) - the melee bend (8 m, x1.35, up to 80 deg) folded the archer
+  in half. `AttackCombo.VariantCount(Bow) = 0`.
+- **`BowString`** (on the held bow): the pack bow's string (LineRenderer) from tip to nock to tip; the
+  nock is pulled from B-nockPoint to AnchorPoint on the Load clip's own timing (0.2 s + 0.15 s, the
+  pack's values) and snaps back on release; the pack's arrow sits in the string hand (B-handProp.R)
+  while drawing. The first pass's IK pose (BowPose) was removed when the clips arrived.
+- **Items** (NAV > Combat > Build Bow And Arrows, re-runnable): **Hunting Bow** (bog wood 4, leather 2,
+  resin 2 at Workbench level 2; damage 14, draw 0.9 s, 50 m/s, stamina 8; held in B-handProp.L like the
+  pack demo), **Wood / Flint / Iron Arrow** x10 per craft (Wood 2 | Wood 2 + Flint 2 at the Workbench,
+  Wood 2 + Iron Bar 1 at the Forge; damage 8 / 14 / 24, recover 50 / 60 / 75 %), pack models
+  (arrows tinted per kind). Recipes in PlayerCrafting's known list, items in DefaultItemDatabase.
+- **HUD:** the crosshair ring closes in while drawing; under it the loaded arrow and count
+  ("Flint Arrow x29"), "No arrows" when trying to draw without any.
+
+Checked in Play Mode: draw -> Load -> Hold (arms at shoulder height, shot axis along the aim),
+release -> arrow flies; a flint arrow at full draw took a deer from 40 to 12 HP; a missed arrow stuck
+in the terrain tile. Not done: arrow trails/sounds (bow twang, whoosh), moving-shot animations,
+limbs bending on the draw, quiver on the back.
+
+### v0.1 --- 2026-10-25 (Tier 4 - the Swamp, part 2: iron age pieces, antidote, boss slot)
+
+**NAV > Build > Build Swamp Iron Age (Tier 4)** (`Editor/SwampCraftSetup.cs`, re-runnable, saves the scene):
+- **Iron Hinge** (new item): x2 from an iron bar at the Forge level 3 (as the iron tools/armour).
+- **Wild Rosemary** (багульник, new item): a pickup growing in the swamp (0.22 / 8 m on wet ground,
+  like shellfish on the islands) -> **Antidote** (x2 from 3 rosemary + 1 resin at the Workbench):
+  `ItemDefinition.CuresPoison` / `PoisonImmunitySeconds` (90 s). Right-click in the inventory drinks it
+  (`PlayerPoison.TryDrinkAntidote`: cures, then `ApplyPoison` is ignored while immune). Not food - no
+  food slot. Tooltip "Right-click to drink - cures poison".
+- **Iron-Bound Gate** (piece): the oak gate's layout (`OakSetup.Piece/Box/Snap/AddGateDoor`, now
+  internal) in bog wood with iron bands, studs, strap hinges and post caps; bog wood 8 + iron hinges 4,
+  Workbench level 3 (joiner's bench). Opens like the oak gate.
+- **Stake Trap** (piece, `SpikeTrap`): bog-wood frame and stakes with iron points, nothing solid
+  (creatures and the NavMesh go straight over it; a flat trigger on the root to aim at); every 0.25 s
+  OverlapBox finds creatures in it - 15 damage + flinch, each at most every 1.2 s; never the player;
+  falls apart after 30 wounds. Bog wood 3 + iron bar 1, Workbench level 2.
+- **Boss 4 arena slot**: `SwampBossSlot` POI - swamp only, 1 per world, priority 20, the generic menhir
+  ring placeholder; added to HybridWorldSettings' POI list. No boss (Boss Status: not designed).
+- `PoiPlacer`: at least 1000 random tries per kind (a 1-point kind in a rare biome missed with 80);
+  found on seeds 1337, 42, 777.
+- WorldGenerationVersion **12**.
+
+Checked in Play Mode: poisoned -> antidote -> cured, a new dose ignored (immune), one flask used; a
+trap placed under a deer took 15 HP off it (it fled); the gate opens (both leaves); in the swamp 108
+rosemary, 191 dead trees, 3 lurkers in range; the swamp boss slot placed. Tier 4 is complete except
+real models and the boss.
+
+### v0.1 --- 2026-10-25 (Tier 5 - the Mountains: cold, silver, snow leopard, fur)
+
+**NAV > World > Build Mountains (Tier 5)** (`Editor/MountainSetup.cs`, re-runnable), then re-run
+**ArmorSetup** and **WeaponRecipesSetup** (they add the silver and fur pieces once the items exist):
+- **Cold** (`Core/WorldClimate` - the generator gives the cold of the point; `BiomeDefinition.Cold`):
+  Mountains 1, Snowy Peaks 1.5, Permafrost 1.5. `PlayerCold` on the player: Warm / Cold / Freezing;
+  exposure = cold - warmth; freezing after 20 s exposed, then 1.5 HP/s. Warmth = worn armour
+  (`ArmorDefinition.Warmth`, `PlayerEquipment.TotalWarmth`) or a `HeatSource` nearby (campfire, forge,
+  bloomery, kiln, smelting furnace). HUD: blue tint and prompts "Cold - find a fire or a warm cloak" /
+  "Freezing! ..." (poison's green wins).
+- **Snowy Peaks** (new biome): height rule >= 175 m before the mountains rule; ground3 tinted white.
+- **Silver**: SilverOre_Rock veins in the mountains and peaks (iron pickaxe or better - min tool tier 4)
+  -> Silver Ore -> **Smelting Furnace** (плавильный горн; the Forge's 4th extension -> Forge level 5;
+  ore + charcoal -> Silver Bar). Silver Axe / Silver Pickaxe (tool tier 5), silver armour set
+  (helm 5/cuirass 10/greaves 5 armour) and 8 silver weapons (x1.55 damage) at Forge level 5.
+  **Silver vs the unclean** (`IUncleanTarget`, `CreatureDefinition.IsUnclean`,
+  `WeaponDefinition.UncleanDamageMultiplier` x1.5, `DamageAgainst`): the Bog Lurker is unclean.
+- **Snow Leopard**: the ithappy tiger with a baked pale texture (grey markings), HP 90, bite 16,
+  stalks slowly then charges ~6.7 m/s, alone; mountains 2-3, peaks 1-2. Drops Fur 2 + Bone.
+- **Loom** (ткацкий станок): the Workbench's 3rd extension -> Workbench level 4: Fur Hood (warmth 0.5)
+  and **Fur Cloak** (new armour slot `ArmorSlot.Cloak`, warmth 1).
+- **Boss 5 arena slot**: `MountainBossSlot` POI (mountains/peaks, 1 per world), the menhir ring
+  placeholder; no boss (Boss Status: not designed).
+- **Spawn**: the player now spawns only in the starting biome (climate band 0's biome or its mix,
+  never a cold one) - before, a seed could start you on a peak among leopards.
+- WorldGenerationVersion **13**.
+
+Checked in Play Mode: spawn on the plains; on a peak Cold -> Freezing -> HP falling; the fur cloak
+(warmth 1) and full fur+silver set (warmth 1.5, armour 18) are visible on the body and stop it; a
+campfire warms (Warm); furnace, loom, silver vein and leopard rendered. Not done: rockfalls (обвалы),
+the boss itself, real models (MODELS_FOR_3D_ARTIST 7.8).
+
+### v0.1 --- 2026-10-25 (Build v0.1.0 - hybrid world, water, tiers 4-5)
+
+Windows 64, Mono, MainMenu + WorldGenTest, built from the editor (BuildPipeline) - succeeded,
+0 errors (38 warnings, all in SUIMONO / NatureStarterKit2 scripts). `Builds/NAV_v0.1.0/NAV.exe` +
+`Builds/NAV_v0.1.0.zip` (92.2 MB, without the Burst DoNotShip folder). The older
+`Builds/NAV_Test_0.1.0` (2026-10-18) is left as it was. Scenes and assets saved before the build.
+Smoke test: started windowed, ran 25 s at the main menu, Player.log without errors. Gameplay in the
+build not clicked through - needs the developer.
+
+### v0.1 --- 2026-10-31 (Build v1.1.2 - grass white quads in builds fixed)
+
+Bug in build v0.1.0, the first build with terrain grass: every grass tuft was an opaque cream quad;
+fine in the editor, nothing in Player.log. **Cause: `new TerrainData()` at runtime.** With a tile
+cloned from an editor-made TerrainData asset the same grass draws correctly in a player build. The
+exact mechanism inside the engine is not known (a guess: the data editor assets carry about the
+detail shaders); the same symptom and workaround are reported for MapMagic 2 on URP.
+
+Ruled out by tests in real player builds: texture missing (both grass textures load, green, 88%
+transparent), the atlas (`Terrain Detail Atlas` correct on the CPU and GPU, all mips), compression
+(an uncompressed RGBA32 texture gave the same quads), re-assigning prototypes after load, stripped
+alpha clip (`_ALPHATEST_ON` is a hard `#define` in WavingGrass.shader). Read/Write off was not the
+cause here (the template terrain's prototypes already made the textures readable in the build) but
+is needed: without that reference Unity logs "Read/Write is disabled ... Terrain Detail Prototype".
+
+Changes:
+- `TerrainTiles.BuildTerrain` clones `WorldGenerationSettings.TileBaseData` (new field) instead of
+  `new TerrainData`; `WorldGenerator.Generate` stops with a clear error if it isn't assigned.
+- `NAV > World > Hybrid World > Create Tile Terrain Base` (`HybridWorldSetup`) makes
+  `Assets/NAV/Art/Terrain/TileTerrainBase.asset` (8.7 KB, trimmed from the template terrain's data)
+  and wires it into the settings. Already run, nothing to set up by hand.
+- `Grass_grass01/02.png` Read/Write on, `VegetationSetup.BuildGreenGrass` now sets it too.
+- `bundleVersion` 1.1.2 (the developer's number; earlier builds were 0.1.x).
+
+Verified in a player build of WorldGenTest (real terrain tiles, screenshots): blades instead of
+quads, no errors in the log. `Builds/NAV_v1.1.2/NAV.exe` + `Builds/NAV_v1.1.2.zip` (92.2 MB, without
+the Burst DoNotShip folder): MainMenu + WorldGenTest, 0 errors, 39 warnings. Smoke test: 20 s at the
+main menu, log without errors. Gameplay of this exact build not clicked through - needs the
+developer. Not changed: `GrassBillboard` mode showed no grass at all in the old setup (unused here).
+Saves are unaffected (no WorldGenerationVersion bump).
+
+### v0.1 --- 2026-10-31 (Video capture tools for the devlogs)
+
+Editor-only, nothing ships and no game code changed. Added `com.unity.recorder` 5.1.7,
+`Scripts/Dev/VideoCapture.cs` (stages a clip: seed, biome or spot, hour, weather, held item, creatures,
+camera move, scripted walking and swings, hidden interface, no pause, god mode) and
+`Scripts/Editor/NavVideoRecorder.cs` (clip queue, Unity Recorder, 4K60 H.264 with game audio to
+`F:/Dev/RebonkVideo/public/footage/nav`). Each clip is a new throwaway world and its save is deleted
+afterwards. Usage and all clip keys: `ProjectTitle/VIDEO_CAPTURE.md`. First script draft:
+`ProjectTitle/Video/E01_Script_Draft.md`.
+
+Checked: 4 test clips recorded (test_wolf, test_walk, test_fight, test_pull): 3840x2160, 60 fps, exact
+frame counts, AAC audio, the capture saves are gone, the compile setting restored, no new console
+errors. Known: from about 200 m up the camera sees the square edge of the built terrain tiles, so very
+high pull-backs must cut to the world map in the edit.
+
+### v0.1 --- 2026-10-31 (Devlog E1 first cut)
+
+No game changes. VideoCapture got `hourSpeed`, `near`, `props`, `arsenal`, `calm`, `hp`, `hide`, `pink`, `fog`, `far`, `maxH` and open water
+(`biome=Water`), see `ProjectTitle/VIDEO_CAPTURE.md`. 29 clips captured from the current working copy, all game footage of E1 and the
+reconstructions (capsule wolf, half-buried gravestone, pink rain, weapon rows). First cuts, English with the Kokoro voice and Russian
+without a voice, plus narrator sheet, thumbnails and upload text: `F:/Dev/RebonkVideo/out/nav/E01/`. Edit: `F:/Dev/RebonkVideo/src/nav/`,
+render with `tools/render_nav.sh`. Not final: two script facts wait for the developer (lines 16 and 29), and the footage is from the
+not yet playtested state. Seen while filming: the test log-house roof built from `WoodRoof` covered one side only with the placement
+used, worth a look when building is next touched.
+
+### v0.1 --- 2026-10-31 (Devlog E1 retakes after the developer's review)
+
+No game changes. Two faults the developer found in the first cut are fixed by retakes: the hero walked in place against the ball, and
+swung at the air beside the tiger. New capture keys `lift`, `ballSize`, `fight` (`VIDEO_CAPTURE.md`), new `Scripts/Dev/VideoCaptureLift.cs`
+(editor only). The game has no pick-up animation, so the ball lift is a staged reconstruction with Animator IK. Cause of the misses: an
+attack turns the body to the camera's direction, so on a staged camera the swing went elsewhere; `fight` holds the body on the creature.
+The Russian cut no longer carries subtitles, its text is in `out/nav/E01/E01_RU_script.txt` (was `E01_RU_voiceover.txt`).
+Lines v16 (the 34-day gap) and v29 (the AI assistant) are removed from E1 at the developer's request; the ids keep their gaps.
+The house in `e1_house` was badly assembled by the capture string (gables on the slope, every piece on its own ground height) and is re-shot:
+new capture key `level`, walls under three pairs of roof slopes. **Backlog (found here, game not changed):** `WoodRoof` is exactly as wide as
+a wall, so two slopes over a 4 m house end flush with the walls and the log ends stick out past the roof; the house only looks right with
+an extra slope hanging past each gable. The eave also drops in front of the top of a door under it. Decide with the developer whether the
+roof piece gets a side overhang and how the door and eave should meet.
+
+### v0.1 --- 2026-11-05 (Main hero model replaces the Kevin Iglesias dummy)
+
+The developer's hero model (`T-Pose.fbx`, Mixamo rig `mixamorig:*`, 3136 verts, one index finger per hand) is now the player's body.
+No game code changed. New: `Assets/NAV/Art/Models/Characters/Hero/Hero.fbx` (Humanoid, avatar from this model, `useFileScale` off and
+`globalScale` 1.607 so it stands 1.82 m like the dummy - the file is in cm units with metre-sized geometry, it imported 2 cm tall;
+the avatar had to be rebuilt from an empty HumanDescription after the rescale, humanScale 1.07) and `Hero_Body.mat` (plain URP Lit,
+remapped over the FBX's untextured material). Scene `WorldGenTest`: `Player/HumanDummy_M Red` removed, `Player/Hero` in its place with
+the same Animator Controller and the moved `PlayerAnimator`, `HeldItemView`, `FootGrounding`, `ArmorView` (settings copied).
+`PlayerCombat._hitboxSource` repointed to the hero. The Kevin rig's prop bones are recreated as `B-handProp.R/.L` under the Mixamo hands
+(same names, so `BowString`/setup tools still find them): rotation from the two rigs' T-poses, offset scaled by hand length (hero hand
+0.134 m wrist-to-tip vs 0.283 m) - grip 5.6 cm from the wrist. `ArmorView` bones: `mixamorig:Head`, `Spine2`, `LeftUpLeg`/`RightUpLeg`,
+`LeftLeg`/`RightLeg`. All controller clips are Humanoid, so they retarget unchanged; their `B-handProp` curves simply don't bind (the
+props barely move in them).
+
+Checked: an edit-mode sheet of all 42 controller clips, dummy and hero side by side, poses match; Play Mode run through the live
+controller (idle with PlayerAnimator, walk, sprint, run back, fall, unarmed jab/hook, 1H stance + three slashes, greatsword stance/chop/
+carry, spear stance/thrust, shield bash, axe build strike, bow load/hold with the arrow, iron helm + chainmail + greaves standing and
+walking): every weapon lands in the right socket, armour sits on its bones, no new console errors. Not yet judged by the developer in
+play. The test left one throwaway save `fd182529-...json` ("New World", 2026-11-05 21:44) in the Saves folder.
+
+### v0.1 --- 2026-11-06 (Hero texture)
+
+The developer sent the textured export of the same model (`20261106005448_05550b31 (1).fbx`, same mesh `mesh_rep_0_ori_repair_quad`,
+UVs identical to the rigged one at all 3136 vertices). Its embedded PBR set is extracted to `Hero/Textures/`
+(`texture_pbr_20250901.png` base colour, `_normal` as Normal map, `_metallic`, `_roughness`; 4096 sources imported at 2048). URP Lit
+takes metal + smoothness in one map, so `Hero_MetallicSmoothness.png` is built from them (R = metallic, A = 1 - roughness; the model is
+almost non-metal, max 0.15). `Hero_Body.mat`: base, normal and that map. The earlier material remap on `Hero.fbx` never applied (the rigged
+FBX has no material, Unity fills in URP's default `Lit.mat`, which can't be remapped) - removed; the material is now assigned on the scene
+renderer. The source FBX was only imported to pull the textures and is in the recycle bin. Checked by renders from four sides and a
+face close-up: face, muscles, trousers, leg wraps and shoes all land in place. No new console errors.
+
+### v0.1 --- 2026-11-06 (Tier 6 - the Black Forest: bog oak, black steel, volkolaks, eternal dusk)
+
+**NAV > World > Build Black Forest (Tier 6)** (`Editor/BlackForestSetup.cs`, re-runnable, saves the scene), then re-run
+**Build Armour** and **Build Pack Weapon Recipes** (they add the black steel pieces once the items exist):
+- **Biome** `BlackForestBiome`: its own climate band - the dense forest's band now ends at 0.5 of the world radius, the black
+  forest takes 0.5-0.6, then the sea islands. 8-11% of all land on seeds 1337/42/777, nearest ~6.8 km from the centre. Dark
+  humus ground (copy of the dense forest layer), steep hills, dense forest decor, almost no grass, fog 0.03 dark violet,
+  night sounds by day.
+- **Eternal dusk** (new): `BiomeDefinition.Twilight` (0..1; black forest 0.6). `AtmosphereFog` eases it in like the biome fog
+  and, after DayNightLighting has set the frame's light, dims the sun (x(1 - 0.8 t)) and the ambient/reflections
+  (x(1 - 0.6 t)); exposes `BiomeTwilight`. `DayNightGrading` (new optional `_atmosphere`) raises the night look to
+  0.75 t. Noon in the black forest reads as dusk.
+- **Bog oak** (морёный дуб): `BogOak_WoodNode` - NSK tree03 (as the old oak) with near-black bark and a dead grey-olive crown,
+  spawned 1.5-2.1x, only here. Felling chain BogOakTree (8 hits) -> BogOakFallen (5) -> 2 BogOakLog (4) -> **Bog Oak Wood** 3
+  (+ Bog Oak Knots 50%); all need **tool tier 6** (black steel axe). **Bog oak deadfall** (`Prefabs/World/BlackForest/
+  BogOakDeadfall`, static fallen boughs, 4 hits, **silver axe** - tier 5) -> **Bog Oak Knots**: the first charcoal without a
+  black steel axe (else the chain would be circular).
+- **Black ore**: `BlackOre_Rock` veins (silver pickaxe+, 7 hits) -> **Black Ore** -> Smelting Furnace (charcoal) -> **Black Iron**
+  (bloom). Charcoal Kiln: 2 knots -> 1 **Bog Oak Charcoal**, 1 bog oak wood -> 2. At the **Forge level 6**: black iron 1 + bog
+  oak charcoal 2 -> **Black Steel Bar**. (Recipes added to the existing kiln/furnace prefabs, not rebuilt.)
+- **Stations**: **Quench Tub** (закалочный чан, bog oak 4, iron bar 4, rock 6) - the Forge's 5th upgrade -> **Forge level 6**;
+  **Carved Table** (резной стол, bog oak 8, silver bar 1, iron bar 2) - the Workbench's 4th upgrade -> **Workbench level 5**.
+- **Black steel**: Black Steel Axe / Pickaxe (tool tier 6, x3.2 damage); 9 pack weapons (`WeaponRecipesSetup` Tier.BlackSteel,
+  Forge 6, x1.8 damage, shields +0.13 block; **hafts of bog oak**): dagger6, sword1H9, hammer1H10, spear6, shield18, axe1H5
+  (also a tier-6 axe), sword2H5, axe2H3, hammer2H8 - the dark models. Armour (`ArmorSetup` Metal.BlackSteel): helm 7 (with an
+  eye mask), cuirass 12 (black steel 9 + volkolak pelt 1), greaves 7 = **26**; **Volkolak Cloak** (Workbench 4 - the loom,
+  armour 2, warmth 1).
+- **Volkolak** (волколак, `Prefabs/Creatures/Volkolak`): the ithappy tiger x0.85, texture baked black with ember-red markings;
+  HP 160, bite 24, charges ~6.8 m/s, packs of 2-3 (pack alert 20 m), **нечисть** (silver x1.5); 2 by day, 6 at night. Drops
+  Volkolak Pelt 1 (+1 40%), Fang 2 (60%), Bone (50%).
+- **Bog-oak set** (Workbench level 5 nearby): Bog Oak Wall (log wall with carved ends), Carved Pillar (4 m, two storeys),
+  Carved Arch (beam with a carved arch under it), **Tent Roof** (шатёр - a 4.5 m pyramid with eaves, carved ribs and a finial
+  over a 4x4 room; procedural mesh `Art/Models/TentRoof.asset`, convex collider), **Black Gate** (the oak gate layout in bog
+  oak with black steel bands and studs; opens).
+- **Boss 6 arena slot**: `BlackForestBossSlot` POI (black forest, 1 per world), the menhir ring placeholder; no boss.
+- WorldGenerationVersion **14**.
+
+Checked: compiles; contact-sheet renders of every new model; in Play Mode (teleported into the black forest at noon):
+biome detected, twilight 0.6, fog 0.024; around the player 304 bog oaks, 91 ancient spruces, 39 deadfalls, 20 black ore
+veins, 2 volkolaks; silver axe - bog oak refused, deadfall cut; black steel axe - bog oak felled -> stump, fallen trunk,
+logs -> Bog Oak Wood + Knots; a volkolak bit an unarmoured player twice (100 -> 52). Not checked: crafting the whole chain at
+the stations by hand, tent roof shelter/snapping on real walls, the black steel armour on the body (placeholder parts were
+fitted to the old dummy - see Technical Debt), the boss slot in the world. The developer was playing in the editor at the end
+of the test, so Play Mode was left running.
+
+### v0.1 --- 2026-11-06 (Attack swings no longer wring the hero's waist)
+
+The developer saw the belt skew hard on every swing. Cause: the attack clips' hip yaw (AttackTwist, up to 87 degrees for
+polearm/bow, 77 for the greatsword) was turned back entirely on `HumanBodyBones.Spine` in `PlayerAnimator.LateUpdate`. On the
+Mixamo hero that bone (`mixamorig:Spine`) sits 10 cm above the hips and the belt is skinned between the two, so the whole turn
+happened at the waist. Now `ApplyTwist` spreads it up the spine - Spine 25%, Chest 35%, UpperChest 40% (two bones 45/55, one
+bone 100%), still about world up, so the shoulders and the weapon end up turned by the same total. Checked: edit-mode renders of
+the greatsword swing at its peak (77 degrees) before/after (`Screenshots/attack_twist_before_after.png`), and in Play Mode the
+iron greatsword swing at 65 degrees seen from behind - belt level, torso turning smoothly. The aim bend (forward/back tilt
+toward low/high targets) still puts 40% on the lowest spine bone - not changed.
+
+### v0.1 --- 2026-11-06 (Hero holds weapons in a real fist; both hands on two-handed hafts)
+
+The developer: weapons looked held in the air, the one-handed sword in the fingertips, the second hand on a spear on
+nothing. Three causes, three fixes:
+- **Fist.** The hero's hand has one finger chain (`mixamorig:*HandIndex1-3`, skinned to all four fingers, no thumb). The
+  animator's hand layers (Kevin's `HandsClosed`, made for five fingers) over-curled it back into the wrist - a lump with
+  no hole. New **`Presentation/Animation/HandGrip`** (on `Player/Hero`, LateUpdate after the Animator): poses the chain
+  from its rest pose by fixed curls (15/80/95 deg) about the hand's right axis (the grip axis), blended in when the
+  animator's `HoldingItem` (right) / `HoldingLeftItem` or a two-handed/polearm `HoldStyle` (left) is on. Rest rotations
+  come from the model asset. **NAV > Animation > Setup Hero Hand Grip** (`Editor/HandGripSetup`) adds it, stores the rest
+  pose and moves `B-handProp.R/.L` into the middle of the finger ring (fitted circle: R (-0.002, 0.044, 0.032), L
+  (-0.013, 0.047, 0.027)).
+- **Sword grips by the pommel.** `WeaponPackGenerator` assumed the pack's blades pivot at the guard (grip = halfway down
+  the handle); most pivot at the bottom of the handle, so the fist sat by the pommel up to 20 cm from the guard. New
+  **NAV > Items > Fit Blade Grips Below Guard** (`Editor/WeaponGripFitter`, also run by the generator): for every sword,
+  greatsword and dagger held prefab it finds the guard from the mesh's cross-section and moves the model + its
+  MeleeHitbox so the socket sits 5 cm under it. 61 prefabs moved (iron sword 15 cm, iron greatsword 23 cm); idempotent.
+- **Second hand on air.** The stance clips were made for the dummy's proportions. `HandGrip` now also pulls the left fist
+  onto the weapon's axis (two-bone arm IK + the fist turned along the haft) for two-handed and polearm styles: where the
+  animated hand is nearest the axis, at least 10 cm from the right fist, between the butt/pommel and the striking part
+  (the held MeleeHitbox) - greatsword hands go down the handle, spear/axe hands up the haft.
+
+Checked in Play Mode with renders: iron greatsword, iron spear, iron battle axe, iron hand axe - left fist exactly on the
+axis (0 mm off), 10-39 cm from the right one; iron sword - fist right under the guard; banded shield - left hand closed.
+Screenshots `hand_grip_*.png`. Not checked: every one of the 155 pack weapons, attack swings frame by frame with the IK on.
+
+### v0.1 --- 2026-11-06 (Death = physics ragdoll for every creature and the player)
+
+The developer: dead creatures just tipped onto their side; bodies must fall like real heavy corpses, the player too - **a rule
+for all mobs and entities** (written into `CLAUDE.md` "Death Rule").
+- **`Presentation/Animation/Ragdoll`**: a list of parts (bone, capsule in the bone's space, mass, parent part, twist/swing
+  limits). Nothing physical exists while the body lives; `Activate(velocity, push)` turns the Animator and the bone-posing
+  scripts off and the living body's colliders (creature hit box, player CharacterController) off, adds Rigidbody + capsule +
+  CharacterJoint per part in that frame's pose, moves the bones to layer **Ragdoll** (new, 9), gives every body the speed it
+  had plus 40% of the push and the highest body the rest (so it topples away from the blow). `Deactivate` removes them and
+  rebinds the Animator. Flesh physic material (friction 0.7/0.9, no bounce).
+- **NAV > Animation > Build Ragdolls** (`Editor/RagdollSetup`): the hero by its avatar (hips, chest, head, arms, legs - 11
+  parts, 75 kg); the ithappy animals by their rigify-style skeleton (pelvis = spine bone above the hind thigh, middle back,
+  chest = where the front legs hang, neck, head, first tail bone, thigh + shin of each leg - 14 parts). Each capsule is fitted
+  to the skinned vertices that part carries (principal axis, 5-95% span, 70th-percentile radius); mass split by volume: wolf
+  45, deer 70, bog lurker 35, snow leopard 50, volkolak 95 kg. Corpses stay 20 s (was 5). The interaction ray ignores the
+  Ragdoll layer (corpses never hide loot). New creature prefabs go into its list.
+- **Creatures**: `CreatureAnimator` hands the body to its Ragdoll one frame after `Died` (so `Creature.LastHitDirection`,
+  new, set by ReactToHit after TakeDamage, is known), with the agent's last velocity and a 2.5 m/s push. The old side roll
+  is only a fallback for a prefab without a Ragdoll.
+- **Player**: `PlayerRagdoll` on the hero: PlayerDeath.Died -> ragdoll (keeps the run speed, 1.5 m/s push back);
+  Respawned -> back to the animated body. The gravestone now stands 1 m in front of where the player fell
+  (`PlayerDeath._gravestoneOffset`) - on the spot the corpse landed on the stone and hung in the air.
+
+Checked in Play Mode: a deer's pelvis fell 0.94 -> 0.45 m in 0.35 s (free fall) and the body collapsed, legs splayed, antlers
+on the ground; a wolf hit from the side fell onto its side, legs out, tail down, 1 m from where it stood, then slept; the
+player's corpse lies crumpled face down, the gravestone 1.0 m away; Respawn - no bodies left, Animator and the posing
+scripts back, standing pose (hips 0.96 m, head 1.52 m). Screenshots `ragdoll_*.png`.
+
+### v0.1 --- 2026-11-06 (Multiplayer - Photon PUN 2: world sync, creatures, chat; version 1.2.1)
+
+Finishes the increment below. **Shared world** (`Network/NetworkWorldSync`, Photon events in the room's GLOBAL cache, so
+late joiners - and changes from players who left - arrive in order): pieces built (definition id, position, rotation,
+`BuildingPiece.NetworkId`) and demolished (`PlayerBuilding.PieceBuilt/PieceDemolishing`, new); resource nodes gathered
+out (`ResourceNode.Depleted`, new static event; `WorldGenerator.TryGetNodeId/RemoveNode`, new - the stump stays, the
+felled trunk/logs/drops exist only for the gatherer); chat lines. **Creatures** (`Network/NetworkCreatureSync`): each
+machine runs the creatures around its own player and sends snapshots (~8/s) - the others show copies
+(`Creature.CreatingRemoteCopy/MakeRemoteCopy`: no AI, no agent, `RemoteVelocity` for CreatureAnimator,
+`PlayAttackAsCopy`); players within 170 m share one set - the lower actor number runs it, the other stops spawning
+(`CreaturePopulation.SpawningSuppressed`) and drops its own; a hit on a copy goes to the owner
+(`TakeDamageFrom(amount, actor)`), the death is announced with the killer and the loot drops on the killer's machine
+only (`KilledBy`); creatures hunt remote players' avatars (`IRemoteProxy.TakeCreatureDamage` -> the owner's
+PlayerCombat + poison). PvE: player swings pass through other players (`IRemoteProxy.CanBeHitByPlayers`).
+**Chat** (`Network/NetworkChatUI`): Enter opens a line (controls paused), Enter sends, Esc closes; last 7 lines fade
+after 12 s. NetworkSetup wires all three into WorldGenTest's "Network" object. **Version 1.2.1** (was 1.1.2).
+
+Tested with the editor as host and a built guest (2nd run): guest joined with the password, got the host's wall
+built BEFORE it joined (room cache), 15 copies of the host's creatures and none of its own (suppressed - host
+nearby), chat both ways, the host's avatar steady (the 1e18 m bug fixed), a PvP hit from the host took the guest
+100 -> 70 on the guest's machine, the guest killed a copy of the host's deer and it died on the host (15 -> 14
+alive), no exceptions on either side. Not verified: loot appearing on the guest (pickup count was confused by chunk
+loading), a guest's real swing landing on the host (the test swing followed the guest's camera, not the host),
+gathering seen from the other side (the event path is the building one; `RemoveNode` itself checked on the host).
+Not synced yet: dropped items and pickups, chest contents, station processing, doors, felled trunks/logs, arrows in
+flight; a guest's character is not saved (guests don't save). Test script and `Builds/NetTest` removed.
+
+### v0.1 --- 2026-11-06 (Multiplayer increment 1 - Photon PUN 2)
+
+Developer's request: Multiplayer button, server list with room name + password (click = pick, double click = join),
+Create World "Online" toggle with room name, password and PvE/PvP, players interact, PUN 2. App Id set in
+PhotonServerSettings, fixed region "eu". Code: `Network/NetworkSession` (connect, lobby, rooms; password = salted
+hash, checked by the joiner and the host), `Network/NetworkGameManager` (game scene: avatar spawn, guest spawn
+offset, host's clock/weather to guests, guests don't save), `Network/NetworkAvatar` (proxy avatar: position,
+all Animator params + layer states, equipment via player props, death ragdoll, name tag, PvP hits sent to the
+owner's PlayerCombat), `NetworkEquipmentMirror`, `IEquipmentView` (HeldItemView/ArmorView now take any),
+`IRemoteProxy` (creatures ignore avatars), `SpineTwist`, `UI/MultiplayerMenuUIController`, menu UXML/USS,
+`Editor/NetworkSetup` (NAV > Network > Build Network Player -> Resources/NetworkPlayer.prefab, scenes wired).
+Tested: editor host + built guest (`Builds/NetTest`): connect, room with password + PvP, guest joined with the
+same seed, both avatars, guest's sword shown on the host. Fixed after that test (rebuilt, NOT yet re-tested):
+avatar extrapolation blew up to 1e18 m (velocity now from the last two received positions); Create World
+layout; random nickname changed on every read. NOT done: PvP hit test end to end, world sync (buildings,
+gathered resources, creatures, dropped items), chat. `Dev/NetTestDriver.cs` is a TEMPORARY test script
+(active only with -navNetTest) - delete after testing. Not checked: bog lurker, snow leopard
+and volkolak in play (built the same way), corpses on steep slopes / in water, many corpses at once (performance).
+
+### v0.1 --- 2026-11-06 (Leshy model + his own animations - boss 1)
+
+Developer: boss 1 is the Leshy, no altar, met by chance in the forest; 2.5x the player; slow, viscous
+"living tree" animations (nothing fitting on Mixamo or the store); his special wood must gate the first
+pickaxe. Gave two files: `T-Pose (1).fbx` (Mixamo skeleton - turned out to have no mesh at all, 208 KB) and
+the textured mesh (`20261106211902_cffca832.fbx`, 14495 verts, 2K PBR maps). Done:
+-   `Editor/LeshyModelSetup` (NAV > Characters > Build Leshy Model): skeleton import scale 400 (4.59 m,
+    hero ~1.85 m), Generic; the mesh skinned to the 49 bones (automatic weights, 6 smoothing passes, top 4);
+    `Leshy_Body.mat` URP Lit with base/normal and metallic+smoothness packed from the metallic/roughness maps,
+    two-sided (bark rags are single sheets); `Leshy_Model.prefab` with Animator. Textures extracted to
+    `Art/Models/Characters/Leshy/Textures`.
+-   `Editor/LeshyAnimationSetup` (NAV > Characters > Build Leshy Animations): clips authored in code as key
+    poses on a hunched stance, baked at 30 fps - Idle 6 s, Walk 3.2 s (in place, ~1.05 m/s), Attack_Slam
+    (hit ~2.15 s), Attack_Sweep (hit ~1.95 s), Roar 4.4 s, HitReact. Viscous: smootherstep between keys,
+    each upper-body bone lags its parent (follow-through), hips sink after steps. Death = ragdoll (rule).
+    `Leshy.controller`: Locomotion blend on Speed, triggers Slam/Sweep/Roar/Hit.
+-   `Editor/LeshyPreviewRenderer` (NAV > Characters > Render Leshy Preview): contact sheets next to the
+    hero, `Screenshots/leshy_*.png`. Checked: texture on, joints bend cleanly, feet stay on the ground.
+Not done: the boss gameplay (waiting for the developer's choice of the mandatory mechanic).
+
+### v0.1 --- 2026-11-06 (Leshy boss - wrath of the forest, heartwood gate)
+
+Developer chose "wrath of the forest + chance". Code: `World/Encounters/ForestWrath` + `ForestWrathSettings`
+(felling the world's trees in Plains/Forest/Birch/Dense Forest adds wrath, it fades 0.15/min; every 30 s in
+the forests a 0.4% chance growing to +8% with wrath, x2 at night; at 24 wrath he comes for sure - checked
+right on the felling tree; omen lines at 35%/70%; "the forest has fallen silent" -> 15 s -> he steps out
+26-40 m away and roars; killed: wrath 0, 30 min cooldown; escaped (>110 m, not fighting): 60% wrath kept,
+8 min), `Gameplay/Bosses/BossActor` (generic: health bar, enraged flag), `Gameplay/Bosses/LeshyBoss`
+(ICreatureAttack: Slam - circle 1.7 m, 2 m in front, 40 dmg at 2.15 s; Sweep - 150 deg arc 3.1 m, 25 dmg at
+1.95 s; roar on arrival and at 50% HP, then x1.25 actions, x1.3 walk), `Gameplay/AI/ICreatureAttack`,
+`Creature` (custom attack hook, SpeedMultiplier, slow turning from `CreatureDefinition.TurnSpeed`, Surface
+from the definition), `Presentation/Animation/LeshyAnimator`, `Presentation/Animation/LegGrounding`
+(foot IK for Generic bipeds: body lowered to the lower foot - also removes the 0.2 m NavMesh hover - two-bone
+knee IK, soles to the slope), `UI/BossHudController` (+ PlayerHud.uxml/uss: boss bar, omen line),
+`SaveGameData` ForestWrath/LeshyDefeats/LeshyCooldownSeconds, `NetworkCreatureSync` suppresses encounters where
+it suppresses creatures, `RagdollSetup.BuildMixamoBiped` (11 parts, 600 kg). Setup: NAV > Bosses > Build Leshy
+Boss (Leshy Heartwood item + icon, Stone Pickaxe recipe = 1 heartwood + 2 wood + 3 rock, LeshyCreature,
+`Prefabs/Bosses/Leshy.prefab`, ragdoll, ForestWrathSettings, WorldGenTest wired). Loot: heartwood 2 (+1 at 50%),
+wood 10. Leshy.controller is now rebuilt in place (deleting it lost the controller on the prefabs).
+Tested in Play Mode (3 runs): wrath 24 -> omens -> he came 34-40 m away and walked up; Slam hit for 40, Sweep for
+25, killed the hero; HUD bar; animations playing in game; feet on the ground (toes 2-5 cm, body -0.07..-0.14 m);
+enraged at 50% (speed x1.3, actions x1.25, red bar); death -> ragdoll, heartwood dropped, wrath reset, cooldown
+30 min, "The Leshy is dead" line. Fixed on the way: wrath faded below 24 before the next check (now checked on
+the felling), a null controller override on the nested model (T-pose), empty heartwood icon (async shaders).
+After the developer's playtest: no more hovering (LegGrounding), shorter reach (was slam 2.6 m circle 2.4 m out,
+sweep 4.6 m) - the shorter reach is NOT re-tested in play.
+
+### v0.1 --- 2026-11-06 (Peaceful Leshy until provoked)
+
+Developer: while the forest isn't angry, the Leshy met in the forest is neutral and only fights when provoked.
+`Creature.IsPeaceful` / `MakePeaceful()` / `Provoke(target)` / `Provoked` event: a hostile creature that neither
+notices nor hunts while peaceful; a hit (or Provoke) ends it and it turns on its attacker. `ForestWrath`: an
+encounter is angry only at wrath >= 35% of the guaranteed mark (`ForestWrathSettings.AngryWrathFraction`, same
+share as the first omen); otherwise "Old wood creaks..." -> he steps out peaceful ("The master of the forest is
+walking nearby. Leave him be."), wanders, no health bar; provoked by a hit or by felling a tree within 30 m of him
+(my addition - the forest's master watching his trees; `ProvokeTreeDistance`, 0 turns it off) -> "You have angered
+the Leshy!", a roar (LeshyBoss), the fight as usual; left alone he goes back into the thicket after 4 min once 35 m+
+from the player, wrath untouched. Tested in Play Mode: peaceful, 2.4-4 m from the hero for 23 s game time - no attack,
+no bar; one hit -> provoked message, roar, chase, attack state, bar shown. Not tested: the tree provocation, the
+peaceful departure after 4 min.
+
+### v0.1 --- 2026-11-06 (Stone Pickaxe from heartwood only)
+
+Developer: the first pickaxe is made from the Leshy's wood, not ordinary wood; he drops 3-5 of it; the pickaxe takes 3.
+Stone Pickaxe recipe = 3 Leshy Heartwood + 3 Rock (was 1 heartwood + 2 wood + 3 rock). Leshy loot = heartwood 3 (always)
++ 1 (50%) + 1 (50%) = 3-5, plus ordinary wood 10 (kept - his body is wood; not asked about). Applied to the assets
+directly (the developer was in Play Mode) and in `LeshyBossSetup` for re-runs.
+
+### v0.1 --- 2026-11-06 (Leshy sound design - placeholder sounds, full wiring)
+
+Developer asked how to do the Leshy's sound design, then to build it with placeholder sounds. `Presentation/Audio/
+LeshySoundSet` (ScriptableObject `ScriptableObjects/Audio/LeshySoundSet.asset`: slots Omen, PeacefulOmen, Presence
+(loop), Footstep, Roar, SlamWindup, SlamImpact, SweepWhoosh, Hurt, DeathCreak, DeathImpact - each with variants,
+volume, random pitch, max distance), `LeshyAudio` on the boss (3D, linear rolloff: presence loop, a footstep on each
+foot `LegGrounding.FootPlanted`, roar at the cry of the clip (`LeshyBoss.MomentOf`), slam strain at the wind-up and
+impact on the hit with a camera shake fading over 25 m, sweep whoosh 0.4 s before the hit, a groan on a flinch,
+death creak then the fall's impact + shake), `ForestWrathAudio` (omen sounds twice from the thicket 25-45 m away,
+`ForestWrath.OmenStarted`), `ForestWrath.Silence` -> `AmbienceController` (birds/crickets fade out while an angry
+Leshy comes and fights, 0.3 for a peaceful one; the wind stays; they return after), `ThirdPersonCameraController.
+AddShake`. Placeholders by NAV > Audio > Build Leshy Sounds: synthesised WAVs in `Audio/Leshy/Placeholder`
+(creaks = stick-slip pulses through wood resonances, booms, cracks, rustle, growl, a two-note whistle with echo; DC
+removed, mono Vorbis) + 3 heavy whooshes from the Whooshes pack. Real sounds: drag them into the slots - a re-run
+keeps slots that hold non-placeholder clips. Checked in Play Mode by logging (not by ear): silence 0.33 -> 0.00 at the
+omen, whistles at +2.5 s and +9.5 s, footstep + roar on arrival, presence loop. Also fixed: the guaranteed coming
+missed again when the wrath faded a hair below 24 before the check - now a "cup full" flag holds until he comes.
+
+Fix (2026-11-06, found by the developer): the boss health bar stayed on screen when the Leshy was removed instead of
+killed (went back into the thicket) - BossHudController tested `_shown != null` and a destroyed boss reads as null in
+Unity; now a visible flag. Compiles after Play Mode; not re-tested.
+
+### v0.1 --- 2026-11-06 (Camera collision)
+
+Developer: the camera flew through the ground and objects and showed what is outside/under the map.
+`ThirdPersonCameraController.CollideDistance`: a sphere cast (r 0.3) from the CameraTarget back to the camera - the
+camera is pulled in at once in front of the terrain or anything solid (trees, rocks, buildings), never closer than
+0.6 m, and eases back out at 6 m/s when the way clears; then checked against the terrain height under the camera
+(0.35 m clearance) in case the cast slips through a tile seam. Ignored: the player, CharacterControllers, anything
+IDamageable (creatures, the Leshy, dummies), loose physics bodies (items, logs, corpses), triggers. Settings in the
+Inspector (Collision: layers, radius, min distance, return speed, ground clearance). Tested in Play Mode: pitch -60
+(looking up from below, the developer's screenshot) - the camera stays 0.4-0.8 m above the ground, distance shortened
+to 1.3-2.2 m. Not tested: against trees and building walls.
+
+### v0.1 --- 2026-11-06 (Build 1.2.2)
+
+Developer asked to save and build. Scenes and assets saved; `PlayerSettings.bundleVersion` 1.2.1 -> **1.2.2**; build
+`Builds/NAV_v1.2.2/NAV.exe` (MainMenu + WorldGenTest, Win64, succeeded, 0 errors, 43 warnings, 388 MB, 2:18) and
+`Builds/NAV_v1.2.2.zip` (109 MB). Contains everything since 1.2.1: the Leshy boss (wrath of the forest, peaceful mode,
+heartwood pickaxe, foot IK, shorter reach), his placeholder sounds, forest silence, camera shake and collision, the
+boss-bar fix. Not played in the built game. Still uncommitted.

@@ -99,6 +99,12 @@ namespace NAV.Gameplay.Building
         /// <summary>Fires after a piece is demolished with the hammer.</summary>
         public event Action<BuildingPieceDefinition> PieceDemolished;
 
+        /// <summary>A piece this player just built (the instance) - multiplayer builds it on the other machines.</summary>
+        public event Action<BuildingPiece> PieceBuilt;
+
+        /// <summary>A piece this player is about to demolish (still alive) - multiplayer removes it elsewhere.</summary>
+        public event Action<BuildingPiece> PieceDemolishing;
+
         /// <summary>Build mode turned on/off, or the selection (piece / Demolish) changed - for
         /// the build menu.</summary>
         public event Action StateChanged;
@@ -130,7 +136,12 @@ namespace NAV.Gameplay.Building
         public bool IsPlacementValid => _hasValidHit;
         public bool IsSnapped { get; private set; }
         public bool CanAffordSelected => SelectedPiece != null && SelectedPiece.CanAfford(_playerInventory.Inventory);
-        public bool CanPlace => IsBuildModeActive && !_demolishSelected && _hasValidHit && CanAffordSelected && IsInBuildArea;
+        public bool CanPlace => IsBuildModeActive && !_demolishSelected && _hasValidHit && CanAffordSelected && IsInBuildArea
+            && (SelectedPiece == null || !SelectedPiece.FloatsOnWater || _onWater);
+
+        // Water (m) a floating piece needs under it.
+        private const float MinFloatDepth = 0.6f;
+        private bool _onWater;
 
         /// <summary>The ghost stands where the selected piece may go: anywhere for pieces that
         /// don't need a workbench, else inside some placed workbench's build radius - of the
@@ -153,6 +164,11 @@ namespace NAV.Gameplay.Building
                 if (!_hasValidHit)
                 {
                     return "Aim at the ground";
+                }
+
+                if (SelectedPiece.FloatsOnWater && !_onWater)
+                {
+                    return "Place it on deeper water";
                 }
 
                 if (!IsInBuildArea)
@@ -429,6 +445,7 @@ namespace NAV.Gameplay.Building
             if (instance.TryGetComponent(out BuildingPiece buildingPiece))
             {
                 buildingPiece.Configure(piece);
+                PieceBuilt?.Invoke(buildingPiece);
             }
             else
             {
@@ -468,6 +485,7 @@ namespace NAV.Gameplay.Building
             BuildingPiece piece = _demolishTarget;
             BuildingPieceDefinition definition = piece.Definition;
             SetDemolishTarget(null);
+            PieceDemolishing?.Invoke(piece);
 
             Collider pieceCollider = piece.GetComponentInChildren<Collider>();
             Bounds bounds = pieceCollider != null ? pieceCollider.bounds : new Bounds(piece.transform.position, Vector3.one);
@@ -649,6 +667,15 @@ namespace NAV.Gameplay.Building
             }
 
             Vector3 anchoredPosition = hit.point + Vector3.up * _pieceHalfHeight;
+            _onWater = false;
+            if (SelectedPiece != null && SelectedPiece.FloatsOnWater && NAV.Core.WorldWater.HasSea)
+            {
+                // A boat sits on the surface (its pivot is the waterline) - only where the aim
+                // reaches the bottom deep enough below it.
+                float sea = NAV.Core.WorldWater.SeaHeight;
+                anchoredPosition.y = sea;
+                _onWater = hit.point.y <= sea - MinFloatDepth;
+            }
 
             _ghostInstance.SetActive(true);
             _ghostInstance.transform.SetPositionAndRotation(anchoredPosition, GhostRotation());

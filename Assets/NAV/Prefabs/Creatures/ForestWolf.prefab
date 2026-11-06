@@ -553,6 +553,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4358585728494009307}
   - component: {fileID: 3978681832949981548}
+  - component: {fileID: 1641245562199792443}
   m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
@@ -599,6 +600,153 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1641245562199792443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3978681832949981537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c32afd5ea967274499ca4f6327dab6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Animation.Ragdoll
+  _animator: {fileID: 3978681832949981548}
+  _parts:
+  - Bone: {fileID: 8263381976491886087}
+    Parent: -1
+    Center: {x: 0.000517264, y: 0.31698486, z: -0.26286644}
+    Radius: 0.11091249
+    Height: 0.30685717
+    Direction: 0
+    Mass: 1.8991187
+    TwistLimit: 0
+    SwingLimit: 0
+  - Bone: {fileID: 7335042075417001356}
+    Parent: 0
+    Center: {x: 0.00024170124, y: 0.21373104, z: -0.47077203}
+    Radius: 0.17377993
+    Height: 0.4171865
+    Direction: 2
+    Mass: 6.031692
+    TwistLimit: 12
+    SwingLimit: 18
+  - Bone: {fileID: 2649712592957447924}
+    Parent: 0
+    Center: {x: -0.0000016301913, y: 0.5422842, z: 0.47831064}
+    Radius: 0.100947686
+    Height: 0.8436836
+    Direction: 1
+    Mass: 5.2440004
+    TwistLimit: 25
+    SwingLimit: 40
+  - Bone: {fileID: 8993293761065313795}
+    Parent: 0
+    Center: {x: -0.035379473, y: 0.5817733, z: 0.04003885}
+    Radius: 0.13556124
+    Height: 0.35275286
+    Direction: 1
+    Mass: 3.1958957
+    TwistLimit: 25
+    SwingLimit: 60
+  - Bone: {fileID: 7279714896502279927}
+    Parent: 0
+    Center: {x: 0.038409665, y: 0.57547796, z: 0.18841636}
+    Radius: 0.13931948
+    Height: 0.3537444
+    Direction: 2
+    Mass: 3.3560784
+    TwistLimit: 25
+    SwingLimit: 60
+  - Bone: {fileID: 8042189398221093192}
+    Parent: 1
+    Center: {x: 0.0003591776, y: 0.11489545, z: -0.42162415}
+    Radius: 0.20026119
+    Height: 0.48571905
+    Direction: 0
+    Mass: 9.362465
+    TwistLimit: 12
+    SwingLimit: 18
+  - Bone: {fileID: 7208865461735055329}
+    Parent: 3
+    Center: {x: -0.0490618, y: 0.29387736, z: 0.28160807}
+    Radius: 0.109730266
+    Height: 0.34159786
+    Direction: 2
+    Mass: 2.1424012
+    TwistLimit: 5
+    SwingLimit: 75
+  - Bone: {fileID: 840657363923226395}
+    Parent: 4
+    Center: {x: 0.049603105, y: 0.21672972, z: 0.3236627}
+    Radius: 0.1025623
+    Height: 0.34916866
+    Direction: 2
+    Mass: 1.9577429
+    TwistLimit: 5
+    SwingLimit: 75
+  - Bone: {fileID: 7109959539012736509}
+    Parent: 5
+    Center: {x: 0.000001206994, y: 0.10048625, z: -0.31300002}
+    Radius: 0.10745986
+    Height: 0.3358985
+    Direction: 0
+    Mass: 2.0226197
+    TwistLimit: 20
+    SwingLimit: 30
+  - Bone: {fileID: 4293908164533038725}
+    Parent: 5
+    Center: {x: -0.06254385, y: 0.34921366, z: 0.053779513}
+    Radius: 0.097159214
+    Height: 0.25656295
+    Direction: 1
+    Mass: 1.2000171
+    TwistLimit: 25
+    SwingLimit: 60
+  - Bone: {fileID: 6032142788601791690}
+    Parent: 5
+    Center: {x: 0.09350378, y: 0.3430836, z: 0.03379496}
+    Radius: 0.093321115
+    Height: 0.25501502
+    Direction: 1
+    Mass: 1.1129153
+    TwistLimit: 25
+    SwingLimit: 60
+  - Bone: {fileID: 5019182381098488348}
+    Parent: 8
+    Center: {x: -0.00014355143, y: 0.19901685, z: -0.4186553}
+    Radius: 0.16146646
+    Height: 0.38661954
+    Direction: 1
+    Mass: 4.8208456
+    TwistLimit: 25
+    SwingLimit: 30
+  - Bone: {fileID: 7559279139058286964}
+    Parent: 9
+    Center: {x: -0.06654993, y: 0.30752775, z: 0.028915966}
+    Radius: 0.101730265
+    Height: 0.27327883
+    Direction: 1
+    Mass: 1.4093456
+    TwistLimit: 5
+    SwingLimit: 75
+  - Bone: {fileID: 2705595069240237319}
+    Parent: 10
+    Center: {x: 0.07656, y: 0.2771625, z: -0.08100593}
+    Radius: 0.08160218
+    Height: 0.33645028
+    Direction: 1
+    Mass: 1.2448628
+    TwistLimit: 5
+    SwingLimit: 75
+  _disableWhileActive: []
+  _collidersOffWhileActive:
+  - {fileID: 332835672946523909}
+  _material: {fileID: 13400000, guid: 346bff2b18843c648a76790f1df6e3ce, type: 2}
+  _layerName: Ragdoll
+  _linearDamping: 0.1
+  _angularDamping: 0.8
 --- !u!1 &4752268518478348976
 GameObject:
   m_ObjectHideFlags: 0
@@ -1080,7 +1228,7 @@ MonoBehaviour:
   _lootScatterRadius: 1
   _lootScatterForce: 1.5
   _lootUpwardForce: 2
-  _despawnDelaySeconds: 5
+  _despawnDelaySeconds: 20
 --- !u!114 &5061012963466011470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1103,6 +1251,8 @@ MonoBehaviour:
   _lungeDistance: 0.4
   _lungeSeconds: 0.35
   _lungePitch: 8
+  _ragdoll: {fileID: 1641245562199792443}
+  _deathPush: 2.5
   _deathRollSeconds: 0.6
 --- !u!65 &332835672946523909
 BoxCollider:

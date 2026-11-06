@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e768508110a43e64a97fa1f5d9d1202e, type: 3}
+  m_Name: TentRoofPiece
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Building.BuildingPieceDefinition
+  _id: TentRoofPiece
+  _displayName: Tent Roof
+  _icon: {fileID: 21300000, guid: af5bcccf5d4969e4fa0763e900f734ec, type: 3}
+  _cost:
+  - _item: {fileID: 11400000, guid: 088e72112e73f3c4bb0b80e173bd7ad7, type: 2}
+    _amount: 10
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 6
+  _prefab: {fileID: 6642242098101855754, guid: 83e9c4ab0fc3864478575a4275586882, type: 3}
+  _requiresWorkbench: 1
+  _requiredStation: {fileID: 11400000, guid: 88076d6efe864874a13bb414e213afdb, type: 2}
+  _requiredStationLevel: 5
+  _directional: 0
+  _floatsOnWater: 0
+  _unlockItems: []

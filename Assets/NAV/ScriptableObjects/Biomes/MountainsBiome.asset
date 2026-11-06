@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 361de9b037aa6154344c9279e01ee3a0, type: 3}
+  m_Name: MountainsBiome
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.World.Biomes.BiomeDefinition
+  _displayName: Mountains
+  _terrainLayer: {fileID: 8574412962073106934, guid: d19dd7129dbf443479e6df24dfb776da, type: 2}
+  _isWater: 0
+  _mapColor: {r: 0.55, g: 0.53, b: 0.5, a: 1}
+  _heightVariation: 1
+  _resourceSpawns:
+  - _prefab: {fileID: 7999546932499005254, guid: fbde3d3bdcbe55043af2ef2d376484b7, type: 3}
+    _density: 0.12
+    _minSpacing: 16
+    _scale: {x: 0.9, y: 1.4}
+    _heightAboveWater: {x: -1000, y: 1000}
+  - _prefab: {fileID: 5056375507921044682, guid: a28c62f724d2be04b812e4ac5502a361, type: 3}
+    _density: 0.2
+    _minSpacing: 14
+    _scale: {x: 1.2, y: 2.6}
+    _heightAboveWater: {x: -1000, y: 1000}
+  - _prefab: {fileID: 7000480892539141789, guid: e14dea2f61bf28549875fb6463133d6a, type: 3}
+    _density: 0.06
+    _minSpacing: 16
+    _scale: {x: 1, y: 1}
+    _heightAboveWater: {x: -1000, y: 1000}
+  - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
+    _density: 0.08
+    _minSpacing: 12
+    _scale: {x: 0.45, y: 0.75}
+    _heightAboveWater: {x: 0, y: 150}
+  - _prefab: {fileID: 314203175579233507, guid: 919898c5cb5c5974a8b4f3d93e0c2207, type: 3}
+    _density: 0.03
+    _minSpacing: 18
+    _scale: {x: 0.6, y: 0.9}
+    _heightAboveWater: {x: -1000, y: 1000}
+  _decorSpawns: []
+  _grassDensity: 0.12
+  _flowerDensity: 0
+  _creatureSpawns:
+  - _prefab: {fileID: 7615035062538442650, guid: f3fd3522f0ef3324d9e32d5bccce8675, type: 3}
+    _count: 2
+    _nightCount: 3
+    _groupSize: {x: 1, y: 1}
+    _respawnSeconds: 150
+  _fogDensity: 0.004
+  _fogColor: {r: 0.7, g: 0.74, b: 0.8, a: 0.4}
+  _cold: 1
+  _dayAmbience: {fileID: 8300000, guid: 660790bb19a97eb4581a05d90c81f369, type: 3}
+  _nightAmbience: {fileID: 8300000, guid: 21538f6160ff48040a8488deb4ed6d5e, type: 3}
+  _ambienceVolume: 0.3
+  _windAmbience: {fileID: 8300000, guid: 660790bb19a97eb4581a05d90c81f369, type: 3}
+  _windVolume: 0.5

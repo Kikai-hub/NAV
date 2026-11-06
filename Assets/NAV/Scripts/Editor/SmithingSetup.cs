@@ -228,7 +228,7 @@ namespace NAV.Editor
             }
         }
 
-        private static void AddExtension(GameObject root, WorkbenchDefinition upgrades, string id)
+        internal static void AddExtension(GameObject root, WorkbenchDefinition upgrades, string id)
         {
             var extension = new SerializedObject(root.AddComponent<WorkbenchExtension>());
             extension.FindProperty("_upgrades").objectReferenceValue = upgrades;
@@ -238,7 +238,7 @@ namespace NAV.Editor
 
         // ---- Pieces ----
 
-        private static BuildingPieceDefinition BuildPiece(string id, string displayName, (ItemDefinition item, int amount)[] cost,
+        internal static BuildingPieceDefinition BuildPiece(string id, string displayName, (ItemDefinition item, int amount)[] cost,
             System.Action<Transform> buildModel, System.Action<GameObject> addComponents)
         {
             string definitionPath = $"{PieceFolder}{id}Piece.asset";
@@ -383,7 +383,7 @@ namespace NAV.Editor
         /// <summary>The metal's tint (bright - it multiplies textures that are fairly dark), and
         /// the plain metal colour for untextured materials (the developer's own Blender models,
         /// whose flat stone colour would only turn muddy brown when multiplied).</summary>
-        private struct Metal
+        internal struct Metal
         {
             public string Name;
             public Color Tint;
@@ -393,7 +393,7 @@ namespace NAV.Editor
         // The developer's Blender tool models name their wooden handle part this; it stays wood.
         private const string HandlePartName = "Рукоядь";
 
-        private static Metal TintedToolMaterial(string metal, Color tint, Color solid)
+        internal static Metal TintedToolMaterial(string metal, Color tint, Color solid)
         {
             return new Metal { Name = metal, Tint = tint, Solid = solid };
         }
@@ -422,7 +422,7 @@ namespace NAV.Editor
 
         /// <summary>A metal version of a stone tool: copies of its definition, weapon, pickup and
         /// held prefabs, recoloured, with a higher tool tier and damage.</summary>
-        private static ItemDefinition BuildTool(string sourceId, string id, string displayName, string description, int tier, float damageScale, Metal tint)
+        internal static ItemDefinition BuildTool(string sourceId, string id, string displayName, string description, int tier, float damageScale, Metal tint)
         {
             var source = Load<ItemDefinition>($"{Items}{sourceId}.asset");
             string itemPath = $"{Items}{id}.asset";

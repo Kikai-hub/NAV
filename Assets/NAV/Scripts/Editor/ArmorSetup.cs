@@ -48,7 +48,7 @@ namespace NAV.Editor
             { ArmorBone.ShinRight, new Vector3(0.118f, 0.515f, 0.027f) },
         };
 
-        private enum Metal { Leather, Copper, Bronze, Iron }
+        private enum Metal { Leather, Copper, Bronze, Iron, Silver, Fur, BlackSteel, BlackFur }
 
         private struct Mats
         {
@@ -58,6 +58,10 @@ namespace NAV.Editor
             public Material Bronze;
             public Material Iron;
             public Material Mail;
+            public Material Silver;
+            public Material Fur;
+            public Material BlackSteel;
+            public Material BlackFur;
         }
 
         private static Mesh _dome;
@@ -97,6 +101,10 @@ namespace NAV.Editor
                 Bronze = AssetDatabase.LoadAssetAtPath<Material>(MaterialFolder + "Bronze_material.mat"),
                 Iron = GetOrCreateMaterial("ArmorIron_material", new Color(0.55f, 0.56f, 0.6f), 0.6f, 0.85f),
                 Mail = GetOrCreateMaterial("Chainmail_material", new Color(0.42f, 0.43f, 0.46f), 0.3f, 0.75f),
+                Silver = GetOrCreateMaterial("ArmorSilver_material", new Color(0.82f, 0.84f, 0.88f), 0.75f, 0.9f),
+                Fur = GetOrCreateMaterial("ArmorFur_material", new Color(0.52f, 0.44f, 0.36f), 0.05f, 0f),
+                BlackSteel = GetOrCreateMaterial("ArmorBlackSteel_material", new Color(0.13f, 0.13f, 0.15f), 0.65f, 0.9f),
+                BlackFur = GetOrCreateMaterial("ArmorBlackFur_material", new Color(0.1f, 0.09f, 0.09f), 0.05f, 0f),
             };
 
             var pieces = new List<(ItemDefinition item, RecipeDefinition recipe)>
@@ -130,6 +138,50 @@ namespace NAV.Editor
                 Piece("IronGreaves", "Iron Greaves", "Iron shin guards over mail leggings.", ArmorSlot.Legs, 4f, 5f, Metal.Iron,
                     forge, 3, (ironBar, 4), (leather, 2)),
             };
+
+            // Tier 5 (the mountains - MountainSetup makes silver and fur first): silver ~5/10/5 at
+            // the Forge level 5 (the smelting furnace); fur hood and cloak at the Workbench level 4
+            // (the loom) - they keep the cold off (warmth: hood 0.5, cloak 1).
+            ItemDefinition silverBar = Item("SilverBar");
+            ItemDefinition fur = Item("Fur");
+            if (silverBar != null && fur != null)
+            {
+                pieces.Add(Piece("SilverHelm", "Silver Helm", "A tall silver helm with a nose guard and a mail aventail - bright, and hated by the unclean.", ArmorSlot.Head, 5f, 3f, Metal.Silver,
+                    forge, 5, (silverBar, 3), (leather, 1)));
+                pieces.Add(Piece("SilverCuirass", "Silver Cuirass", "Silver-faced plates over mail.", ArmorSlot.Chest, 10f, 10f, Metal.Silver,
+                    forge, 5, (silverBar, 8), (leather, 2)));
+                pieces.Add(Piece("SilverGreaves", "Silver Greaves", "Silver shin and knee guards over mail leggings.", ArmorSlot.Legs, 5f, 6f, Metal.Silver,
+                    forge, 5, (silverBar, 4), (leather, 2)));
+                pieces.Add(WarmPiece(Piece("FurHood", "Fur Hood", "A deep hood of snow-leopard fur. Warm.", ArmorSlot.Head, 2f, 1f, Metal.Fur,
+                    workbench, 4, (fur, 2), (leather, 1)), "FurHood", 0.5f));
+                pieces.Add(WarmPiece(Piece("FurCloak", "Fur Cloak", "A heavy cloak of snow-leopard fur - keeps the mountain cold off.", ArmorSlot.Cloak, 1f, 2f, Metal.Fur,
+                    workbench, 4, (fur, 4), (leather, 2)), "FurCloak", 1f));
+            }
+            else
+            {
+                Debug.LogWarning("ArmorSetup: no Silver Bar / Fur yet - run NAV > World > Build Mountains (Tier 5), then this again for the silver and fur pieces.");
+            }
+
+            // Tier 6 (the black forest - BlackForestSetup makes black steel and the volkolak pelt
+            // first): black steel 7/12/7 at the Forge level 6 (the quench tub); the volkolak cloak
+            // at the Workbench level 4 (the loom) - a little more armour than the fur one, as warm.
+            ItemDefinition blackSteelBar = Item("BlackSteelBar");
+            ItemDefinition pelt = Item("VolkolakPelt");
+            if (blackSteelBar != null && pelt != null)
+            {
+                pieces.Add(Piece("BlackSteelHelm", "Black Steel Helm", "A tall black steel shelom with a mask over the eyes.", ArmorSlot.Head, 7f, 3.5f, Metal.BlackSteel,
+                    forge, 6, (blackSteelBar, 4), (leather, 1)));
+                pieces.Add(Piece("BlackSteelCuirass", "Black Steel Cuirass", "Black steel plates over mail, lined with volkolak pelt.", ArmorSlot.Chest, 12f, 11f, Metal.BlackSteel,
+                    forge, 6, (blackSteelBar, 9), (pelt, 1), (leather, 2)));
+                pieces.Add(Piece("BlackSteelGreaves", "Black Steel Greaves", "Black steel shin and knee guards over mail leggings.", ArmorSlot.Legs, 7f, 6.5f, Metal.BlackSteel,
+                    forge, 6, (blackSteelBar, 5), (leather, 2)));
+                pieces.Add(WarmPiece(Piece("VolkolakCloak", "Volkolak Cloak", "A cloak of black volkolak pelt. Warm, and the forest's нечисть smells its own kind on it.", ArmorSlot.Cloak, 2f, 2f, Metal.BlackFur,
+                    workbench, 4, (pelt, 3), (leather, 2)), "VolkolakCloak", 1f));
+            }
+            else
+            {
+                Debug.LogWarning("ArmorSetup: no Black Steel Bar / Volkolak Pelt yet - run NAV > World > Build Black Forest (Tier 6), then this again for the black steel pieces.");
+            }
 
             var itemDatabase = new SerializedObject(AssetDatabase.LoadAssetAtPath<ItemDatabase>("Assets/NAV/ScriptableObjects/Core/DefaultItemDatabase.asset"));
             PlayerCrafting crafting = Object.FindAnyObjectByType<PlayerCrafting>(FindObjectsInactive.Include);
@@ -219,6 +271,17 @@ namespace NAV.Editor
             return (item, recipe);
         }
 
+        /// <summary>Sets the warmth (PlayerCold) on a piece's ArmorDefinition.</summary>
+        private static (ItemDefinition, RecipeDefinition) WarmPiece((ItemDefinition, RecipeDefinition) piece, string id, float warmth)
+        {
+            var definition = AssetDatabase.LoadAssetAtPath<ArmorDefinition>($"{ArmorFolder}/{id}Armor.asset");
+            var serialized = new SerializedObject(definition);
+            serialized.FindProperty("_warmth").floatValue = warmth;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(definition);
+            return piece;
+        }
+
         // ---- Shapes (character space, origin = bone pivot; Unity cylinder = 1 wide, 2 tall) ----
 
         private static List<(ArmorBone, System.Action<Transform>)> Parts(ArmorSlot slot, Metal metal)
@@ -229,6 +292,8 @@ namespace NAV.Editor
                     return new List<(ArmorBone, System.Action<Transform>)> { (ArmorBone.Head, t => BuildHelmet(t, metal)) };
                 case ArmorSlot.Chest:
                     return new List<(ArmorBone, System.Action<Transform>)> { (ArmorBone.Chest, t => BuildBody(t, metal)) };
+                case ArmorSlot.Cloak:
+                    return new List<(ArmorBone, System.Action<Transform>)> { (ArmorBone.Chest, t => BuildCloak(t, metal)) };
                 default:
                     return new List<(ArmorBone, System.Action<Transform>)>
                     {
@@ -246,6 +311,14 @@ namespace NAV.Editor
             float height = metal == Metal.Leather ? 0.22f : metal == Metal.Copper ? 0.25f : metal == Metal.Bronze ? 0.27f : 0.3f;
             AddDome(root, "Dome", shell, new Vector3(0f, 0.1f, 0.025f), new Vector3(0.285f, height, 0.305f));
             Material rim = metal == Metal.Leather ? _mats.Strap : shell;
+            if (metal == Metal.Fur || metal == Metal.BlackFur)
+            {
+                // A deep, shaggy hood: a fat fur roll round the face and down the nape.
+                CreatureLootSetup.AddPart(root, PrimitiveType.Cylinder, "Rim", shell, new Vector3(0f, 0.09f, 0.025f), Vector3.zero, new Vector3(0.33f, 0.04f, 0.35f));
+                CreatureLootSetup.AddPart(root, PrimitiveType.Cylinder, "Nape", shell, new Vector3(0f, 0.0f, -0.07f), new Vector3(-15f, 0f, 0f), new Vector3(0.3f, 0.08f, 0.2f));
+                return;
+            }
+
             CreatureLootSetup.AddPart(root, PrimitiveType.Cylinder, "Rim", rim, new Vector3(0f, 0.105f, 0.025f), Vector3.zero, new Vector3(0.3f, 0.014f, 0.32f));
             if (metal == Metal.Leather)
             {
@@ -263,7 +336,13 @@ namespace NAV.Editor
                 }
             }
 
-            if (metal == Metal.Iron)
+            if (metal == Metal.BlackSteel)
+            {
+                // A half-mask over the eyes - tells the black helm from the iron shelom.
+                CreatureLootSetup.AddPart(root, PrimitiveType.Cube, "Mask", shell, new Vector3(0f, 0.075f, 0.155f), Vector3.zero, new Vector3(0.2f, 0.05f, 0.03f));
+            }
+
+            if (metal == Metal.Iron || metal == Metal.Silver || metal == Metal.BlackSteel)
             {
                 // The shelom's spike and a mail curtain over the nape.
                 CreatureLootSetup.AddPart(root, PrimitiveType.Cylinder, "Spike", shell, new Vector3(0f, 0.27f, 0.025f), Vector3.zero, new Vector3(0.03f, 0.05f, 0.03f));
@@ -296,9 +375,23 @@ namespace NAV.Editor
             }
         }
 
+        /// <summary>A fur cloak on the chest bone: a broad mantle over the shoulders, a long back
+        /// panel down to the knees, a shaggy collar.</summary>
+        private static void BuildCloak(Transform root, Metal metal)
+        {
+            const float chestPivot = 1.264f;
+            Material fur = Shell(metal);
+            CreatureLootSetup.AddPart(root, PrimitiveType.Cylinder, "Mantle", fur, new Vector3(0f, 0.14f, -0.01f), Vector3.zero, new Vector3(0.5f, 0.05f, 0.36f));
+            CreatureLootSetup.AddPart(root, PrimitiveType.Cylinder, "Collar", fur, new Vector3(0f, 0.2f, -0.02f), Vector3.zero, new Vector3(0.3f, 0.05f, 0.26f));
+            // Back panel: from the shoulders (1.42 m) to the knees (~0.55 m), a little behind the back.
+            float top = 1.4f - chestPivot;
+            float bottom = 0.55f - chestPivot;
+            CreatureLootSetup.AddPart(root, PrimitiveType.Cube, "Back", fur, new Vector3(0f, (top + bottom) * 0.5f, -0.2f), new Vector3(-4f, 0f, 0f), new Vector3(0.5f, top - bottom, 0.04f));
+        }
+
         private static void BuildThigh(Transform root, Metal metal, float side)
         {
-            Material material = metal == Metal.Iron ? _mats.Mail : _mats.Leather;
+            Material material = metal == Metal.Iron || metal == Metal.Silver || metal == Metal.BlackSteel ? _mats.Mail : _mats.Leather;
             CreatureLootSetup.AddPart(root, PrimitiveType.Cylinder, "Thigh", material, new Vector3(0.022f * side, -0.19f, 0.01f), Vector3.zero, new Vector3(0.22f, 0.18f, 0.22f));
         }
 
@@ -318,6 +411,10 @@ namespace NAV.Editor
             Metal.Leather => _mats.Leather,
             Metal.Copper => _mats.Copper,
             Metal.Bronze => _mats.Bronze,
+            Metal.Silver => _mats.Silver,
+            Metal.Fur => _mats.Fur,
+            Metal.BlackSteel => _mats.BlackSteel,
+            Metal.BlackFur => _mats.BlackFur,
             _ => _mats.Iron,
         };
 

@@ -22,6 +22,10 @@ namespace NAV.Presentation.Lighting
     /// render every quarter second, read back asynchronously), over DayNightLighting's
     /// ambient-based colour - so distant hills fade into the sky by day, at sunset and in rain -
     /// then multiplied by the biome's fog colour (0.5 grey = unchanged) by that colour's alpha.
+    /// It also applies the biome's twilight (BiomeDefinition.Twilight - the black forest's
+    /// eternal dusk): after DayNightLighting has set this frame's sun and ambient light (it runs
+    /// earlier - execution order), they are dimmed by the eased twilight; DayNightGrading reads
+    /// BiomeTwilight for its night look.
     /// </summary>
     [DefaultExecutionOrder(100)]
     public class AtmosphereFog : MonoBehaviour
@@ -46,6 +50,12 @@ namespace NAV.Presentation.Lighting
         [Tooltip("Seconds to ease into a biome's fog after crossing its border.")]
         [SerializeField, Min(0.1f)] private float _biomeBlendSeconds = 4f;
 
+        [Header("Biome Twilight")]
+        [Tooltip("Share of the sun/moon light taken away at Twilight 1.")]
+        [SerializeField, Range(0f, 1f)] private float _twilightSunDim = 0.8f;
+        [Tooltip("Share of the ambient light (and reflections) taken away at Twilight 1.")]
+        [SerializeField, Range(0f, 1f)] private float _twilightAmbientDim = 0.6f;
+
         [Header("Horizon Colour")]
         [Tooltip("How much the fog takes the colour of the real sky just above the horizon (sampled from the skybox where the camera looks) over DayNightLighting's ambient-based colour. Distant hills then fade into the sky instead of standing out as grey silhouettes.")]
         [SerializeField, Range(0f, 1f)] private float _horizonMatch = 0.85f;
@@ -64,6 +74,9 @@ namespace NAV.Presentation.Lighting
 
         /// <summary>The density last applied (for tests and debug HUDs).</summary>
         public float Density { get; private set; }
+
+        /// <summary>The biome twilight around the camera, eased like the biome fog (0..1).</summary>
+        public float BiomeTwilight { get; private set; }
 
         private void Awake()
         {
@@ -162,6 +175,8 @@ namespace NAV.Presentation.Lighting
             float ease = 1f - Mathf.Exp(-Time.deltaTime / _biomeBlendSeconds);
             _biomeDensity = Mathf.Lerp(_biomeDensity, targetBiomeDensity, ease);
             _biomeColor = Color.Lerp(_biomeColor, targetBiomeColor, ease);
+            BiomeTwilight = Mathf.Lerp(BiomeTwilight, biome != null ? biome.Twilight : 0f, ease);
+            ApplyTwilight();
 
             Density = Mathf.Sqrt(edge * edge + weather * weather + _biomeDensity * _biomeDensity + haze * haze);
             RenderSettings.fog = true;
@@ -180,6 +195,27 @@ namespace NAV.Presentation.Lighting
             Color tinted = baseColor * (_biomeColor * 2f);
             tinted.a = 1f;
             RenderSettings.fogColor = Color.Lerp(baseColor, tinted, _biomeColor.a);
+        }
+
+        /// <summary>Dims what DayNightLighting set this frame (it rewrites it every frame, so this
+        /// never accumulates).</summary>
+        private void ApplyTwilight()
+        {
+            if (BiomeTwilight < 0.001f)
+            {
+                return;
+            }
+
+            if (RenderSettings.sun != null)
+            {
+                RenderSettings.sun.intensity *= 1f - BiomeTwilight * _twilightSunDim;
+            }
+
+            float ambient = 1f - BiomeTwilight * _twilightAmbientDim;
+            RenderSettings.ambientSkyColor *= ambient;
+            RenderSettings.ambientEquatorColor *= ambient;
+            RenderSettings.ambientGroundColor *= ambient;
+            RenderSettings.reflectionIntensity *= ambient;
         }
     }
 }

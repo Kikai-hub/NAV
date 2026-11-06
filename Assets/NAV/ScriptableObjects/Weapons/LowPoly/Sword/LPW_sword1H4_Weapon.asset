@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e39050b6273ab097fc513453b811c1, type: 3}
   m_Name: LPW_sword1H4_Weapon
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.WeaponDefinition
-  _displayName: Sword 4
+  _displayName: Silver Sword
   _icon: {fileID: 21300000, guid: 4e1f6bd5bc114e945b8c6cf189831dfe, type: 3}
   _weaponClass: 3
-  _damage: 15
+  _damage: 23.2
   _range: 2.4
   _attackCooldown: 0.6
   _attackStaminaCost: 10
@@ -23,6 +23,9 @@ MonoBehaviour:
   _attackAnimationSpeed: 1.5
   _hitWindowStart: 0.04
   _hitWindowEnd: 0.32
-  _blockDamageReduction: 0.5
+  _uncleanDamageMultiplier: 1.5
+  _drawSeconds: 0.9
+  _projectileSpeed: 50
+  _blockDamageReduction: 0.6
   _blockStaminaCostPerHit: 10
   _parryWindowSeconds: 0.25

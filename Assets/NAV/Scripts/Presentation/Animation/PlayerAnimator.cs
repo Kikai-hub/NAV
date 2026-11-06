@@ -41,7 +41,7 @@ namespace NAV.Presentation.Animation
     /// The attack clips swing from a stance with the hips turned, but the upper-body layer
     /// keeps the locomotion hips (facing forward), which sent every swing off to the left.
     /// Each baked attack clip carries an AttackTwist curve (its hip yaw); LateUpdate turns the
-    /// spine by it after the Animator has posed the body, so the swing lands where the
+    /// spine by it (spread over Spine/Chest/UpperChest - ApplyTwist) after the Animator has posed the body, so the swing lands where the
     /// character faces. In the full stance the hips already come from the stance clip, so its
     /// own hip yaw (FullStanceTwist, weighted by the layer) is taken off again. Runs before
     /// PlayerCombat's LateUpdate (execution order) so the weapon hitbox is swept from the
@@ -59,6 +59,10 @@ namespace NAV.Presentation.Animation
         [SerializeField] private PlayerEquipment _equipment;
         [Tooltip("Optional - plays a hammer strike whenever a building piece is placed or demolished.")]
         [SerializeField] private PlayerBuilding _building;
+        [Tooltip("Optional - the bow draw/hold/release (Human Archer Animations). Empty = found on the player.")]
+        [SerializeField] private PlayerArchery _archery;
+        [Tooltip("Length (s) of the bow Load clip - its speed is set so the draw lasts the bow's Draw Seconds.")]
+        [SerializeField, Min(0.1f)] private float _bowLoadClipSeconds = 0.83f;
 
         [Header("Smoothing")]
         [SerializeField] private float _moveDampTime = 0.15f;
@@ -106,6 +110,10 @@ namespace NAV.Presentation.Animation
         private static readonly int HoldingLeftItemHash = Animator.StringToHash("HoldingLeftItem");
         private static readonly int HoldStyleHash = Animator.StringToHash("HoldStyle");
         private static readonly int AttackTwistHash = Animator.StringToHash("AttackTwist");
+        private static readonly int BowDrawingHash = Animator.StringToHash("BowDrawing");
+        private static readonly int BowReleaseHash = Animator.StringToHash("BowRelease");
+        private static readonly int BowDrawSpeedHash = Animator.StringToHash("BowDrawSpeed");
+        private bool _hasBowParameters;
 
         private Animator _animator;
         private Transform _spine;
@@ -136,6 +144,12 @@ namespace NAV.Presentation.Animation
             {
                 _hasTwistParameter |= parameter.nameHash == AttackTwistHash;
                 _hasFullStanceTwist |= parameter.nameHash == FullStanceTwistHash;
+                _hasBowParameters |= parameter.nameHash == BowDrawingHash;
+            }
+
+            if (_archery == null && _motor != null)
+            {
+                _archery = _motor.GetComponent<PlayerArchery>();
             }
 
             _fullStanceLayer = _animator.GetLayerIndex(FullStanceLayer);
@@ -165,6 +179,11 @@ namespace NAV.Presentation.Animation
                 _building.PiecePlaced += HandlePiecePlaced;
                 _building.PieceDemolished += HandlePiecePlaced;
             }
+
+            if (_archery != null)
+            {
+                _archery.Loosed += HandleLoosed;
+            }
         }
 
         private void OnDisable()
@@ -183,6 +202,19 @@ namespace NAV.Presentation.Animation
             {
                 _building.PiecePlaced -= HandlePiecePlaced;
                 _building.PieceDemolished -= HandlePiecePlaced;
+            }
+
+            if (_archery != null)
+            {
+                _archery.Loosed -= HandleLoosed;
+            }
+        }
+
+        private void HandleLoosed(WeaponDefinition bow)
+        {
+            if (_hasBowParameters)
+            {
+                _animator.SetTrigger(BowReleaseHash);
             }
         }
 
@@ -210,12 +242,23 @@ namespace NAV.Presentation.Animation
 
                 if (Mathf.Abs(twist) > 0.01f)
                 {
-                    // World up: a pure turn of the whole upper body, whatever the spine bone's axes.
-                    _spine.rotation = Quaternion.AngleAxis(twist, Vector3.up) * _spine.rotation;
+                    ApplyTwist(twist);
                 }
             }
 
             ApplyAimBend();
+        }
+
+        /// <summary>
+        /// Turns the upper body by the attack clip's hip yaw about world up (a pure turn, whatever
+        /// the bones' axes), spread up the spine - most of it high. All of it on the lowest spine
+        /// bone (as before 2026-11-06) wrung the waist: on the hero's Mixamo rig that bone sits
+        /// 10 cm above the hips and the belt is skinned between the two, so an 80-degree turn
+        /// there pinched and skewed it. The shoulders end up turned by the full amount either way.
+        /// </summary>
+        private void ApplyTwist(float twist)
+        {
+            SpineTwist.Apply(_spine, _chest, _upperChest, twist);
         }
 
         /// <summary>
@@ -275,6 +318,12 @@ namespace NAV.Presentation.Animation
         /// camera pitch (the camera sits above/behind, so its own pitch overstates it).</summary>
         private float AimPitchFrom(Vector3 chestPosition)
         {
+            WeaponDefinition held = _equipment != null ? _equipment.MainHandWeapon : null;
+            if (held != null && held.IsRanged)
+            {
+                return BowAimPitch(chestPosition);
+            }
+
             float pitch;
             if (Physics.Raycast(_aimCamera.position, _aimCamera.forward, out RaycastHit hit, _aimRayDistance + 6f, ~0, QueryTriggerInteraction.Ignore)
                 && !hit.collider.transform.IsChildOf(_motor.transform))
@@ -291,6 +340,26 @@ namespace NAV.Presentation.Animation
             }
 
             return Mathf.Clamp(pitch * _aimBendGain, -_maxAimBendUp, _maxAimBendDown);
+        }
+
+        // A bow is aimed, not swung: the bow clips shoot level, so the body tilts by exactly the
+        // angle from the chest to what the crosshair is on (far away too) - no swing gain.
+        private const float BowAimDistance = 250f;
+        private const float BowMaxAimPitch = 60f;
+
+        private float BowAimPitch(Vector3 chestPosition)
+        {
+            Vector3 target = _aimCamera.position + _aimCamera.forward * BowAimDistance;
+            if (Physics.Raycast(_aimCamera.position, _aimCamera.forward, out RaycastHit hit, BowAimDistance, ~0, QueryTriggerInteraction.Ignore)
+                && !hit.collider.transform.IsChildOf(_motor.transform))
+            {
+                target = hit.point;
+            }
+
+            Vector3 offset = target - chestPosition;
+            float horizontal = new Vector2(offset.x, offset.z).magnitude;
+            float pitch = Mathf.Atan2(-offset.y, Mathf.Max(horizontal, 0.5f)) * Mathf.Rad2Deg;
+            return Mathf.Clamp(pitch, -BowMaxAimPitch, BowMaxAimPitch);
         }
 
         private float CameraPitch()
@@ -322,7 +391,7 @@ namespace NAV.Presentation.Animation
                 _comboStep = 0;
             }
 
-            int variant = _comboStep % AttackCombo.VariantCount(weapon.AttackStyle);
+            int variant = _comboStep % Mathf.Max(1, AttackCombo.VariantCount(weapon.AttackStyle));
             _comboStep++;
 
             _lastAttackTime = Time.time;
@@ -363,6 +432,18 @@ namespace NAV.Presentation.Animation
             // A swimmer counts as grounded - it treads water with the locomotion clips (no swim
             // animation yet) instead of being stuck in the fall pose.
             _animator.SetBool(GroundedHash, _motor.IsGrounded || _motor.IsSwimming);
+
+            if (_hasBowParameters && _archery != null)
+            {
+                // The Load clip plays over exactly the bow's draw time, so the arms reach full
+                // draw when PlayerArchery does.
+                _animator.SetBool(BowDrawingHash, _archery.IsDrawing);
+                WeaponDefinition bow = _equipment != null ? _equipment.MainHandWeapon : null;
+                if (bow != null && bow.IsRanged)
+                {
+                    _animator.SetFloat(BowDrawSpeedHash, _bowLoadClipSeconds / bow.DrawSeconds);
+                }
+            }
 
             if (_fullStanceLayer >= 0)
             {

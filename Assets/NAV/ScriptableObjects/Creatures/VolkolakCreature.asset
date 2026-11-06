@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddbc90f4f972db56e7d88a8c4c1b2fa1, type: 3}
+  m_Name: VolkolakCreature
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.AI.CreatureDefinition
+  _displayName: Volkolak
+  _isHostile: 1
+  _isUnclean: 1
+  _maxHealth: 160
+  _moveSpeed: 1.9
+  _chaseSpeedMultiplier: 3.6
+  _detectionRadius: 18
+  _viewAngle: 220
+  _alwaysNoticeDistance: 3
+  _eyeHeight: 0.8
+  _packAlertRadius: 20
+  _attackDamage: 24
+  _attackRange: 1.9
+  _attackCooldown: 1.4
+  _poisonDamage: 0
+  _poisonSeconds: 8
+  _staggerSeconds: 0.35
+  _knockbackDistance: 0.5
+  _patrolRadius: 10
+  _patrolWaitSeconds: 3
+  _searchWaitSeconds: 5
+  _fleeDistance: 10
+  _lootDrops:
+  - _item: {fileID: 11400000, guid: f918b7147a9a299479b259b6aeb4bc91, type: 2}
+    _amount: 1
+    _chance: 1
+  - _item: {fileID: 11400000, guid: f918b7147a9a299479b259b6aeb4bc91, type: 2}
+    _amount: 1
+    _chance: 0.4
+  - _item: {fileID: 11400000, guid: c1e3fe6baee7d4d42b54799e7ca1aa0e, type: 2}
+    _amount: 2
+    _chance: 0.6
+  - _item: {fileID: 11400000, guid: 4f02272fd9d05d04da21fd35f0757053, type: 2}
+    _amount: 1
+    _chance: 0.5

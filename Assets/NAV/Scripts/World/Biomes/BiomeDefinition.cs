@@ -113,6 +113,8 @@ namespace NAV.World.Biomes
         [SerializeField] private string _displayName;
         [SerializeField] private TerrainLayer _terrainLayer;
         [SerializeField] private bool _isWater;
+        [Tooltip("Colour of this biome on the world map (and the generator's preview).")]
+        [SerializeField] private Color _mapColor = new(0.5f, 0.6f, 0.4f, 1f);
 
         [Header("Terrain Shape")]
         [Tooltip("0 = perfectly flat within this biome, 1 = full detail-noise amplitude from WorldGenerationSettings. Keep Plains low (flat fields), Forest higher (rolling hills), Ocean low (smooth seabed).")]
@@ -136,6 +138,12 @@ namespace NAV.World.Biomes
         [SerializeField, Min(0f)] private float _fogDensity;
         [Tooltip("Multiplies the sky-matched fog colour in this biome (0.5 grey = unchanged, darker/greener = gloomier); alpha = how strongly (0 = not at all). Multiplied, so it still darkens at night.")]
         [SerializeField] private Color _fogColor = new(0.5f, 0.5f, 0.5f, 0f);
+        [Tooltip("How much of the daylight this biome swallows (0 = none, 1 = night at noon) - the black forest's eternal dusk. AtmosphereFog dims the sun and ambient light by it and DayNightGrading leans towards the night look.")]
+        [SerializeField, Range(0f, 1f)] private float _twilight;
+
+        [Header("Climate")]
+        [Tooltip("How cold it is here (PlayerCold): 0 = mild, 1 = cold (mountains - a warm cloak keeps it off), 1.5 = bitter (snowy peaks, permafrost - cloak and hood).")]
+        [SerializeField, Range(0f, 2f)] private float _cold;
 
         [Header("Ambience")]
         [Tooltip("Loop heard here by day (birds, cicadas, the sea) - AmbienceController blends the biomes around the listener.")]
@@ -150,6 +158,7 @@ namespace NAV.World.Biomes
         public string DisplayName => _displayName;
         public TerrainLayer TerrainLayer => _terrainLayer;
         public bool IsWater => _isWater;
+        public Color MapColor => _mapColor;
         public float HeightVariation => _heightVariation;
         public IReadOnlyList<BiomeResourceSpawn> ResourceSpawns => _resourceSpawns;
         public IReadOnlyList<BiomeCreatureSpawn> CreatureSpawns => _creatureSpawns;
@@ -158,6 +167,8 @@ namespace NAV.World.Biomes
         public float FlowerDensity => _flowerDensity;
         public float FogDensity => _fogDensity;
         public Color FogColor => _fogColor;
+        public float Twilight => _twilight;
+        public float Cold => _cold;
         public AudioClip DayAmbience => _dayAmbience;
         public AudioClip NightAmbience => _nightAmbience;
         public float AmbienceVolume => _ambienceVolume;

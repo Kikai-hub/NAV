@@ -18,6 +18,10 @@ namespace NAV.Presentation.Lighting
         [SerializeField] private WorldClock _clock;
         [Tooltip("Optional - drives the Overcast volume.")]
         [SerializeField] private WeatherSystem _weather;
+        [Tooltip("Optional - a biome's twilight (the black forest's dusk) brings in the night look by day.")]
+        [SerializeField] private AtmosphereFog _atmosphere;
+        [Tooltip("Night-look weight at biome Twilight 1.")]
+        [SerializeField, Range(0f, 1f)] private float _twilightNightWeight = 0.75f;
 
         [SerializeField] private Volume _goldenHour;
         [SerializeField] private Volume _night;
@@ -50,6 +54,11 @@ namespace NAV.Presentation.Lighting
             if (!settings.IsDaytime(hour))
             {
                 night = Mathf.SmoothStep(0f, 1f, Mathf.Min(toSunrise, toSunset) / _nightFadeHours);
+            }
+
+            if (_atmosphere != null)
+            {
+                night = Mathf.Max(night, _atmosphere.BiomeTwilight * _twilightNightWeight);
             }
 
             float overcast = _weather != null && _weather.Current != null ? _weather.Evaluate(w => w.Overcast) : 0f;

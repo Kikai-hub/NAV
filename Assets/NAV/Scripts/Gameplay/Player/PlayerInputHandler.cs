@@ -17,6 +17,9 @@ namespace NAV.Gameplay.Player
         /// event, since blocking is a hold, not a one-shot action.</summary>
         public bool BlockHeld { get; private set; }
 
+        /// <summary>Attack (LMB) is held down - drawing a bow (PlayerArchery).</summary>
+        public bool AttackHeld { get; private set; }
+
         private int _menuOpenRequests;
 
         /// <summary>
@@ -280,6 +283,7 @@ namespace NAV.Gameplay.Player
             LookInput = MenuOpen ? Vector2.zero : _lookAction.ReadValue<Vector2>();
             SprintHeld = !MenuOpen && _sprintAction.IsPressed();
             BlockHeld = !MenuOpen && _blockAction.IsPressed();
+            AttackHeld = !MenuOpen && _attackAction.IsPressed();
         }
 
         private void HandleJumpPerformed(InputAction.CallbackContext context)

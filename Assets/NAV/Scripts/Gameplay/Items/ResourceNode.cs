@@ -70,6 +70,10 @@ namespace NAV.Gameplay.Items
             : _definition.RequiredTool == ToolType.Pickaxe ? HitSurface.Stone
             : HitSurface.Other;
 
+        /// <summary>Any node gathered out (by a hit on this machine), just before it is replaced
+        /// by its next stage - multiplayer removes the same node on the other machines.</summary>
+        public static event System.Action<ResourceNode> Depleted;
+
         public bool ReceiveMeleeHit(GameObject attacker, WeaponDefinition weapon)
         {
             return TryGather(attacker);
@@ -106,6 +110,7 @@ namespace NAV.Gameplay.Items
             }
 
             Debug.Log($"{name} was depleted by {interactor.name} and scattered its yield.", this);
+            Depleted?.Invoke(this);
             SpawnDrops();
             SpawnNextStage(interactor);
             Destroy(gameObject);

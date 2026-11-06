@@ -67,6 +67,12 @@ namespace NAV.Editor
         private const string HoldStyleParameter = "HoldStyle";
         private const string SprintParameter = "IsSprinting";
         private const string BuildStrikeParameter = "BuildStrike";
+        // Bow (Human Archer Animations FREE): drawing (PlayerArchery.IsDrawing), the loose, and
+        // the Load clip's speed so it lasts the bow's Draw Seconds (PlayerAnimator).
+        private const string BowClips = CombatClips + "Bow/";
+        private const string BowDrawingParameter = "BowDrawing";
+        private const string BowReleaseParameter = "BowRelease";
+        private const string BowDrawSpeedParameter = "BowDrawSpeed";
         // Placing a building piece: Kevin's overhead 2H blow read as a hammer strike.
         private const string BuildStrikeSource = CombatClips + "2H/HumanM@Attack2H01.fbx";
         private const float BuildStrikeSpeed = 1.8f;
@@ -145,11 +151,15 @@ namespace NAV.Editor
             EnsureParameter(controller, TwistParameter, AnimatorControllerParameterType.Float);
             EnsureParameter(controller, FullStanceTwistParameter, AnimatorControllerParameterType.Float);
             EnsureParameter(controller, HitActiveParameter, AnimatorControllerParameterType.Float);
+            EnsureParameter(controller, BowDrawingParameter, AnimatorControllerParameterType.Bool);
+            EnsureParameter(controller, BowReleaseParameter, AnimatorControllerParameterType.Trigger);
+            EnsureParameter(controller, BowDrawSpeedParameter, AnimatorControllerParameterType.Float, 1f);
             RemoveParameter(controller, "AttackMirror");
 
             var bakeModel = Object.Instantiate(bakeModelAsset);
             var baked = new Dictionary<string, AnimationClip>();
             AnimationClip stance1H, stance2H, stancePolearm, carry2H, carryPolearm, full1H, full2H, fullPolearm;
+            AnimationClip stanceBow, fullBow, bowLoad, bowHold, bowRelease;
             try
             {
                 foreach (Attack attack in Attacks)
@@ -172,6 +182,14 @@ namespace NAV.Editor
                 full1H = Bake(LoadClip(CombatClips + "1H/HumanM@CombatIdle1H01.fbx"), "FullStance1H", bakeModel, false, FullStanceTwistParameter, Strike.None, 0f);
                 full2H = Bake(LoadClip(CombatClips + "2H/HumanM@CombatIdle2H01.fbx"), "FullStance2H", bakeModel, false, FullStanceTwistParameter, Strike.None, 0f);
                 fullPolearm = Bake(LoadClip(CombatClips + "Polearm/HumanM@CombatIdlePolearm01.fbx"), "FullStancePolearm", bakeModel, false, FullStanceTwistParameter, Strike.None, 0f);
+
+                // The archer stands side-on: the twist curves turn the upper body back so the
+                // shot goes where the character faces (the aim).
+                stanceBow = Bake(LoadClip(BowClips + "HumanM@BowIdle01.fbx"), "StanceBow", bakeModel, false, TwistParameter, Strike.None, 0f);
+                fullBow = Bake(LoadClip(BowClips + "HumanM@BowIdle01.fbx"), "FullStanceBow", bakeModel, false, FullStanceTwistParameter, Strike.None, 0f);
+                bowLoad = Bake(LoadClip(BowClips + "HumanM@BowShot01 - Load.fbx"), "BowLoad", bakeModel, false, TwistParameter, Strike.None, 0f);
+                bowHold = Bake(LoadClip(BowClips + "HumanM@BowShot01 - Hold.fbx"), "BowHold", bakeModel, false, TwistParameter, Strike.None, 0f);
+                bowRelease = Bake(LoadClip(BowClips + "HumanM@BowShot01 - Release.fbx"), "BowRelease", bakeModel, false, TwistParameter, Strike.None, 0f);
             }
             finally
             {
@@ -193,6 +211,7 @@ namespace NAV.Editor
                 new Pose(AddPoseState(full, "Full 1H", full1H, new Vector3(0, -100, 0)), Set(Style(WeaponAttackStyle.OneHanded)), Set(Style(WeaponAttackStyle.Shield))),
                 new Pose(AddPoseState(full, "Full 2H", full2H, new Vector3(0, 0, 0)), Set(Style(WeaponAttackStyle.TwoHanded))),
                 new Pose(AddPoseState(full, "Full Polearm", fullPolearm, new Vector3(0, 100, 0)), Set(Style(WeaponAttackStyle.Polearm))),
+                new Pose(AddPoseState(full, "Full Bow", fullBow, new Vector3(0, 200, 0)), Set(Style(WeaponAttackStyle.Bow))),
             };
             ConnectPoses(fullPoses);
 
@@ -207,7 +226,9 @@ namespace NAV.Editor
             // condition sets (OR of ANDs) under which it is the right one - exactly one matches.
             var poses = new[]
             {
-                new Pose(empty, Set(Style(0)), Set(Style(WeaponAttackStyle.OneHanded), Sprinting(true)), Set(Style(WeaponAttackStyle.Shield), Sprinting(true))),
+                new Pose(empty, Set(Style(0)), Set(Style(WeaponAttackStyle.OneHanded), Sprinting(true)), Set(Style(WeaponAttackStyle.Shield), Sprinting(true)),
+                    Set(Style(WeaponAttackStyle.Bow), Sprinting(true))),
+                new Pose(AddPoseState(upper, "Stance Bow", stanceBow, new Vector3(0, 225, 0)), Set(Style(WeaponAttackStyle.Bow), Sprinting(false))),
                 new Pose(AddPoseState(upper, "Stance 1H", stance1H, new Vector3(0, -150, 0)),
                     Set(Style(WeaponAttackStyle.OneHanded), Sprinting(false)), Set(Style(WeaponAttackStyle.Shield), Sprinting(false))),
                 new Pose(AddPoseState(upper, "Stance 2H", stance2H, new Vector3(0, -75, 0)), Set(Style(WeaponAttackStyle.TwoHanded), Sprinting(false))),
@@ -238,6 +259,8 @@ namespace NAV.Editor
             {
                 AddPoseTransitions(buildStrike, pose, hasExitTime: true, duration: 0.2f);
             }
+
+            AddBowShot(upper, poses, bowLoad, bowHold, bowRelease);
 
             // --- Hands: close the fist around a held item ---
             AddGripLayer(controller, RightHandLayer, rightHandMask, fist, "HoldingItem");
@@ -514,6 +537,67 @@ namespace NAV.Editor
             foreach (Pose pose in poses)
             {
                 AddPoseTransitions(state, pose, hasExitTime: true, duration: 0.2f);
+            }
+        }
+
+        /// <summary>
+        /// The bow shot on the upper body: from a rest pose with a bow, BowDrawing starts Load
+        /// (sped up/slowed by BowDrawSpeed to last the bow's Draw Seconds), which runs into the
+        /// looping Hold; BowRelease plays Release (from Load or Hold), then back to whichever
+        /// rest pose fits. BowDrawing going off without a release (cancelled) eases straight back.
+        /// The release transitions are added first so they win when both happen in one frame.
+        /// </summary>
+        private static void AddBowShot(AnimatorStateMachine machine, Pose[] poses, AnimationClip load, AnimationClip hold, AnimationClip release)
+        {
+            AnimatorState loadState = machine.AddState("Bow Load", new Vector3(1000, 150, 0));
+            loadState.motion = load;
+            loadState.speedParameterActive = true;
+            loadState.speedParameter = BowDrawSpeedParameter;
+            AnimatorState holdState = machine.AddState("Bow Hold", new Vector3(1000, 225, 0));
+            holdState.motion = hold;
+            AnimatorState releaseState = machine.AddState("Bow Release", new Vector3(1000, 300, 0));
+            releaseState.motion = release;
+
+            foreach (Pose pose in poses)
+            {
+                AnimatorStateTransition draw = pose.State.AddTransition(loadState);
+                draw.hasExitTime = false;
+                draw.duration = 0.1f;
+                draw.AddCondition(AnimatorConditionMode.If, 0f, BowDrawingParameter);
+                draw.AddCondition(AnimatorConditionMode.Equals, (int)WeaponAttackStyle.Bow, HoldStyleParameter);
+            }
+
+            foreach (AnimatorState drawing in new[] { loadState, holdState })
+            {
+                AnimatorStateTransition loose = drawing.AddTransition(releaseState);
+                loose.hasExitTime = false;
+                loose.duration = 0.05f;
+                loose.AddCondition(AnimatorConditionMode.If, 0f, BowReleaseParameter);
+            }
+
+            AnimatorStateTransition toHold = loadState.AddTransition(holdState);
+            toHold.hasExitTime = true;
+            toHold.exitTime = 0.95f;
+            toHold.duration = 0.1f;
+
+            foreach (Pose pose in poses)
+            {
+                foreach (Condition[] set in pose.Sets)
+                {
+                    foreach (AnimatorState drawing in new[] { loadState, holdState })
+                    {
+                        AnimatorStateTransition cancel = drawing.AddTransition(pose.State);
+                        cancel.hasExitTime = false;
+                        cancel.duration = 0.2f;
+                        cancel.AddCondition(AnimatorConditionMode.IfNot, 0f, BowDrawingParameter);
+                        foreach (Condition condition in set)
+                        {
+                            cancel.AddCondition(condition.Mode, condition.Threshold, condition.Parameter);
+                        }
+                    }
+                }
+
+                AddPoseTransitions(releaseState, pose, hasExitTime: true, duration: 0.2f);
             }
         }
 

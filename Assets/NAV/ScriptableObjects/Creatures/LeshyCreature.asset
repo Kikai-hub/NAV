@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddbc90f4f972db56e7d88a8c4c1b2fa1, type: 3}
+  m_Name: LeshyCreature
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.AI.CreatureDefinition
+  _displayName: Leshy
+  _isHostile: 1
+  _isUnclean: 0
+  _surface: 2
+  _maxHealth: 650
+  _moveSpeed: 1.1
+  _chaseSpeedMultiplier: 1.5
+  _turnSpeed: 55
+  _detectionRadius: 30
+  _viewAngle: 200
+  _alwaysNoticeDistance: 10
+  _eyeHeight: 4
+  _packAlertRadius: 0
+  _attackDamage: 0
+  _attackRange: 3
+  _attackCooldown: 1.2
+  _poisonDamage: 0
+  _poisonSeconds: 8
+  _staggerSeconds: 0
+  _knockbackDistance: 0
+  _patrolRadius: 18
+  _patrolWaitSeconds: 6
+  _searchWaitSeconds: 10
+  _fleeDistance: 10
+  _lootDrops:
+  - _item: {fileID: 11400000, guid: 0713ce997fecbc941b1ffc42acb2a35b, type: 2}
+    _amount: 3
+    _chance: 1
+  - _item: {fileID: 11400000, guid: 0713ce997fecbc941b1ffc42acb2a35b, type: 2}
+    _amount: 1
+    _chance: 0.5
+  - _item: {fileID: 11400000, guid: 0713ce997fecbc941b1ffc42acb2a35b, type: 2}
+    _amount: 1
+    _chance: 0.5
+  - _item: {fileID: 11400000, guid: ce1dc4f3b8a3bb7d6b450ff4280ae2b4, type: 2}
+    _amount: 10
+    _chance: 1

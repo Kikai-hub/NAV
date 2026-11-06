@@ -21,5 +21,8 @@ namespace NAV.Gameplay.Combat
 
         /// <summary>Shields - a bash with the shield arm.</summary>
         Shield = 4,
+
+        /// <summary>Bows - drawn and loosed (PlayerArchery), no melee swing.</summary>
+        Bow = 5,
     }
 }

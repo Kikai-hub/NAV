@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: LPW_hammer1H8
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_hammer1H8
-  _displayName: Mace 8
-  _description: Mace from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Silver Mace
+  _description: A mace with a silver head - it breaks the unclean.
   _icon: {fileID: 21300000, guid: de8dd4c51434bff4db9134d5f4b86c13, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 4
+  _density: 2
   _worldPrefab: {fileID: 2520272645619013592, guid: 35069f8cd8a18b14fa351cbe9b432a83, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +27,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: a632ab93c09dc844c84ece081b19cefd, type: 2}
   _heldPrefab: {fileID: 4119001971362462944, guid: 210a62461481bd540a9d5d7af04cd9d9, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

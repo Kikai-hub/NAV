@@ -176,6 +176,22 @@ This file is the project's memory.
 
 ------------------------------------------------------------------------
 
+## Death Rule (ragdolls)
+
+Every creature, boss, NPC and the player dies into a **physics ragdoll** (developer,
+2026-11-06): the body falls like a real, heavy corpse - limbs with mass, jointed,
+colliding with the ground and the world - never a canned "tip over onto its side"
+animation or a scripted rotation.
+
+-   Every new creature/entity prefab gets a `Ragdoll` (NAV > Animation > Build Ragdolls
+    builds the parts from its skeleton; add new prefabs to that setup).
+-   The ragdoll takes the body's momentum (a running wolf tumbles on) and the push of the
+    killing blow.
+-   A death animation may only lead into the ragdoll, not replace it.
+-   The player's corpse is a ragdoll too and is restored to the animated body on respawn.
+
+------------------------------------------------------------------------
+
 ## Boss Rule
 
 Bosses are NOT FINALIZED.

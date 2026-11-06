@@ -716,6 +716,7 @@ GameObject:
   - component: {fileID: 1805211739273423823}
   - component: {fileID: 1972816540407330765}
   - component: {fileID: 8698919754455020081}
+  - component: {fileID: 483072834045666110}
   m_Layer: 0
   m_Name: Bloomery
   m_TagString: Untagged
@@ -796,6 +797,19 @@ MonoBehaviour:
   _volume: 0.55
   _minDistance: 1.5
   _maxDistance: 25
+--- !u!114 &483072834045666110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6437929004377488409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40c9b8a49669230408f3121cb78cf3ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Environment.HeatSource
+  _radius: 4
 --- !u!1 &7293823905431290681
 GameObject:
   m_ObjectHideFlags: 0

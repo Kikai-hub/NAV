@@ -23,6 +23,9 @@ MonoBehaviour:
   _attackAnimationSpeed: 1.5
   _hitWindowStart: 0.04
   _hitWindowEnd: 0.32
+  _uncleanDamageMultiplier: 1
+  _drawSeconds: 0.9
+  _projectileSpeed: 50
   _blockDamageReduction: 0.54
   _blockStaminaCostPerHit: 10
   _parryWindowSeconds: 0.25

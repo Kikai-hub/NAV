@@ -22,5 +22,6 @@ namespace NAV.Gameplay.Combat
         Warhammer = 8,
         Spear = 9,
         Shield = 10,
+        Bow = 11,
     }
 }

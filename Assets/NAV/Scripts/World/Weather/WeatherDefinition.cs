@@ -55,6 +55,10 @@ namespace NAV.World.Weather
         [Tooltip("Exponential-squared fog density. 0 = no fog (clear weather keeps fog off).")]
         [SerializeField, Min(0f)] private float _fogDensity;
 
+        [Header("Sea")]
+        [Tooltip("Wave height multiplier on the sea (OceanSurface): 1 = calm swell, 2-3 = storm.")]
+        [SerializeField, Range(0f, 4f)] private float _seaState = 1f;
+
         [Header("Lightning")]
         [SerializeField] private bool _hasLightning;
         [SerializeField, Min(0.5f)] private float _minLightningInterval = 6f;
@@ -74,6 +78,7 @@ namespace NAV.World.Weather
         public float SkyExposureMultiplier => _skyExposureMultiplier;
         public float Overcast => _overcast;
         public float FogDensity => _fogDensity;
+        public float SeaState => _seaState;
         public bool HasLightning => _hasLightning;
         public float MinLightningInterval => _minLightningInterval;
         public float MaxLightningInterval => _maxLightningInterval;

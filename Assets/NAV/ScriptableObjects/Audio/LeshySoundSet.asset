@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb5184a9d0b8dff459e7746fed4dea3e, type: 3}
+  m_Name: LeshySoundSet
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Audio.LeshySoundSet
+  Omen:
+    Clips:
+    - {fileID: 8300000, guid: fc77cead81c2d2f4fb64aaf34fa2e7bd, type: 3}
+    - {fileID: 8300000, guid: 4153605e596d9844da6614fddd0046fa, type: 3}
+    Volume: 0.8
+    Pitch: {x: 0.95, y: 1.05}
+    MaxDistance: 120
+  PeacefulOmen:
+    Clips:
+    - {fileID: 8300000, guid: 2ebc232c98257ed479fb491806acd590, type: 3}
+    - {fileID: 8300000, guid: a0a7c74f15633814c9d6842461df61fc, type: 3}
+    Volume: 0.5
+    Pitch: {x: 0.95, y: 1.05}
+    MaxDistance: 120
+  Presence:
+    Clips:
+    - {fileID: 8300000, guid: 424bfa2321b341f4e9cc4eeb39c4fe5e, type: 3}
+    Volume: 0.55
+    Pitch: {x: 1, y: 1}
+    MaxDistance: 45
+  Footstep:
+    Clips:
+    - {fileID: 8300000, guid: 47780d85b046dca44952048a9ea54d93, type: 3}
+    - {fileID: 8300000, guid: be7d8f656d56c4f4596c84022753b93b, type: 3}
+    - {fileID: 8300000, guid: cc75f666b48f196469fa044ebcb625b1, type: 3}
+    Volume: 0.8
+    Pitch: {x: 0.85, y: 1}
+    MaxDistance: 55
+  Roar:
+    Clips:
+    - {fileID: 8300000, guid: 0d85338aa2898e746a2a102b462e9d19, type: 3}
+    - {fileID: 8300000, guid: 2c094c687178152469da1c725c93ce03, type: 3}
+    Volume: 1
+    Pitch: {x: 0.92, y: 1.02}
+    MaxDistance: 140
+  SlamWindup:
+    Clips:
+    - {fileID: 8300000, guid: 14907513446fbdf47b8e4ef73b78a907, type: 3}
+    - {fileID: 8300000, guid: 354204121e7665048aa4f07bb01c206a, type: 3}
+    Volume: 0.8
+    Pitch: {x: 0.95, y: 1.05}
+    MaxDistance: 60
+  SlamImpact:
+    Clips:
+    - {fileID: 8300000, guid: e45a83bcea8a6a34da1bb674be1880c5, type: 3}
+    - {fileID: 8300000, guid: 33b95bf01e9144b47b809ded15e72107, type: 3}
+    Volume: 1
+    Pitch: {x: 0.9, y: 1}
+    MaxDistance: 90
+  SweepWhoosh:
+    Clips:
+    - {fileID: 8300000, guid: d4bf182ca8c5f4c459c03b1b229fe492, type: 3}
+    - {fileID: 8300000, guid: 5e3a05f28e6504b82a82523aa957b4d2, type: 3}
+    - {fileID: 8300000, guid: 472f30ae362af4ad688578ba5f13a113, type: 3}
+    Volume: 0.9
+    Pitch: {x: 0.75, y: 0.85}
+    MaxDistance: 45
+  Hurt:
+    Clips:
+    - {fileID: 8300000, guid: 28ed6b8e880b01949ae3c66af99ab5f4, type: 3}
+    - {fileID: 8300000, guid: 6631cdbcad0444546bf1d448f71e3d00, type: 3}
+    - {fileID: 8300000, guid: 1009f420fc04a274fa57abdcc62b86b6, type: 3}
+    Volume: 0.7
+    Pitch: {x: 0.95, y: 1.05}
+    MaxDistance: 50
+  DeathCreak:
+    Clips:
+    - {fileID: 8300000, guid: 41be73730a3476c4da853786df10a1a8, type: 3}
+    Volume: 1
+    Pitch: {x: 0.95, y: 1}
+    MaxDistance: 120
+  DeathImpact:
+    Clips:
+    - {fileID: 8300000, guid: b371848fe44c5234ba2e266fd0558409, type: 3}
+    Volume: 1
+    Pitch: {x: 0.9, y: 0.95}
+    MaxDistance: 100

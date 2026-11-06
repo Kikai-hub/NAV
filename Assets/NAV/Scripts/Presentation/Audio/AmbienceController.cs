@@ -28,6 +28,8 @@ namespace NAV.Presentation.Audio
         [SerializeField] private WorldGenerator _worldGenerator;
         [SerializeField] private WorldClock _clock;
         [SerializeField] private WeatherSystem _weather;
+        [Tooltip("Optional - the forest falls silent (birds, crickets) while the Leshy comes and fights; the wind stays.")]
+        [SerializeField] private NAV.World.Encounters.ForestWrath _forestWrath;
         [Tooltip("Optional - defaults to Camera.main.")]
         [SerializeField] private Transform _listener;
         [Tooltip("Optional - found by its PlayerMotor. Used for the under-a-roof check.")]
@@ -154,6 +156,11 @@ namespace NAV.Presentation.Audio
 
             // Creatures fall quiet in the rain; the wind picks up with the clouds.
             float life = 1f - 0.8f * Mathf.Clamp01(rain * 2f);
+            if (_forestWrath != null)
+            {
+                // The forest holds its breath while its master is about (the sources ease to it).
+                life *= 1f - _forestWrath.Silence;
+            }
             float wind = (1f + overcast * 1.2f) * outdoor;
 
             foreach (KeyValuePair<BiomeDefinition, float> pair in _biomeWeights)

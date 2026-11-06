@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: SilverAxe
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: SilverAxe
+  _displayName: Silver Axe
+  _description: A silver-edged axe - fells the mountain's old pines.
+  _icon: {fileID: 21300000, guid: 8df9eb266c0f0a04694c27f116d35d98, type: 3}
+  _category: 1
+  _maxStackSize: 1
+  _weight: 3
+  _density: 2
+  _worldPrefab: {fileID: 8399096635942995220, guid: 552688a93ae9d224e908a50bc918751f, type: 3}
+  _food: {fileID: 0}
+  _toolType: 1
+  _toolTier: 5
+  _weapon: {fileID: 11400000, guid: a0d516faf71608e4fa71d8eb86e13ac7, type: 2}
+  _heldPrefab: {fileID: 6912651559692850068, guid: b61eb8495a55b084d816714994147097, type: 3}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

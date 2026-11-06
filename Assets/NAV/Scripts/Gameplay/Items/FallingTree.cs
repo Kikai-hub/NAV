@@ -43,8 +43,17 @@ namespace NAV.Gameplay.Items
         /// <summary>Fires once per trunk, the moment it lands.</summary>
         public static event Action<FallingTree> AnyLanded;
 
+        // A trunk felled into the sea floats.
+        private const float TrunkDensity = 0.65f;
+
         private void Start()
         {
+            if (!TryGetComponent(out NAV.Gameplay.Environment.WaterBuoyancy buoyancy))
+            {
+                buoyancy = gameObject.AddComponent<NAV.Gameplay.Environment.WaterBuoyancy>();
+            }
+
+            buoyancy.Density = TrunkDensity;
             AnyFelled?.Invoke(this);
         }
 

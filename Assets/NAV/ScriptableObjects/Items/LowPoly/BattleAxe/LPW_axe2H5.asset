@@ -13,17 +13,21 @@ MonoBehaviour:
   m_Name: LPW_axe2H5
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_axe2H5
-  _displayName: Battle Axe 5
-  _description: Battle Axe from the LowPoly Weapons Pack. Placeholder stats - no
-    materials, tier or recipe yet.
+  _displayName: Silver Battle Axe
+  _description: A great silver battle axe.
   _icon: {fileID: 21300000, guid: 304fc7305bb60ed448b78feafbcf64f1, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 8
+  _density: 2
   _worldPrefab: {fileID: 7217335080164657070, guid: d038ff844be71514bbe0112a00b87016, type: 3}
   _food: {fileID: 0}
   _toolType: 1
-  _toolTier: 1
+  _toolTier: 5
   _weapon: {fileID: 11400000, guid: 848e4ba2d256a584095ca49f4740cd6d, type: 2}
   _heldPrefab: {fileID: 1179516361395038074, guid: 485089f01b7eb554bbb71c09f5182509, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

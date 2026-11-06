@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a64578e61d1b974eb8b29e6a87e5400, type: 3}
+  m_Name: BogOakKnots
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
+  _id: BogOakKnots
+  _displayName: Bog Oak Knots
+  _description: Black boughs and knots broken off fallen bog oaks. Too twisted to
+    build with - burn them into charcoal.
+  _icon: {fileID: 21300000, guid: c24c2c7044c6a27488a5e8d1b584ce9d, type: 3}
+  _category: 0
+  _maxStackSize: 50
+  _weight: 0.6
+  _density: 2
+  _worldPrefab: {fileID: 1272309678816072044, guid: abaa528cf83fd694ebf1b757401fbaa4, type: 3}
+  _food: {fileID: 0}
+  _toolType: 0
+  _toolTier: 1
+  _weapon: {fileID: 0}
+  _heldPrefab: {fileID: 0}
+  _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2849322760820936752}
   - component: {fileID: 70853704480144382}
   - component: {fileID: 7895435980523986375}
+  - component: {fileID: 7898707292505898927}
   m_Layer: 0
   m_Name: CharcoalKiln
   m_TagString: Untagged
@@ -99,6 +100,19 @@ MonoBehaviour:
   _volume: 0.5
   _minDistance: 1.5
   _maxDistance: 20
+--- !u!114 &7898707292505898927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709517153978306884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40c9b8a49669230408f3121cb78cf3ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Environment.HeatSource
+  _radius: 4
 --- !u!1 &820232591143371232
 GameObject:
   m_ObjectHideFlags: 0
@@ -1200,6 +1214,16 @@ MonoBehaviour:
     _output: {fileID: 11400000, guid: 7e57685acc2228d4f8a050bd1459a219, type: 2}
     _outputAmount: 1
     _seconds: 10
+  - _input: {fileID: 11400000, guid: 29a9aa8277a386741bc6c5c14399c79d, type: 2}
+    _inputAmount: 2
+    _output: {fileID: 11400000, guid: c945cd0980c55da43ab66269eb0312c0, type: 2}
+    _outputAmount: 1
+    _seconds: 20
+  - _input: {fileID: 11400000, guid: 088e72112e73f3c4bb0b80e173bd7ad7, type: 2}
+    _inputAmount: 1
+    _output: {fileID: 11400000, guid: c945cd0980c55da43ab66269eb0312c0, type: 2}
+    _outputAmount: 2
+    _seconds: 25
   _fuel: {fileID: 0}
   _fuelPerItem: 1
   _fuelCapacity: 1

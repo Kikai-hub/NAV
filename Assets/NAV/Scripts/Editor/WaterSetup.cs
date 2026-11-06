@@ -70,6 +70,8 @@ namespace NAV.Editor
             }
 
             GetOrAdd<WaterBody>(water.gameObject);
+            // Real waves: LOD rings around the camera, the sea endless and wavy (OceanSurface).
+            GetOrAdd<OceanSurface>(water.gameObject);
             NavMeshModifier modifier = GetOrAdd<NavMeshModifier>(water.gameObject);
             modifier.ignoreFromBuild = true;
             EditorUtility.SetDirty(modifier);

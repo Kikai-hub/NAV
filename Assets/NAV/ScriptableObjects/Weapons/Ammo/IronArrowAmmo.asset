@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95407c7008658ba46b9d2318374aaa9c, type: 3}
+  m_Name: IronArrowAmmo
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Combat.AmmoDefinition
+  _damage: 24
+  _projectilePrefab: {fileID: 7063135765773237269, guid: a81dd51f1e3bafb409494d3dfea84bdc, type: 3}
+  _recoverChance: 0.75

@@ -15,6 +15,7 @@ MonoBehaviour:
   _displayName: Forest
   _terrainLayer: {fileID: 8574412962073106934, guid: 526b0480996617546ad70677a4ab1857, type: 2}
   _isWater: 0
+  _mapColor: {r: 0.24, g: 0.52, b: 0.24, a: 1}
   _heightVariation: 0.65
   _resourceSpawns:
   - _prefab: {fileID: 3560497028252483409, guid: 3846406aab19ff84badfbbc0a187aea5, type: 3}
@@ -62,16 +63,6 @@ MonoBehaviour:
     _minSpacing: 18
     _scale: {x: 1, y: 1}
     _heightAboveWater: {x: -1000, y: 1000}
-  - _prefab: {fileID: 5822155337055520264, guid: 2bc89edf1f8ea8e4b8abebdff9dbe3d5, type: 3}
-    _density: 0.12
-    _minSpacing: 14
-    _scale: {x: 0.7, y: 1.1}
-    _heightAboveWater: {x: 0.1, y: 1.5}
-  - _prefab: {fileID: 1176642649903770046, guid: 993c6d14c01eb5f44897fad73d9c52f3, type: 3}
-    _density: 0.04
-    _minSpacing: 20
-    _scale: {x: 0.8, y: 1.15}
-    _heightAboveWater: {x: 0.8, y: 4}
   _decorSpawns:
   - _prefab: {fileID: 7663410815729985492, guid: 10c433e5fed076d47abd0770632e3322, type: 3}
     _density: 0.08

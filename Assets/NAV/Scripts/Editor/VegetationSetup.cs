@@ -705,6 +705,8 @@ namespace NAV.Editor
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.alphaIsTransparency = true;
             importer.wrapMode = TextureWrapMode.Clamp;
+            // The terrain packs detail textures into an atlas at runtime.
+            importer.isReadable = true;
             importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }

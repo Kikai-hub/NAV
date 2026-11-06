@@ -401,6 +401,15 @@ namespace NAV.UI
             {
                 _playerFood.TryEatFromSlot(index);
             }
+            else if (item.IsAntidote)
+            {
+                // The antidote works on the player's poison (same object as the inventory).
+                PlayerPoison poison = _playerInventory.GetComponent<PlayerPoison>();
+                if (poison != null)
+                {
+                    poison.TryDrinkAntidote(_playerInventory.Inventory, index);
+                }
+            }
             else if ((item.IsEquippable || item.IsArmor) && _playerEquipment != null)
             {
                 _playerEquipment.ToggleFromSlot(index);

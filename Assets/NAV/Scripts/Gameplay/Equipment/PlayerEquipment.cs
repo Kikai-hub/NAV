@@ -19,7 +19,7 @@ namespace NAV.Gameplay.Equipment
     /// PlayerInputHandler.HotbarSlotPerformed) or RMB in the Inventory panel
     /// (InventoryUIController). PlayerCombat reads MainHandWeapon; ResourceNode reads HasTool.
     /// </summary>
-    public class PlayerEquipment : MonoBehaviour
+    public class PlayerEquipment : MonoBehaviour, IEquipmentView
     {
         [SerializeField] private PlayerInventory _playerInventory;
         [SerializeField] private PlayerInputHandler _inputHandler;
@@ -48,6 +48,21 @@ namespace NAV.Gameplay.Equipment
                 foreach (ItemDefinition item in _worn.Values)
                 {
                     total += item.Armor.Armor;
+                }
+
+                return total;
+            }
+        }
+
+        /// <summary>Sum of the worn pieces' warmth (PlayerCold).</summary>
+        public float TotalWarmth
+        {
+            get
+            {
+                float total = 0f;
+                foreach (ItemDefinition item in _worn.Values)
+                {
+                    total += item.Armor.Warmth;
                 }
 
                 return total;

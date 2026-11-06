@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: LPW_sword1H4
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_sword1H4
-  _displayName: Sword 4
-  _description: Sword from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Silver Sword
+  _description: "A bright silver-faced blade. \u041D\u0435\u0447\u0438\u0441\u0442\u044C
+    fears it."
   _icon: {fileID: 21300000, guid: 4e1f6bd5bc114e945b8c6cf189831dfe, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 3
+  _density: 2
   _worldPrefab: {fileID: 3800639446298876172, guid: 03c5f69ed011d314fb5893c3255994d3, type: 3}
   _food: {fileID: 0}
   _toolType: 0
@@ -27,3 +28,7 @@ MonoBehaviour:
   _weapon: {fileID: 11400000, guid: a44b1d0fa5b50e043a3a3a052152b6c6, type: 2}
   _heldPrefab: {fileID: 8616213789614305892, guid: f8075af1006e149479efb0e01b097c31, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

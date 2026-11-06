@@ -13,17 +13,21 @@ MonoBehaviour:
   m_Name: LPW_axe1H4
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: LPW_axe1H4
-  _displayName: Hand Axe 4
-  _description: Hand Axe from the LowPoly Weapons Pack. Placeholder stats - no materials,
-    tier or recipe yet.
+  _displayName: Silver Hand Axe
+  _description: A double-bitted silver hand axe - for battle and for trees.
   _icon: {fileID: 21300000, guid: 8ae834699a81c28458b3288082952b0f, type: 3}
   _category: 2
   _maxStackSize: 1
   _weight: 3
+  _density: 2
   _worldPrefab: {fileID: 3491651237911837396, guid: 7ff16ae572bcdf8478111b1a90426ee1, type: 3}
   _food: {fileID: 0}
   _toolType: 1
-  _toolTier: 1
+  _toolTier: 5
   _weapon: {fileID: 11400000, guid: 31871692fa21e4c429ef87e5abb506fe, type: 2}
   _heldPrefab: {fileID: 9125978622667783865, guid: 3d0fb69c754acae45abeb4f683831a44, type: 3}
   _heldInLeftHand: 0
+  _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

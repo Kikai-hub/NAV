@@ -15,6 +15,7 @@ MonoBehaviour:
   _displayName: Dense Forest
   _terrainLayer: {fileID: 8574412962073106934, guid: e5e9197ebb26d804c97080d9af5144ad, type: 2}
   _isWater: 0
+  _mapColor: {r: 0.1, g: 0.33, b: 0.17, a: 1}
   _heightVariation: 0.8
   _resourceSpawns:
   - _prefab: {fileID: 7872121924578471631, guid: 846595641a3acf94d85e3644b5368ebe, type: 3}
@@ -52,11 +53,6 @@ MonoBehaviour:
     _minSpacing: 16
     _scale: {x: 1.4, y: 2.4}
     _heightAboveWater: {x: -1000, y: 1000}
-  - _prefab: {fileID: 5822155337055520264, guid: 2bc89edf1f8ea8e4b8abebdff9dbe3d5, type: 3}
-    _density: 0.1
-    _minSpacing: 14
-    _scale: {x: 0.7, y: 1.1}
-    _heightAboveWater: {x: 0.1, y: 1.5}
   - _prefab: {fileID: 6071631904141763935, guid: 633922528696c554693ddfe962197ad1, type: 3}
     _density: 0.12
     _minSpacing: 14

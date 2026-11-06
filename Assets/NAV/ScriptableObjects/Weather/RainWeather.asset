@@ -31,6 +31,7 @@ MonoBehaviour:
   _skyExposureMultiplier: 0.6
   _overcast: 0.6
   _fogDensity: 0.008
+  _seaState: 1.5
   _hasLightning: 0
   _minLightningInterval: 6
   _maxLightningInterval: 16

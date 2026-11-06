@@ -17,7 +17,8 @@ namespace NAV.Presentation.Equipment
     /// </summary>
     public class ArmorView : MonoBehaviour
     {
-        [SerializeField] private PlayerEquipment _equipment;
+        [Tooltip("What the character wears: the player's PlayerEquipment, or a network avatar's mirror (any IEquipmentView).")]
+        [SerializeField] private MonoBehaviour _equipment;
         [Tooltip("Rig bones the worn models attach to - names on the Kevin Iglesias rig.")]
         [SerializeField] private string _headBone = "B-head";
         [SerializeField] private string _chestBone = "B-chest";
@@ -29,12 +30,14 @@ namespace NAV.Presentation.Equipment
         private readonly Dictionary<ArmorBone, Transform> _bones = new();
         private readonly Dictionary<ArmorBone, Quaternion> _bindRotations = new();
         private readonly List<GameObject> _spawned = new();
+        private IEquipmentView _view;
 
         private void Awake()
         {
-            if (_equipment == null)
+            _view = _equipment as IEquipmentView;
+            if (_view == null)
             {
-                Debug.LogError($"{nameof(ArmorView)} on '{name}' is missing its PlayerEquipment.", this);
+                Debug.LogError($"{nameof(ArmorView)} on '{name}' is missing its equipment (an IEquipmentView).", this);
                 enabled = false;
                 return;
             }
@@ -55,18 +58,18 @@ namespace NAV.Presentation.Equipment
 
         private void OnEnable()
         {
-            if (_equipment != null)
+            if (_view != null)
             {
-                _equipment.Changed += Refresh;
+                _view.Changed += Refresh;
                 Refresh();
             }
         }
 
         private void OnDisable()
         {
-            if (_equipment != null)
+            if (_view != null)
             {
-                _equipment.Changed -= Refresh;
+                _view.Changed -= Refresh;
             }
         }
 
@@ -93,7 +96,7 @@ namespace NAV.Presentation.Equipment
             }
 
             _spawned.Clear();
-            foreach (ItemDefinition item in _equipment.Worn.Values)
+            foreach (ItemDefinition item in _view.Worn.Values)
             {
                 foreach (ArmorWornPart part in item.Armor.WornParts)
                 {
