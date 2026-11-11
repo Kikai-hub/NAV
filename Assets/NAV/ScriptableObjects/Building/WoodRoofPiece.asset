@@ -23,4 +23,6 @@ MonoBehaviour:
   _requiredStation: {fileID: 0}
   _requiredStationLevel: 0
   _directional: 1
+  _risesTowardCentre: 1
+  _floatsOnWater: 0
   _unlockItems: []

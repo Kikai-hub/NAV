@@ -39,9 +39,12 @@ namespace NAV.Gameplay.Player
             CurrentHealth = _stats.MaxHealth;
         }
 
+        /// <summary>Developer console "god": takes no damage.</summary>
+        public bool Invulnerable { get; set; }
+
         public void TakeDamage(float amount)
         {
-            if (amount <= 0f || !IsAlive)
+            if (amount <= 0f || !IsAlive || Invulnerable)
             {
                 return;
             }

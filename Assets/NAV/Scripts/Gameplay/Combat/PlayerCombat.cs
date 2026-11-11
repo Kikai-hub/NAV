@@ -375,18 +375,37 @@ namespace NAV.Gameplay.Combat
         /// </summary>
         private void StrikeReceiverAlongAimRay(WeaponDefinition weapon)
         {
-            if (!Physics.Raycast(_cameraTransform.position, _cameraTransform.forward, out RaycastHit hit, _maxAimDistance, _hitLayers, QueryTriggerInteraction.Ignore)
-                || hit.collider.transform.IsChildOf(transform)
-                || Vector3.Distance(transform.position, hit.point) > weapon.Range)
+            // The nearest thing on the crosshair that isn't us or a body: another player's avatar
+            // (online, often right next to the same tree) or an animal standing in front would
+            // otherwise eat the ray, and the tree behind it got no hit.
+            int count = Physics.RaycastNonAlloc(_cameraTransform.position, _cameraTransform.forward, _aimHits, _maxAimDistance, _hitLayers, QueryTriggerInteraction.Ignore);
+            RaycastHit nearest = default;
+            float best = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit candidate = _aimHits[i];
+                if (candidate.distance >= best || candidate.collider.transform.IsChildOf(transform)
+                    || candidate.collider.GetComponentInParent<IDamageable>() != null)
+                {
+                    continue;
+                }
+
+                best = candidate.distance;
+                nearest = candidate;
+            }
+
+            if (best == float.MaxValue || Vector3.Distance(transform.position, nearest.point) > weapon.Range)
             {
                 return;
             }
 
-            if (hit.collider.GetComponentInParent<IMeleeHitReceiver>() != null && hit.collider.GetComponentInParent<IDamageable>() == null)
+            if (nearest.collider.GetComponentInParent<IMeleeHitReceiver>() != null)
             {
-                Strike(weapon, hit.collider, hit.point, _cameraTransform.forward);
+                Strike(weapon, nearest.collider, nearest.point, _cameraTransform.forward);
             }
         }
+
+        private readonly RaycastHit[] _aimHits = new RaycastHit[16];
 
         /// <summary>Nearest point on the collider's surface to the probe. ClosestPoint only
         /// supports primitive and convex colliders - others use their bounds instead (close

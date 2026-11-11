@@ -112,6 +112,38 @@
     min-width: 90px;
 }
 
+/* The tick box in the kit's colours: a dark wooden square with a gold rim, gold when on
+   (the default Unity box was a white square). */
+.create-world-online-toggle .unity-toggle__checkmark {
+    width: 26px;
+    height: 26px;
+    background-color: rgb(58, 36, 18);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(176, 132, 52);
+    border-right-color: rgb(176, 132, 52);
+    border-top-color: rgb(176, 132, 52);
+    border-bottom-color: rgb(176, 132, 52);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    -unity-background-image-tint-color: rgb(250, 226, 160);
+}
+
+.create-world-online-toggle:hover .unity-toggle__checkmark {
+    border-left-color: rgb(230, 190, 100);
+    border-right-color: rgb(230, 190, 100);
+    border-top-color: rgb(230, 190, 100);
+    border-bottom-color: rgb(230, 190, 100);
+}
+
+.create-world-online-toggle:checked .unity-toggle__checkmark {
+    background-color: rgb(120, 70, 28);
+}
+
 .create-world-online {
     display: none;
     flex-shrink: 0;
@@ -133,16 +165,59 @@
     margin-bottom: 6px;
 }
 
-.create-world-pvp > .unity-radio-button-group__container,
-.create-world-pvp #unity-radio-button-group__container {
+.create-world-pvp .unity-radio-button-group__container {
     flex-direction: row;
     justify-content: space-between;
 }
 
-.create-world-pvp .unity-radio-button > .unity-label,
-.create-world-pvp .unity-radio-button__label {
-    color: rgb(62, 38, 18);
-    font-size: 14px;
+/* PvE / PvP as two of the kit's buttons side by side - the chosen one pressed and gold
+   (they were Unity's white radio circles). */
+.create-world-pvp .unity-radio-button {
+    flex-grow: 1;
+    flex-basis: 0;
+    height: 46px;
+    margin: 0 3px;
+    padding: 0 18px 2px 18px;
+    background-image: url("../../Art/UI/Kit/Button.png");
+    -unity-slice-left: 57;
+    -unity-slice-right: 57;
+    -unity-slice-scale: 0.42px;
+    justify-content: center;
+    align-items: center;
+}
+
+.create-world-pvp .unity-radio-button:hover {
+    background-image: url("../../Art/UI/Kit/ButtonHover.png");
+}
+
+.create-world-pvp .unity-radio-button:checked {
+    background-image: url("../../Art/UI/Kit/ButtonPressed.png");
+}
+
+/* Unity 6 keeps the choice's text inside the input, next to the round mark: only the mark goes. */
+.create-world-pvp .unity-radio-button__input {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.create-world-pvp .unity-radio-button__checkmark-background {
+    display: none;
+}
+
+.create-world-pvp .unity-radio-button__text {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0;
+    color: rgb(225, 210, 180);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.create-world-pvp .unity-radio-button:checked .unity-radio-button__text {
+    color: rgb(255, 222, 140);
 }
 
 .create-world-status {
@@ -197,15 +272,24 @@
     font-size: 13px;
 }
 
+/* The server list sits in a sunken parchment field like the other windows' lists. */
 .room-list {
     flex-grow: 1;
     margin-bottom: 8px;
+    padding: 10px 10px 6px 10px;
+    background-image: url("../../Art/UI/Kit/DialogParchment.png");
+    -unity-slice-left: 34;
+    -unity-slice-right: 34;
+    -unity-slice-top: 34;
+    -unity-slice-bottom: 34;
+    -unity-slice-scale: 0.5px;
 }
 
 .room-list-empty {
     -unity-text-align: middle-center;
     font-size: 15px;
     margin-bottom: 8px;
+    color: rgb(225, 205, 160);
 }
 
 .room-list-item {

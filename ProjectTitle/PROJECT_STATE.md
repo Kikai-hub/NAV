@@ -170,16 +170,25 @@ altar + ritual items; - bosses tied to progression.
 
 ## Technical Debt
 
+-   **Steam demo limits (2026-11-12):** not played through in a build with demo mode on; the end-of-demo
+    texts are English (localization stage); wishlist/feedback URLs empty until the Steam page exists; ores,
+    furs and mobs of tiers 3-6 still spawn (only crafting/building/smelting is locked - decide whether to
+    turn off their spawning in the demo); the dev console is gated but `Scripts/Dev` still ships.
+    Plan and remaining stages: `STEAM_DEMO_PLAN.md`.
+
+-   **2026-11-10 HUD batch:** the fog fix (Graphics > Fog Modes = Custom) not yet seen in a build; the map's
+    explored area not yet round-tripped through a real save/load; chat not re-tested between two clients after the
+    move to ChatChannel. The map has no pins/markers yet. Test saves from that day's editor runs are left in
+    `%USERPROFILE%/AppData/LocalLow/DefaultCompany/NAVъ/Saves` (auto mode can't delete them).
 -   **Leshy (2026-11-06):** the developer's rigged FBX is a bare Mixamo skeleton (no mesh), so the
     textured mesh is skinned to it by `LeshyModelSetup` with automatic weights (nearest bone by
     body region + surface smoothing) - good enough in the preview sheets, but not painted by hand;
     the hands/fingers got few vertices of their own. Rebuilding the weights needs the textured
     FBX copied back to `Assets/_TempLeshySource/LeshySource.fbx` (deleted after the build). No foot
     IK in the clips themselves (crouches match the hip drop to the knee bend); in game `LegGrounding`
-    plants the feet. Leshy boss (2026-11-06): NOT synced in multiplayer (a guest near the host gets
-    no encounter - ForestWrath.EncountersSuppressed - but the host's Leshy isn't shown on the
-    guest); a Leshy on the way / in a fight is not saved (wrath, kills, cooldown are); no sounds
-    (roar, creak, slam) and no dust/shake on the slam yet; balance (650 HP, slam 40, sweep 25, 2.1 m/s
+    plants the feet. Leshy boss: synced in multiplayer since 2026-11-10 (copies with health, rage,
+    actions, encounter lines, omens and silence for nearby players); a Leshy on the way / in a fight is not saved (wrath, kills, cooldown are); no sounds
+    (placeholder sounds since 2026-11-06, no slam dust yet); balance (650 HP, slam 40, sweep 25, 2.1 m/s
     enraged) set on paper, tried only with fists. Old saves keep a Stone Pickaxe made the old way.
 
 -   **Hero model (2026-11-05):** textured since 2026-11-06 (see Change Log). The rigged FBX has no
@@ -6081,8 +6090,8 @@ nearby), chat both ways, the host's avatar steady (the 1e18 m bug fixed), a PvP 
 alive), no exceptions on either side. Not verified: loot appearing on the guest (pickup count was confused by chunk
 loading), a guest's real swing landing on the host (the test swing followed the guest's camera, not the host),
 gathering seen from the other side (the event path is the building one; `RemoveNode` itself checked on the host).
-Not synced yet: dropped items and pickups, chest contents, station processing, doors, felled trunks/logs, arrows in
-flight; a guest's character is not saved (guests don't save). Test script and `Builds/NetTest` removed.
+Since 2026-11-10 synced too: items, chests, stations, doors, felled trunks/logs (see that entry). Still not synced:
+arrows in flight, boats, gravestones; a guest's character is not saved (guests don't save). Test script and `Builds/NetTest` removed.
 
 ### v0.1 --- 2026-11-06 (Multiplayer increment 1 - Photon PUN 2)
 
@@ -6212,3 +6221,119 @@ Developer asked to save and build. Scenes and assets saved; `PlayerSettings.bund
 `Builds/NAV_v1.2.2.zip` (109 MB). Contains everything since 1.2.1: the Leshy boss (wrath of the forest, peaceful mode,
 heartwood pickaxe, foot IK, shorter reach), his placeholder sounds, forest silence, camera shake and collision, the
 boss-bar fix. Not played in the built game. Still uncommitted.
+
+### v0.1 --- 2026-11-10 (Multiplayer increment 2 - one shared world)
+
+Developer's online test found: each player's world went its own way (items could not be picked up or handed over,
+a felled tree fell only for the feller - even its logs - and simply vanished for the other), a guest's hits on trees
+registered badly, events weren't shared. Done:
+-   **Gathering** `Network/NetworkResourceSync` (+ `ResourceNode.Network`/`IResourceNodeNetwork`, `ApplyGatherHits`,
+    `SetRemainingHits`, `DepleteBy`, `StagesSpawned`, `DepletedRemotely`, `IsNetworkCopy`, `NetworkId`): every gather hit
+    on a world tree/rock/ore goes to the master client, which keeps ONE count per node and tells everyone; the hit that
+    empties it decides the feller - their machine makes the drops and the falling trunk, the others keep the stump.
+    Trunks and logs belong to the machine that made them (physics there, poses streamed ~10/s, a cached resting pose);
+    the others show kinematic copies, and a hit on a copy is counted by the owner. A leaving player's stages go to the
+    master client. Cached for late joiners.
+-   **Items** `Network/NetworkItemSync` (+ `ItemPickup.Network`/`IItemPickupNetwork`, `NetworkId`, `GiveTo`, `PickedUp`):
+    every pickup spawned anywhere (drops, loot, logs' wood, station products, demolished chests) appears for everyone with
+    the same impulse and rest pose; picking up asks the master client - first to ask gets it, it is gone everywhere, what
+    doesn't fit is put back as a new item. Handing things over = drop and pick up. World pickups (loose branches/stones,
+    starter items) removed everywhere via NetworkWorldSync (WorldGenerator.TryGetNodeId/RemoveNode/GetNode now cover the
+    starter items).
+-   **Buildings** `Network/NetworkContainerSync` (+ `Inventory.SetAllSlots`, `BuildingDoor.Toggled/SetOpen`,
+    `ProcessingStation.SimulationSuppressed`): chest and station contents sent whole after each change (last change
+    wins), stations process only on the master client (products drop as shared items), doors open/close for everyone.
+-   **Events**: the Leshy is copied like any creature (Prefabs/Bosses added to NetworkCreatureSync) with health and
+    fighting state in the snapshots (`Creature.ApplyRemoteState`: boss bar, rage) and his actions replayed
+    (`INetworkedActions`, `LeshyBoss.PlayActionAsCopy`: clip, sounds, slam shake - no damage); the encounter's lines,
+    omen and silence reach players within 220 m (`ForestWrath.ShowRemoteMessage/PlayRemoteOmen/SetRemoteSilence`,
+    NetworkWorldSync codes 105-107); trees felled by others count for the wrath. A boss/encounter creature is no longer
+    removed when another player's machine takes over the creatures nearby.
+-   **Guest hit registration**: the shared count fixes the main cause (the host's hits weren't counted on the guest's
+    tree, which then vanished under the guest's axe). Also `PlayerCombat` gathering aim assist now looks past bodies
+    (another player's avatar, an animal) to the tree behind - a player standing next to the same tree ate the ray.
+-   NetworkSetup wires the three new components (re-run NAV > Network > Build Network Player).
+Tested with the editor as host and a built guest (temporary NetTestDriver, removed, 0 exceptions on both): guest
+felled a tree (6 swings, 3 counted - same as the same scripted swing offline), the host saw it felled with the guest's
+trunk as a copy; the host's hits on that trunk were counted on the guest (3 -> 1); the trunk split into logs and the
+logs into 5 wood items, seen on the host; 3 rocks dropped by the host picked up by the guest (gone on the host); the
+host's Leshy on the guest: omen lines, arrival, a live copy hp 650 engaged, silence 1.0, after 360 damage hp 290 enraged,
+death line, silence 0, the loot appeared on the guest; host-built chest (7 rocks), door (open) and charcoal kiln
+(wood) seen by the guest, its stations suppressed; the guest took 2 rocks - the host's chest showed 5; the kiln made 2
+charcoal on the host only, as shared items. Not tested: a guest's drop picked up by the host (test script used the wrong
+item id), a late joiner, two players taking from one chest at the same moment, players far apart (chunks unloaded).
+
+### v0.1 --- 2026-11-10 (Building snaps, chat, developer console, map, menu, fog in builds)
+
+Developer's list after the multiplayer test. Done (uncommitted, the developer playtests first):
+-   **Building - roof, gable, door snapping** (`PlayerBuilding`, `BuildingPieceDefinition`, `RusBuildingStyleSetup`,
+    `WoodDoorSetup`, WoodRoofPiece/WoodGablePiece assets, WoodDoor prefab):
+    -   the door sank ~1 m: `ComputeHalfHeight` took the first collider (the door's 5 cm trigger) - now the
+        non-trigger colliders, else the renderers;
+    -   a piece held over a building is anchored by its lowest snap point (`_lowestSnapOffset`), not its half height,
+        so roofs and gables reach the wall tops' points;
+    -   roofs and gables `RisesTowardCentre`: of the two flips the one whose high side faces the middle of the nearby
+        pieces wins - both roof slopes rise to the ridge, gable halves alternate into the triangle;
+    -   the door got TopL/TopR snap points (NAV > Build > Add Door Top Snap Points) - a roof/wall goes on top of it;
+    -   the same piece can't be placed twice on the same spot ("Already built here");
+    -   test hooks `PlayerBuilding.AimOverride` / `GhostYawOffset` (a scripted 4x4 izba was built through the real
+        PlayerBuilding with them - the temporary BuildAudit script is deleted).
+-   **Chat in solo and online** (`Core/ChatChannel`, `UI/ChatUI` + `ChatPanel.uss`; `Network/NetworkChatUI` deleted):
+    Enter opens, Enter sends, Esc closes; dark half-transparent panel bottom left with the kit's gold rim, lines fade
+    after 12 s. Solo: your lines echo locally. Online: NetworkWorldSync sets `ChatChannel.Sender`, nickname as the name,
+    "Online: room (PvE/PvP)" line on joining.
+-   **Developer console** (`UI/DevConsole` registry, `UI/DevConsoleUI` + `DevConsolePanel.uss`): the ` key, only with
+    Settings > Controls > Developer > Developer Console on (`GameSettingsData.DevConsole`). History (Up/Down), Tab
+    completion, game errors printed into it. Commands: help, clear, give, items, heal, god, pos, tp, time, weather,
+    timescale, spawn, killall, leshy, wrath, seed, reveal. Supporting: `PlayerHealth.Invulnerable`,
+    `WeatherSystem.Weathers`, `ItemDatabase.Items`.
+-   **Map** (`Presentation/Map/MapExploration`, `UI/MapUI` + `MapPanel.uss`, `Core/MapExplorers`): Valheim-style
+    exploration - dark parchment fog lifts 70 m round each player (others online via MapExplorers from NetworkAvatar);
+    4 m cells in 512 m tiles coloured from the world (biome map colour on parchment, hill shading, water by depth).
+    Minimap top right under the day sign (the developer's choice) in the kit's ornament slot, north up, player arrow,
+    other players as dots with names. M - world map in a wooden window with a title plaque, wheel zoom, drag, M/Esc
+    closes, the minimap hides under it. Saved as one bit per cell (`SaveGameData.ExploredMap`, SaveManager `_map`).
+-   **Main menu multiplayer UI** (`MainMenuPanel.uss`/`.uxml`): the Online tick is the kit's dark wood square with a
+    gold rim, PvE/PvP are two kit buttons (pressed + gold text = chosen; labels "PvE - co-op", "PvP - duels"), the
+    server list sits on parchment. Unity 6 note: a RadioButton's text lives inside `.unity-radio-button__input` - hide
+    only `__checkmark-background`.
+-   **Fog missing in builds**: Graphics Settings had Fog Modes = Automatic, which keeps only the fog variants used by the
+    scenes in the build - all three scenes had Lighting fog off (AtmosphereFog turns it on at runtime), so every fog
+    variant was stripped. Now Fog Modes = Custom with Linear/Exponential/Exponential Squared kept, and WorldGenTest's
+    Lighting fog is on. **Not yet seen in a build** - check it in the next one.
+-   Setup: NAV > UI > Set Up Chat, Console and Map (already run, WorldGenTest saved) - a "HudExtras" object with
+    MapExploration, Chat, DevConsole and Map on the HUD's panel settings; removes the old chat's missing script.
+Verified in the editor with screenshots (`Screenshots/build_audit_*.png`, `hud_console_chat.png`, `hud_minimap_right.png`,
+`hud_worldmap.png`, `menu_create_online.png`, `menu_multiplayer.png`). Not tested: chat between two clients after the
+rewrite, the map's save/load round trip in a real save, the fog in a build.
+
+### v0.1 --- 2026-11-12 (Steam demo: plan and demo limits)
+
+-   Audit "NAV: аудит перед Steam-демо" (2026-11-11) checked against the repo; the step-by-step plan is
+    `STEAM_DEMO_PLAN.md`. Developer's decision: the demo = **tiers 1-2 + the Leshy, single-player**.
+    Urgent and theirs to do: make the GitHub repo private (Asset Store packs and the Photon AppId are public).
+-   **Demo limits (new):** `Gameplay/Demo/DemoConfig` (ScriptableObject at `Assets/NAV/Resources/DemoConfig`)
+    + `DemoMode` (static, everything "allowed" when the config is off or missing). Off by default -
+    **NAV > Demo > Demo Mode** switches it (on before building the demo), **NAV > Demo > Build Demo Config**
+    refills the lists from `Editor/DemoSetup` and logs what is kept/hidden.
+    -   Station caps: workbench 3 (tanning rack + joiner's bench), forge 1 - `Workbench.Tier` is clamped, so
+        upgrade pieces past it add nothing.
+    -   Locked items (43 + bow/arrows): tin/bronze, iron, silver, black steel, bog oak, bog wood, furs, wild
+        rosemary, antidote; the Hunting Bow (made of Bog Wood) and so its arrows. Locked pieces: Ladya,
+        Casting Mould. A recipe/piece/smelting conversion that makes or uses a locked item is hidden
+        (`PlayerCrafting.IsUnlocked`/`TryCraft`, `PlayerBuilding.RefreshAvailablePieces`,
+        `ProcessingStation` loading and processing). Result: 23 recipes / 22 pieces kept, 63 / 15 hidden.
+    -   End-of-demo screen `UI/DemoFinaleUI` (+ `DemoFinalePanel.uss`), built in code and added by itself to
+        any scene with a PlayerCrafting while the demo is on: shown once, at the craft that completes the
+        full copper armour (helm, scale shirt, greaves - first of its kind). Pauses the game; buttons Add to
+        Wishlist / Share Feedback (only when the URLs are filled in DemoConfig) and Keep Playing.
+        New event `PlayerCrafting.Crafted(recipe, firstOfItsKind)`.
+    -   Main menu: in the demo the Multiplayer button and Create World's Online toggle are hidden and
+        MultiplayerMenuUIController is disabled before its Start (never connects to Photon).
+    -   Developer console: in the demo only in Development Builds/editor (`DemoMode.AllowsDevConsole`);
+        the Settings toggle is hidden too.
+-   Verified in the editor (demo mode on): DemoMode active, finale UI created in WorldGenTest, finale opens
+    on a first-of-its-kind greaves craft with helm + shirt owned and not on a repeat craft, pauses and
+    frees the cursor, closes back to timeScale 1; MainMenu shows no Multiplayer button and the controller
+    is disabled. Compile clean. The editor screenshot capture drops the veil's transparency (an opaque test
+    colour covered the screen). The play-test save was deleted; demo mode switched back off.

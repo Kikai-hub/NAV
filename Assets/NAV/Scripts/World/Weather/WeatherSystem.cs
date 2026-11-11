@@ -86,6 +86,9 @@ namespace NAV.World.Weather
             return Mathf.Lerp(selector(Previous), selector(Current), Blend);
         }
 
+        /// <summary>Every weather it can pick (the developer console lists them).</summary>
+        public IReadOnlyList<WeatherDefinition> Weathers => _weathers;
+
         public WeatherDefinition FindById(string id)
         {
             return _weathers.Find(w => w.Id == id);

@@ -1,0 +1,141 @@
+/* The map (MapUI): a minimap top right, under the day sign (the developer's choice), in an
+   ornamented slot frame, and the world map (M) as a wooden window with a parchment field - the
+   HUD kit's sprites. */
+
+/* --- Minimap --- */
+
+.minimap {
+    position: absolute;
+    right: 14px;
+    top: 74px;
+    width: 196px;
+    height: 196px;
+    background-image: url("../../Art/UI/Kit/SlotOrnament.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    padding: 16px;
+}
+
+.minimap__view {
+    flex-grow: 1;
+    overflow: hidden;
+    background-color: rgb(46, 38, 28);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.minimap__north {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    width: 20px;
+    margin-left: -10px;
+    -unity-text-align: middle-center;
+    color: rgb(240, 214, 150);
+    font-size: 13px;
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.95);
+}
+
+.minimap__key {
+    position: absolute;
+    right: 18px;
+    bottom: 15px;
+    color: rgb(225, 205, 160);
+    font-size: 11px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.95);
+}
+
+/* --- Shared --- */
+
+.map-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.map-tile {
+    position: absolute;
+}
+
+.map-marker {
+    position: absolute;
+}
+
+.map-marker__name {
+    position: absolute;
+    left: 10px;
+    top: -9px;
+    color: rgb(245, 235, 215);
+    font-size: 12px;
+    white-space: nowrap;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.95);
+}
+
+/* --- World map --- */
+
+.worldmap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    align-items: center;
+    justify-content: center;
+}
+
+.worldmap--hidden {
+    display: none;
+}
+
+.worldmap__window {
+    width: 84%;
+    height: 84%;
+    background-image: url("../../Art/UI/Kit/PanelWood.png");
+    -unity-slice-left: 40;
+    -unity-slice-right: 40;
+    -unity-slice-top: 40;
+    -unity-slice-bottom: 40;
+    -unity-slice-scale: 0.6px;
+    padding: 34px 26px 22px 26px;
+}
+
+.worldmap__title {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    width: 220px;
+    height: 48px;
+    margin-left: -110px;
+    background-image: url("../../Art/UI/Kit/TitlePlaque.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    -unity-text-align: middle-center;
+    color: rgb(240, 226, 190);
+    font-size: 20px;
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+    padding-bottom: 4px;
+}
+
+.worldmap__field {
+    flex-grow: 1;
+    overflow: hidden;
+    background-color: rgb(46, 38, 28);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-color: rgb(120, 86, 40);
+    border-right-color: rgb(120, 86, 40);
+    border-top-color: rgb(120, 86, 40);
+    border-bottom-color: rgb(120, 86, 40);
+}
+
+.worldmap__hint {
+    margin-top: 6px;
+    -unity-text-align: middle-center;
+    color: rgb(225, 205, 160);
+    font-size: 13px;
+}

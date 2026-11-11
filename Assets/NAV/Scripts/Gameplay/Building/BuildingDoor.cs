@@ -44,9 +44,19 @@ namespace NAV.Gameplay.Building
 
         public bool CanInteract(GameObject interactor) => enabled && (_piece == null || _piece.IsPlaced);
 
+        /// <summary>Opened or closed by a player here (not by SetOpen) - multiplayer sends it.</summary>
+        public event System.Action<BuildingDoor, bool> Toggled;
+
         public void Interact(GameObject interactor)
         {
             IsOpen = !IsOpen;
+            Toggled?.Invoke(this, IsOpen);
+        }
+
+        /// <summary>Opens or closes it without announcing it (another player did, online).</summary>
+        public void SetOpen(bool open)
+        {
+            IsOpen = open;
         }
 
         private void Update()

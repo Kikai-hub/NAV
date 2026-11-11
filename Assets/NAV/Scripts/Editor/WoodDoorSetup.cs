@@ -22,6 +22,40 @@ namespace NAV.Editor
         // Taller than the player's capsule (1.8 m + skin) - at 1.8 the player stuck in the opening.
         private const float LeafHeight = 1.9f;
 
+        internal static void EnsureSnapPoint(Transform root, string name, Vector3 localPosition)
+        {
+            Transform point = root.Find(name);
+            if (point == null)
+            {
+                point = new GameObject(name).transform;
+                point.SetParent(root, false);
+            }
+
+            point.localPosition = localPosition;
+            point.localRotation = Quaternion.identity;
+            if (point.GetComponent<BuildingSnapPoint>() == null)
+            {
+                point.gameObject.AddComponent<BuildingSnapPoint>();
+            }
+        }
+
+        /// <summary>Gives the existing door prefab its top snap points (without rebuilding it).</summary>
+        [MenuItem("NAV/Build/Add Door Top Snap Points")]
+        internal static void AddTopSnapPoints()
+        {
+            GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                EnsureSnapPoint(root.transform, "TopL", new Vector3(-1f, 1f, 0f));
+                EnsureSnapPoint(root.transform, "TopR", new Vector3(1f, 1f, 0f));
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
         internal static void BuildRus(Material log, Material logEnd, Material moss, Material plank, Material carving)
         {
             Material iron = AssetDatabase.LoadAssetAtPath<Material>("Assets/NAV/Materials/Items/Iron_material.mat");
@@ -58,6 +92,10 @@ namespace NAV.Editor
                         Object.DestroyImmediate(child.gameObject);
                     }
                 }
+
+                // Its top takes what a wall's top takes (a wall above, a gable, a roof's eave).
+                EnsureSnapPoint(root.transform, "TopL", new Vector3(-1f, 1f, 0f));
+                EnsureSnapPoint(root.transform, "TopR", new Vector3(1f, 1f, 0f));
 
                 // BuildingPiece requires a collider on the root - a tiny trigger; the frame and
                 // the leaf have their own.

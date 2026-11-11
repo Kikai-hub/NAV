@@ -142,12 +142,19 @@ namespace NAV.Network
 
             _targetPosition = transform.position;
             _targetYaw = transform.eulerAngles.y;
+            // On the map: a dot with the name, and the fog lifts round them too.
+            NAV.Core.MapExplorers.Add(transform, photonView.Owner != null ? photonView.Owner.NickName : "?");
             if (_nameTag != null)
             {
                 _nameTag.text = photonView.Owner != null ? photonView.Owner.NickName : "?";
             }
 
             ApplyEquipment(photonView.Owner);
+        }
+
+        private void OnDestroy()
+        {
+            NAV.Core.MapExplorers.Remove(transform);
         }
 
         /// <summary>Owner side: hide the stand-in, follow the scene's Player.</summary>

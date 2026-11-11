@@ -49,6 +49,14 @@ namespace NAV.UI
         {
             _document = GetComponent<UIDocument>();
 
+            // The demo is single-player (developer 2026-11-12): switched off before its Start,
+            // the Multiplayer window never wires up or connects, and the button is hidden below.
+            if (NAV.Gameplay.Demo.DemoMode.HidesMultiplayer && _multiplayer != null)
+            {
+                _multiplayer.enabled = false;
+                _multiplayer = null;
+            }
+
             if (_sceneLoader == null || _loadingScreen == null)
             {
                 Debug.LogError($"{nameof(MainMenuUIController)} on '{name}' is missing a required reference (Scene Loader/Loading Screen).", this);

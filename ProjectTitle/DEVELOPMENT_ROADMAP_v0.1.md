@@ -421,25 +421,41 @@ Started 2026-11-06 at the developer's request (see PROJECT_STATE.md Change Log "
 -   [x] Choose networking technology (Photon PUN 2, fixed region "eu")
 -   [x] Define authority model (each player owns their character - hits go to the owner; each machine runs the creatures around its player, nearby players share the lower actor's set; world changes as cached events)
 -   [x] Network player state (proxy avatars: position, animator, equipment, health, death ragdoll, name tag)
--   [ ] Network inventory (each player keeps their own; dropped items / pickups not synced yet)
+-   [x] Network inventory (each player keeps their own; since 2026-11-10 items on the ground are shared - the master client gives an item to whoever picks it first; hand-over = drop and pick up)
 -   [x] Network combat (PvP rooms: hits sent to the owner's PlayerCombat with block/parry/armour; PvE: no player damage)
 -   [x] Network creatures (copies of the owner's creatures; hits to the owner; loot on the killer's machine)
--   [x] Network construction (build / demolish; doors and station processing not yet)
--   [ ] Network containers (chest contents)
+-   [x] Network construction (build / demolish; doors since 2026-11-10; stations process on the master client only)
+-   [x] Network containers (2026-11-10: chest and station contents, whole after each change, last change wins)
+-   [x] Network gathering (2026-11-10: one shared hit count per tree/rock on the master client; trunks and logs owned by the feller, streamed, hits on copies sent to the owner)
+-   [x] Network events (2026-11-10: the Leshy copied with health, rage and actions; encounter lines, omen and forest silence for players nearby)
 -   [ ] Network boats
 -   [ ] Network save/load (the host saves the world incl. guests' builds; guests' characters not saved; online worlds are new-only - no "load save online" yet)
 -   [x] Host/join flow (Multiplayer window: server list, room + password, double click to join; Create World: Online, room, password, PvE/PvP)
 -   [ ] Disconnect/reconnect handling (leaving returns to... the game keeps running offline; host migration keeps the room)
--   [x] Chat (Enter)
+-   [x] Chat (Enter; since 2026-11-10 also in solo, dark half-transparent panel)
 
 ------------------------------------------------------------------------
 
 ## Phase 16 --- Polish and Release
 
+**First Steam demo (planned 2026-11-12):** step-by-step plan in `STEAM_DEMO_PLAN.md`
+(audit check, decisions needed, stages 0-6). Urgent first: make the GitHub repo private (paid
+asset packs + Photon AppId are public). Scope decided 2026-11-12: tiers 1-2 + the Leshy,
+single-player.
+
+-   [x] Demo limits (2026-11-12): `DemoConfig`/`DemoMode`, NAV > Demo menu, end-of-demo screen,
+    multiplayer hidden, dev console only in development builds - see PROJECT_STATE Change Log
+-   [ ] Play the whole demo in a build with demo mode on
+
 -   [ ] Optimization
     -   [x] Dynamic fog, chunk streaming, far-plane tree impostors, local NavMesh (2026-10-25)
     -   [ ] Check the remaining rare 36-90 ms spikes in a build (NavMesh rebuild integration, GC); decor in far chunks; split the terrain into tiles if the world grows further
 -   [ ] UI polish
+    -   [x] Minimap (top right) + explored world map on M, Valheim-style fog of war (2026-11-10)
+    -   [x] Developer console (` key, Settings > Controls > Developer) (2026-11-10)
+    -   [x] Multiplayer menu controls in the kit's style (2026-11-10)
+    -   [ ] Map markers/pins (the player's own notes, boss places) - not requested yet
+    -   [ ] Check the fog in a build after the Fog Modes = Custom fix (2026-11-10)
 -   [x] Input rebinding (2026-10-22: keyboard/mouse, Settings window; gamepad not yet)
 -   [ ] Accessibility
 -   [ ] Audio polish

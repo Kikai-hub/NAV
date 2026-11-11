@@ -27,7 +27,7 @@ namespace NAV.Gameplay.Bosses
     /// the animator listens to the events here (Presentation LeshyAnimator).
     /// </summary>
     [RequireComponent(typeof(Creature))]
-    public class LeshyBoss : MonoBehaviour, ICreatureAttack
+    public class LeshyBoss : MonoBehaviour, ICreatureAttack, INetworkedActions
     {
         [Serializable]
         private class Blow
@@ -82,6 +82,9 @@ namespace NAV.Gameplay.Bosses
         /// <summary>A blow landed now (centre and radius of its area) - dust, shake, sound.</summary>
         public event Action<LeshyAction, Vector3, float> Struck;
 
+        /// <summary>Multiplayer: an action began on the owner's machine (INetworkedActions).</summary>
+        public event Action<int> ActionForNetwork;
+
         public bool IsBusy => Time.time < _busyUntil;
         public bool IsEnraged => _enraged;
 
@@ -117,8 +120,21 @@ namespace NAV.Gameplay.Bosses
 
         private void Update()
         {
-            if (!_creature.IsAlive || _creature.IsRemoteCopy)
+            if (!_creature.IsAlive)
             {
+                return;
+            }
+
+            if (_creature.IsRemoteCopy)
+            {
+                // A copy: its rage follows the health its owner reports (faster clips, red bar).
+                bool rage = _creature.CurrentHealth <= _creature.MaxHealth * _rageHealthFraction;
+                if (rage != _enraged && TryGetComponent(out BossActor copyActor))
+                {
+                    copyActor.IsEnraged = rage;
+                }
+
+                _enraged = rage;
                 return;
             }
 
@@ -162,6 +178,7 @@ namespace NAV.Gameplay.Bosses
             float speed = ActionSpeed;
             _busyUntil = Time.time + blow.Duration / speed;
             ActionStarted?.Invoke(action);
+            ActionForNetwork?.Invoke((int)action);
             _pendingBlow = StartCoroutine(StrikeAfter(blow, action, blow.HitDelay / speed));
             return true;
         }
@@ -170,6 +187,36 @@ namespace NAV.Gameplay.Bosses
         {
             _busyUntil = Time.time + _roarSeconds / ActionSpeed;
             ActionStarted?.Invoke(LeshyAction.Roar);
+            ActionForNetwork?.Invoke((int)LeshyAction.Roar);
+        }
+
+        /// <summary>The owner's Leshy started an action - this copy plays it: the clip, the
+        /// sounds, the slam's shake at the moment of the hit. Never any damage (the owner deals it).</summary>
+        public void PlayActionAsCopy(int action)
+        {
+            if (!_creature.IsAlive || action < 0 || action > (int)LeshyAction.Roar)
+            {
+                return;
+            }
+
+            var leshyAction = (LeshyAction)action;
+            Blow blow = leshyAction == LeshyAction.Slam ? _slam : leshyAction == LeshyAction.Sweep ? _sweep : null;
+            _busyUntil = Time.time + (blow != null ? blow.Duration : _roarSeconds) / ActionSpeed;
+            ActionStarted?.Invoke(leshyAction);
+            if (blow != null)
+            {
+                _pendingBlow = StartCoroutine(StrikeLooksAfter(blow, leshyAction, blow.HitDelay / ActionSpeed));
+            }
+        }
+
+        private IEnumerator StrikeLooksAfter(Blow blow, LeshyAction action, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            _pendingBlow = null;
+            if (_creature.IsAlive)
+            {
+                Struck?.Invoke(action, transform.position + transform.forward * blow.Reach, blow.Radius);
+            }
         }
 
         private IEnumerator StrikeAfter(Blow blow, LeshyAction action, float delay)

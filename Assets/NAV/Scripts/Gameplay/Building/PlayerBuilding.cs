@@ -82,7 +82,11 @@ namespace NAV.Gameplay.Building
         private GameObject _ghostInstance;
         private readonly List<BuildingSnapPoint> _ghostSnapPoints = new();
         private float _ghostYawOffset;
+        // How far the ghost's pivot sits above its bottom (solid colliders) - put on the ground
+        // that far up - and above its lowest snap point - put on a building piece that far up,
+        // so a roof's eave or a gable's base lands on the wall top the player aims at.
         private float _pieceHalfHeight;
+        private float _lowestSnapOffset = float.NaN;
         private bool _hasValidHit;
         private bool? _ghostAppliedValid;
         private float _nextPlaceTime;
@@ -135,9 +139,23 @@ namespace NAV.Gameplay.Building
         public BuildingPieceDefinition SelectedPiece => _availablePieces.Count > 0 ? _availablePieces[_selectedIndex] : null;
         public bool IsPlacementValid => _hasValidHit;
         public bool IsSnapped { get; private set; }
+
+        /// <summary>Tests and tools: aim along this ray instead of the camera's (null = the camera).</summary>
+        public Ray? AimOverride { get; set; }
+
+        /// <summary>Tests and tools: the yaw the held piece turns by on top of the aim (R steps it).</summary>
+        public float GhostYawOffset
+        {
+            get => _ghostYawOffset;
+            set => _ghostYawOffset = Mathf.Repeat(value, 360f);
+        }
+
         public bool CanAffordSelected => SelectedPiece != null && SelectedPiece.CanAfford(_playerInventory.Inventory);
         public bool CanPlace => IsBuildModeActive && !_demolishSelected && _hasValidHit && CanAffordSelected && IsInBuildArea
-            && (SelectedPiece == null || !SelectedPiece.FloatsOnWater || _onWater);
+            && (SelectedPiece == null || !SelectedPiece.FloatsOnWater || _onWater) && !_occupied;
+
+        // The snapped spot already holds the same piece (a second roof slope on top of the first).
+        private bool _occupied;
 
         // Water (m) a floating piece needs under it.
         private const float MinFloatDepth = 0.6f;
@@ -176,6 +194,11 @@ namespace NAV.Gameplay.Building
                     return SelectedPiece.RequiredStation != null
                         ? $"Needs a {SelectedPiece.RequiredStation.DisplayName} (level {SelectedPiece.RequiredStationLevel}) nearby"
                         : "Needs a workbench nearby";
+                }
+
+                if (_occupied)
+                {
+                    return "Already built here";
                 }
 
                 return CanAffordSelected ? null : "Not enough materials";
@@ -217,7 +240,7 @@ namespace NAV.Gameplay.Building
             bool changed = false;
             foreach (BuildingPieceDefinition piece in _knownPieces)
             {
-                if (piece == null || (_crafting != null && !piece.IsUnlocked(_crafting.IsDiscovered)))
+                if (piece == null || !NAV.Gameplay.Demo.DemoMode.Allows(piece) || (_crafting != null && !piece.IsUnlocked(_crafting.IsDiscovered)))
                 {
                     continue;
                 }
@@ -584,6 +607,7 @@ namespace NAV.Gameplay.Building
             // fix. Renderer.bounds is used instead of Collider.bounds for the same reason and
             // because it's the visible mesh that actually needs to sit on the surface.
             _pieceHalfHeight = ComputeHalfHeight(_ghostInstance);
+            _lowestSnapOffset = ComputeLowestSnapOffset(_ghostInstance);
 
             foreach (Collider col in _ghostInstance.GetComponentsInChildren<Collider>())
             {
@@ -622,10 +646,41 @@ namespace NAV.Gameplay.Building
         // still read right after Instantiate, before anything below disables the collider -
         // a disabled Collider's .bounds collapses to zero, which is exactly the silent-zero
         // bug this method was already written once to avoid (see the SpawnGhost comment).
+        /// <summary>The pivot's height above the piece's bottom - its solid colliders (a root
+        /// marker trigger, like the door's 5 cm one, used to sink the door a metre into the
+        /// floor), else its renderers. Read at the Instantiate pose, so relative to it.</summary>
         private static float ComputeHalfHeight(GameObject instance)
         {
-            Collider collider = instance.GetComponentInChildren<Collider>();
-            return collider != null ? collider.bounds.extents.y : 0f;
+            float bottom = float.MaxValue;
+            foreach (Collider collider in instance.GetComponentsInChildren<Collider>())
+            {
+                if (!collider.isTrigger)
+                {
+                    bottom = Mathf.Min(bottom, collider.bounds.min.y);
+                }
+            }
+
+            if (bottom == float.MaxValue)
+            {
+                foreach (Renderer renderer in instance.GetComponentsInChildren<Renderer>())
+                {
+                    bottom = Mathf.Min(bottom, renderer.bounds.min.y);
+                }
+            }
+
+            return bottom == float.MaxValue ? 0f : Mathf.Max(0f, instance.transform.position.y - bottom);
+        }
+
+        /// <summary>The pivot's height above the lowest snap point (NaN if it has none).</summary>
+        private static float ComputeLowestSnapOffset(GameObject instance)
+        {
+            float lowest = float.MaxValue;
+            foreach (BuildingSnapPoint point in instance.GetComponentsInChildren<BuildingSnapPoint>())
+            {
+                lowest = Mathf.Min(lowest, point.transform.position.y);
+            }
+
+            return lowest == float.MaxValue ? float.NaN : instance.transform.position.y - lowest;
         }
 
         private void DestroyGhost()
@@ -657,7 +712,8 @@ namespace NAV.Gameplay.Building
                 return;
             }
 
-            _hasValidHit = Physics.Raycast(_cameraTransform.position, _cameraTransform.forward, out RaycastHit hit, _maxPlacementDistance, _placementLayers, QueryTriggerInteraction.Ignore);
+            Ray aim = AimOverride ?? new Ray(_cameraTransform.position, _cameraTransform.forward);
+            _hasValidHit = Physics.Raycast(aim, out RaycastHit hit, _maxPlacementDistance, _placementLayers, QueryTriggerInteraction.Ignore);
 
             if (!_hasValidHit)
             {
@@ -666,7 +722,9 @@ namespace NAV.Gameplay.Building
                 return;
             }
 
-            Vector3 anchoredPosition = hit.point + Vector3.up * _pieceHalfHeight;
+            // On a building piece, by the lowest snap point (it attaches there); elsewhere by its bottom.
+            bool onBuilding = !float.IsNaN(_lowestSnapOffset) && hit.collider.GetComponentInParent<BuildingPiece>() != null;
+            Vector3 anchoredPosition = hit.point + Vector3.up * (onBuilding ? _lowestSnapOffset : _pieceHalfHeight);
             _onWater = false;
             if (SelectedPiece != null && SelectedPiece.FloatsOnWater && NAV.Core.WorldWater.HasSea)
             {
@@ -681,6 +739,7 @@ namespace NAV.Gameplay.Building
             _ghostInstance.transform.SetPositionAndRotation(anchoredPosition, GhostRotation());
 
             TryApplySnap();
+            _occupied = IsSnapped && SameAlreadyHere();
 
             bool canPlaceNow = CanPlace;
             if (_ghostAppliedValid != canPlaceNow)
@@ -778,7 +837,11 @@ namespace NAV.Gameplay.Building
             // along the target point: its front (+Z - the roof's eave, the door's наличник) turns
             // towards the player, and R (two presses) turns it the other way.
             Quaternion rotation = bestTargetPoint.transform.rotation;
-            if (SelectedPiece != null && SelectedPiece.Directional)
+            if (SelectedPiece != null && SelectedPiece.RisesTowardCentre)
+            {
+                rotation = HighSideTowardCentre(rotation, bestTargetPoint);
+            }
+            else if (SelectedPiece != null && SelectedPiece.Directional)
             {
                 Quaternion flipped = rotation * Quaternion.Euler(0f, 180f, 0f);
                 Quaternion wanted = GhostRotation() * Quaternion.Euler(0f, 180f, 0f);
@@ -806,6 +869,89 @@ namespace NAV.Gameplay.Building
 
             _ghostInstance.transform.position += bestTargetPoint.transform.position - bestGhostPoint.transform.position;
             IsSnapped = true;
+        }
+
+        /// <summary>Of the two ways a roof slope or a gable can sit on its target (as the target
+        /// point turns it, or 180 degrees round), the one whose high side - its highest snap
+        /// point - ends up nearer the middle of the building: the average of the pieces round the
+        /// target. So a slope rises to the ridge and a half gable to the apex however the player
+        /// holds it (two halves of an end wall no longer both rise the same way).</summary>
+        private Quaternion HighSideTowardCentre(Quaternion rotation, BuildingSnapPoint target)
+        {
+            Vector3 centre = Vector3.zero;
+            int count = 0;
+            foreach (BuildingPiece placed in BuildingPiece.AllPieces)
+            {
+                // Structure only (walls, floors, roofs) - a workbench or a chest beside the house
+                // doesn't move its middle.
+                if (placed != null && placed.SnapPoints.Count > 0
+                    && (placed.transform.position - target.transform.position).sqrMagnitude <= _snapSearchRadius * _snapSearchRadius)
+                {
+                    centre += placed.transform.position;
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                return rotation;
+            }
+
+            centre /= count;
+            BuildingSnapPoint highest = null;
+            foreach (BuildingSnapPoint point in _ghostSnapPoints)
+            {
+                if (highest == null || point.transform.localPosition.y > highest.transform.localPosition.y + 0.01f)
+                {
+                    highest = point;
+                }
+            }
+
+            Quaternion flipped = rotation * Quaternion.Euler(0f, 180f, 0f);
+            return HighSideDistance(rotation, target, highest, centre) <= HighSideDistance(flipped, target, highest, centre) ? rotation : flipped;
+        }
+
+        /// <summary>Where the high point lands (flat distance to the centre) if the ghost is turned
+        /// so and its nearest matching point put on the target.</summary>
+        private float HighSideDistance(Quaternion rotation, BuildingSnapPoint target, BuildingSnapPoint highest, Vector3 centre)
+        {
+            Transform ghost = _ghostInstance.transform;
+            Quaternion previous = ghost.rotation;
+            ghost.rotation = rotation;
+            BuildingSnapPoint attach = null;
+            float nearest = float.MaxValue;
+            foreach (BuildingSnapPoint point in _ghostSnapPoints)
+            {
+                float d = (target.transform.position - point.transform.position).sqrMagnitude;
+                if (point.Kind == target.Kind && d < nearest)
+                {
+                    nearest = d;
+                    attach = point;
+                }
+            }
+
+            Vector3 offset = attach != null ? target.transform.position - attach.transform.position : Vector3.zero;
+            Vector3 high = highest.transform.position + offset - centre;
+            ghost.rotation = previous;
+            high.y = 0f;
+            return high.sqrMagnitude;
+        }
+
+        /// <summary>A placed piece of the same kind at the ghost's pose (5 cm, 5 degrees).</summary>
+        private bool SameAlreadyHere()
+        {
+            Transform ghost = _ghostInstance.transform;
+            foreach (BuildingPiece placed in BuildingPiece.AllPieces)
+            {
+                if (placed != null && placed.Definition == SelectedPiece
+                    && (placed.transform.position - ghost.position).sqrMagnitude < 0.0025f
+                    && Quaternion.Angle(placed.transform.rotation, ghost.rotation) < 5f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private Quaternion GhostRotation()

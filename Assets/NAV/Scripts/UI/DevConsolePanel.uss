@@ -1,0 +1,70 @@
+/* The developer console: a dark half-transparent band across the top in the HUD's colours. */
+
+.console {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 46%;
+    padding: 10px 14px 8px 14px;
+    background-color: rgba(10, 7, 5, 0.86);
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(176, 132, 52, 0.85);
+}
+
+.console--hidden {
+    display: none;
+}
+
+.console__title {
+    color: rgb(232, 198, 120);
+    font-size: 13px;
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+}
+
+.console__log {
+    flex-grow: 1;
+}
+
+.console__line {
+    color: rgb(230, 222, 204);
+    font-size: 14px;
+    white-space: normal;
+    margin: 0;
+    padding: 0;
+}
+
+.console__line--command {
+    color: rgb(232, 198, 120);
+}
+
+.console__line--error {
+    color: rgb(235, 120, 100);
+}
+
+.console__input {
+    margin: 6px 0 0 0;
+}
+
+.console__input .unity-base-text-field__input {
+    height: 30px;
+    padding: 3px 10px;
+    background-color: rgba(30, 22, 14, 0.95);
+    color: rgb(245, 235, 215);
+    font-size: 15px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(176, 132, 52, 0.8);
+    border-right-color: rgba(176, 132, 52, 0.8);
+    border-top-color: rgba(176, 132, 52, 0.8);
+    border-bottom-color: rgba(176, 132, 52, 0.8);
+    --unity-cursor-color: rgb(232, 198, 120);
+    --unity-selection-color: rgba(176, 132, 52, 0.5);
+}
+
+.console__input .unity-text-element {
+    color: rgb(245, 235, 215);
+}

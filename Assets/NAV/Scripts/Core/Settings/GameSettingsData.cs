@@ -52,6 +52,8 @@ namespace NAV.Core.Settings
         [Tooltip("Multiplier on the camera's base mouse sensitivity.")]
         public float MouseSensitivity = 1f;
         public bool InvertY;
+        [Tooltip("The developer console (` key): commands for quick testing - give items, teleport, time, weather, spawn.")]
+        public bool DevConsole;
         [Tooltip("Input System binding overrides (InputActionAsset.SaveBindingOverridesAsJson). Empty = defaults.")]
         public string BindingOverrides = string.Empty;
 

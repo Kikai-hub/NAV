@@ -82,6 +82,20 @@ namespace NAV.World.Encounters
         {
             get
             {
+                // Online: the forest round another player's Leshy is silent here too.
+                float remote = Time.time < _remoteSilenceUntil ? _remoteSilence : 0f;
+                return Mathf.Max(remote, LocalSilence);
+            }
+        }
+
+        private float _remoteSilence;
+        private float _remoteSilenceUntil;
+
+        /// <summary>The silence as this machine's own encounter makes it (what is sent to others).</summary>
+        public float LocalSilence
+        {
+            get
+            {
                 bool peaceful = _boss != null ? _boss.IsPeaceful : !_angry;
                 switch (_phase)
                 {
@@ -102,11 +116,33 @@ namespace NAV.World.Encounters
             }
 
             ResourceNode.Depleted += HandleNodeDepleted;
+            ResourceNode.DepletedRemotely += HandleRemoteNodeDepleted; // felled by another player, online
         }
 
         private void OnDisable()
         {
             ResourceNode.Depleted -= HandleNodeDepleted;
+            ResourceNode.DepletedRemotely -= HandleRemoteNodeDepleted;
+        }
+
+        /// <summary>Online: a line from the encounter another player's machine runs nearby.</summary>
+        public void ShowRemoteMessage(string text)
+        {
+            Message?.Invoke(text);
+        }
+
+        /// <summary>Online: the omen of a Leshy coming on another player's machine nearby.</summary>
+        public void PlayRemoteOmen(bool angry)
+        {
+            OmenStarted?.Invoke(angry);
+        }
+
+        /// <summary>Online: the silence round another player's Leshy, valid for a few seconds
+        /// (renewed while it lasts).</summary>
+        public void SetRemoteSilence(float silence)
+        {
+            _remoteSilence = Mathf.Clamp01(silence);
+            _remoteSilenceUntil = Time.time + 3f;
         }
 
         /// <summary>Restores the saved state (SaveManager), before any tree is felled.</summary>
@@ -141,6 +177,23 @@ namespace NAV.World.Encounters
             {
                 StartOmen();
             }
+        }
+
+        // Another player's felling angers the forest just the same (but provokes nobody here -
+        // the provoked Leshy, if any, is on the machine that runs him).
+        private void HandleRemoteNodeDepleted(ResourceNode node)
+        {
+            if (IsWorldTreeInWrathBiome(node))
+            {
+                AddWrath(_settings.WrathPerTree);
+            }
+        }
+
+        private bool IsWorldTreeInWrathBiome(ResourceNode node)
+        {
+            return node != null && node.Definition != null && node.Definition.RequiredTool == ToolType.Axe
+                && _worldGenerator.TryGetNodeId(node.gameObject, out _)
+                && Contains(_settings.WrathBiomes, _worldGenerator.GetBiomeAt(node.transform.position));
         }
 
         private void HandleNodeDepleted(ResourceNode node)

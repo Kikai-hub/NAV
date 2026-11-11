@@ -18,6 +18,9 @@ namespace NAV.Core.Save
 
         private Dictionary<string, ItemDefinition> _lookup;
 
+        /// <summary>Every item (the developer console lists them).</summary>
+        public IReadOnlyList<ItemDefinition> Items => _items;
+
         public ItemDefinition Get(string id)
         {
             if (string.IsNullOrEmpty(id))

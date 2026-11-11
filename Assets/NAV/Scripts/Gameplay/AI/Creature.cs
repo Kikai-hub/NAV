@@ -83,7 +83,22 @@ namespace NAV.Gameplay.AI
         public object SpawnSource { get; set; }
 
         /// <summary>Chasing or attacking something.</summary>
-        public bool IsEngaged => _state == CreatureState.Chase || _state == CreatureState.Attack;
+        public bool IsEngaged => IsRemoteCopy ? _remoteEngaged : _state == CreatureState.Chase || _state == CreatureState.Attack;
+
+        private bool _remoteEngaged;
+
+        /// <summary>A copy's health and whether it is fighting, as its owner reports them (the
+        /// boss health bar on the other machines).</summary>
+        public void ApplyRemoteState(float health, bool engaged)
+        {
+            if (!IsRemoteCopy || !IsAlive)
+            {
+                return;
+            }
+
+            CurrentHealth = Mathf.Clamp(health, 0.01f, MaxHealth);
+            _remoteEngaged = engaged;
+        }
 
         public float CurrentHealth { get; private set; }
 

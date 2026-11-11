@@ -194,13 +194,39 @@ namespace NAV.Editor
             worldSerialized.FindProperty("_world").objectReferenceValue = Object.FindAnyObjectByType<NAV.World.Generation.WorldGenerator>(FindObjectsInactive.Include);
             worldSerialized.FindProperty("_building").objectReferenceValue = Object.FindAnyObjectByType<NAV.Gameplay.Building.PlayerBuilding>(FindObjectsInactive.Include);
             worldSerialized.FindProperty("_pieces").objectReferenceValue = AssetDatabase.LoadAssetAtPath<BuildingPieceDatabase>("Assets/NAV/ScriptableObjects/Core/BuildingPieceDatabase.asset");
+            worldSerialized.FindProperty("_forestWrath").objectReferenceValue = Object.FindAnyObjectByType<NAV.World.Encounters.ForestWrath>(FindObjectsInactive.Include);
             worldSerialized.ApplyModifiedPropertiesWithoutUndo();
 
-            // Creatures: every prefab under Prefabs/Creatures can be copied from the network.
+            var worldGenerator = Object.FindAnyObjectByType<NAV.World.Generation.WorldGenerator>(FindObjectsInactive.Include);
+            var itemDatabase = AssetDatabase.LoadAssetAtPath<ItemDatabase>("Assets/NAV/ScriptableObjects/Core/DefaultItemDatabase.asset");
+
+            // Gathering: one shared count per tree/rock, trunks and logs shown on every machine.
+            NetworkResourceSync resources = manager.GetComponent<NetworkResourceSync>() ?? manager.gameObject.AddComponent<NetworkResourceSync>();
+            var resourceSerialized = new SerializedObject(resources);
+            resourceSerialized.FindProperty("_world").objectReferenceValue = worldGenerator;
+            SerializedProperty definitions = resourceSerialized.FindProperty("_definitions");
+            string[] definitionGuids = AssetDatabase.FindAssets("t:ResourceNodeDefinition");
+            definitions.arraySize = definitionGuids.Length;
+            for (int i = 0; i < definitionGuids.Length; i++)
+            {
+                definitions.GetArrayElementAtIndex(i).objectReferenceValue = AssetDatabase.LoadAssetAtPath<NAV.Gameplay.Items.ResourceNodeDefinition>(AssetDatabase.GUIDToAssetPath(definitionGuids[i]));
+            }
+
+            resourceSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            // Items on the ground: shared, picked up once.
+            NetworkItemSync items = manager.GetComponent<NetworkItemSync>() ?? manager.gameObject.AddComponent<NetworkItemSync>();
+            SetReference(items, "_items", itemDatabase);
+
+            // Chests, stations and doors.
+            NetworkContainerSync containers = manager.GetComponent<NetworkContainerSync>() ?? manager.gameObject.AddComponent<NetworkContainerSync>();
+            SetReference(containers, "_items", itemDatabase);
+
+            // Creatures: every prefab under Prefabs/Creatures and Prefabs/Bosses can be copied from the network.
             NetworkCreatureSync creatures = manager.GetComponent<NetworkCreatureSync>() ?? manager.gameObject.AddComponent<NetworkCreatureSync>();
             var creatureSerialized = new SerializedObject(creatures);
             SerializedProperty prefabs = creatureSerialized.FindProperty("_creaturePrefabs");
-            string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/NAV/Prefabs/Creatures" });
+            string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/NAV/Prefabs/Creatures", "Assets/NAV/Prefabs/Bosses" });
             prefabs.arraySize = guids.Length;
             for (int i = 0; i < guids.Length; i++)
             {
@@ -210,13 +236,8 @@ namespace NAV.Editor
             creatureSerialized.FindProperty("_player").objectReferenceValue = player;
             creatureSerialized.ApplyModifiedPropertiesWithoutUndo();
 
-            // Chat on the HUD's panel settings.
-            NetworkChatUI chat = manager.GetComponent<NetworkChatUI>() ?? manager.gameObject.AddComponent<NetworkChatUI>();
-            var chatSerialized = new SerializedObject(chat);
-            UnityEngine.UIElements.UIDocument hud = Object.FindAnyObjectByType<UnityEngine.UIElements.UIDocument>(FindObjectsInactive.Include);
-            chatSerialized.FindProperty("_panelSettings").objectReferenceValue = hud != null ? hud.panelSettings : null;
-            chatSerialized.FindProperty("_input").objectReferenceValue = player != null ? player.GetComponent<PlayerInputHandler>() : null;
-            chatSerialized.ApplyModifiedPropertiesWithoutUndo();
+            // The chat is the HUD's (UI ChatUI, solo and online - NAV > UI > Set Up Chat, Console and Map);
+            // the network only carries its lines (NAV.Core.ChatChannel).
 
             EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
             return EditorSceneManager.SaveScene(manager.gameObject.scene);

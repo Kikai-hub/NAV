@@ -611,6 +611,16 @@ namespace NAV.World.Generation
         /// node gathered here to the other machines by it.</summary>
         public bool TryGetNodeId(GameObject node, out int id)
         {
+            // The starter items round the spawn point (not streamed with the chunks).
+            for (int i = 0; i < _starterResources.Count; i++)
+            {
+                if (_starterResources[i] != null && _starterResources[i] == node)
+                {
+                    id = StarterIdBase + i;
+                    return true;
+                }
+            }
+
             foreach (Chunk chunk in _chunks.Values)
             {
                 foreach (KeyValuePair<int, GameObject> entry in chunk.Nodes)
@@ -627,10 +637,45 @@ namespace NAV.World.Generation
             return false;
         }
 
+        /// <summary>The loaded instance of a world node by its id, or null (not loaded, gone).</summary>
+        public GameObject GetNode(int id)
+        {
+            int starter = id - StarterIdBase;
+            if (starter >= 0 && starter < _starterResources.Count)
+            {
+                return _starterResources[starter];
+            }
+
+            foreach (Chunk chunk in _chunks.Values)
+            {
+                foreach (KeyValuePair<int, GameObject> entry in chunk.Nodes)
+                {
+                    if (entry.Key == id)
+                    {
+                        return entry.Value;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>A node gathered on another machine: gone here too, without drops (its
         /// leftover - a stump - stays); in a chunk that isn't loaded it just won't spawn.</summary>
         public void RemoveNode(int id)
         {
+            int starter = id - StarterIdBase;
+            if (starter >= 0 && starter < _starterResources.Count)
+            {
+                if (_starterResources[starter] != null)
+                {
+                    Destroy(_starterResources[starter]);
+                    _starterResources[starter] = null;
+                }
+
+                return;
+            }
+
             foreach (Chunk chunk in _chunks.Values)
             {
                 for (int i = 0; i < chunk.Nodes.Count; i++)

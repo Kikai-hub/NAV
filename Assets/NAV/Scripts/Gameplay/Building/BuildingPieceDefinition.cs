@@ -35,6 +35,9 @@ namespace NAV.Gameplay.Building
         [Tooltip("The piece has a front/back that matters (roof slope, gable, carved door): when it snaps, its front (+Z) turns towards the player instead of always taking the snap point's rotation; R turns it the other way.")]
         [SerializeField] private bool _directional;
 
+        [Tooltip("A roof slope or a gable: when it snaps, its high side (its highest snap point - the ridge, the gable's apex) turns towards the middle of the building it joins, whichever way the player holds it.")]
+        [SerializeField] private bool _risesTowardCentre;
+
         [Tooltip("Placed on the water surface (its pivot at the waterline), only where the water is deep enough - a boat.")]
         [SerializeField] private bool _floatsOnWater;
 
@@ -64,6 +67,9 @@ namespace NAV.Gameplay.Building
 
         /// <summary>Snapping may turn it 180 degrees to face the way the player rotated it.</summary>
         public bool Directional => _directional;
+
+        /// <summary>Snapping turns its high side towards the middle of the building (roof, gable).</summary>
+        public bool RisesTowardCentre => _risesTowardCentre;
 
         /// <summary>Goes on the water (a boat) - see PlayerBuilding.</summary>
         public bool FloatsOnWater => _floatsOnWater;

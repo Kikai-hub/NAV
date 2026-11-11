@@ -213,6 +213,13 @@ namespace NAV.UI
             AddSlider(page, "Mouse Sensitivity", 0.2f, 3f, data.MouseSensitivity, v => v.ToString("0.00") + "x", v => data.MouseSensitivity = v);
             AddToggle(page, "Invert Vertical Look", data.InvertY, v => data.InvertY = v);
 
+            if (NAV.Gameplay.Demo.DemoMode.AllowsDevConsole)
+            {
+                AddSection(page, "Developer");
+                AddToggle(page, "Developer Console", data.DevConsole, v => data.DevConsole = v);
+                AddHint(page, "Opens with the ` key (under Esc). Type help for the commands.");
+            }
+
             AddSection(page, "Keys");
             if (_actions == null)
             {

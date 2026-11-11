@@ -54,6 +54,8 @@ namespace NAV.Core.Save
         [SerializeField] private WeatherSystem _weatherSystem;
         [Tooltip("Optional - when assigned, the forest's wrath and the Leshy's kills are saved/restored.")]
         [SerializeField] private ForestWrath _forestWrath;
+        [Tooltip("Optional - when assigned, the explored map is saved/restored.")]
+        [SerializeField] private NAV.Presentation.Map.MapExploration _map;
         [SerializeField] private ItemDatabase _itemDatabase;
         [SerializeField] private BuildingPieceDatabase _buildingPieceDatabase;
         [Tooltip("How often this world autosaves into its own save slot (overwriting the previous autosave, never creating a second file).")]
@@ -193,6 +195,11 @@ namespace NAV.Core.Save
             if (_forestWrath != null)
             {
                 _forestWrath.Restore(data.ForestWrath, data.LeshyDefeats, data.LeshyCooldownSeconds);
+            }
+
+            if (_map != null)
+            {
+                _map.Restore(data.ExploredMap);
             }
 
             SaveSystem.CurrentSaveId = data.SaveId;
@@ -336,7 +343,8 @@ namespace NAV.Core.Save
                 DepletedResourceIds = _worldGenerator.GetDepletedResourceIds(),
                 ForestWrath = _forestWrath != null ? _forestWrath.Wrath : 0f,
                 LeshyDefeats = _forestWrath != null ? _forestWrath.Defeats : 0,
-                LeshyCooldownSeconds = _forestWrath != null ? _forestWrath.CooldownSeconds : 0f
+                LeshyCooldownSeconds = _forestWrath != null ? _forestWrath.CooldownSeconds : 0f,
+                ExploredMap = _map != null ? _map.Save() : new List<ExploredTileSaveData>()
             };
 
             SaveSystem.Save(data);

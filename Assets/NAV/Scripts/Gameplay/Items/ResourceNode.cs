@@ -74,6 +74,27 @@ namespace NAV.Gameplay.Items
         /// by its next stage - multiplayer removes the same node on the other machines.</summary>
         public static event System.Action<ResourceNode> Depleted;
 
+        /// <summary>A node gathered out on ANOTHER machine, shown here (stump, no stages, no
+        /// drops) - so whatever counts felled trees here (ForestWrath) counts it too.</summary>
+        public static event System.Action<ResourceNode> DepletedRemotely;
+
+        /// <summary>The next stages a depletion spawned on this machine (a falling trunk, its
+        /// logs) - multiplayer gives them network ids and shows them on the other machines.</summary>
+        public static event System.Action<ResourceNode, System.Collections.Generic.List<GameObject>> StagesSpawned;
+
+        /// <summary>Multiplayer: when set, decides about every gather hit landed here (see
+        /// IResourceNodeNetwork). Null offline - everything is local.</summary>
+        public static IResourceNodeNetwork Network { get; set; }
+
+        /// <summary>A stage spawned on another machine and shown here (kinematic, moved by the
+        /// network): its hits are sent to the owner, it never depletes on its own.</summary>
+        public bool IsNetworkCopy { get; set; }
+
+        /// <summary>Network id of a stage (trunk, log); 0 for world nodes and offline.</summary>
+        public long NetworkId { get; set; }
+
+        public int RemainingHits => _remainingHits;
+
         public bool ReceiveMeleeHit(GameObject attacker, WeaponDefinition weapon)
         {
             return TryGather(attacker);
@@ -97,8 +118,31 @@ namespace NAV.Gameplay.Items
 
             // A better tool than needed works faster: each tier above the minimum is one more hit
             // (a copper axe fells a tree in fewer swings than a stone one).
-            _remainingHits -= 1 + ExtraHitsFromTool(interactor);
+            int hits = 1 + ExtraHitsFromTool(interactor);
 
+            // Online: the network decides (a shared count, felled once for everyone). Here the
+            // hit only shows - the count drops as a guess, the authority's answer corrects it.
+            if (Network != null && Network.InterceptGather(this, interactor, hits))
+            {
+                SetRemainingHits(Mathf.Max(1, _remainingHits - hits));
+                return true;
+            }
+
+            ApplyGatherHits(hits, interactor != null ? interactor.transform.position : transform.position - transform.forward);
+            return true;
+        }
+
+        /// <summary>Gather hits already judged valid (here, or by the owner of this node on
+        /// another machine): counts them and depletes the node when it is empty - drops, next
+        /// stages falling away from fromPosition.</summary>
+        public void ApplyGatherHits(int hits, Vector3 fromPosition)
+        {
+            if (_remainingHits <= 0)
+            {
+                return;
+            }
+
+            _remainingHits -= hits;
             if (_remainingHits > 0)
             {
                 if (_definition.ShrinkOnHit)
@@ -106,15 +150,48 @@ namespace NAV.Gameplay.Items
                     ApplyDepletionFeedback();
                 }
 
-                return true;
+                return;
             }
 
-            Debug.Log($"{name} was depleted by {interactor.name} and scattered its yield.", this);
-            Depleted?.Invoke(this);
-            SpawnDrops();
-            SpawnNextStage(interactor);
+            DepleteBy(fromPosition, true);
+        }
+
+        /// <summary>The count as the authority has it (multiplayer) - shrinks to match.</summary>
+        public void SetRemainingHits(int remaining)
+        {
+            _remainingHits = Mathf.Clamp(remaining, 0, _definition.HitsToDeplete);
+            if (_remainingHits > 0 && _definition.ShrinkOnHit)
+            {
+                ApplyDepletionFeedback();
+            }
+        }
+
+        /// <summary>Depletes it now. owner: this machine makes the result - drops and the next
+        /// stages (the trunk falls away from fromPosition); otherwise only the leftover (stump)
+        /// stays, the result comes from the machine that made it.</summary>
+        public void DepleteBy(Vector3 fromPosition, bool owner)
+        {
+            if (this == null || !gameObject.activeSelf)
+            {
+                return;
+            }
+
+            _remainingHits = 0;
+            if (owner)
+            {
+                Debug.Log($"{name} was depleted and scattered its yield.", this);
+                Depleted?.Invoke(this);
+                SpawnDrops();
+                SpawnNextStage(fromPosition);
+            }
+            else
+            {
+                DepletedRemotely?.Invoke(this);
+                LeaveLeftover();
+            }
+
+            gameObject.SetActive(false); // gone this frame (a second hit in the same swing finds nothing)
             Destroy(gameObject);
-            return true;
         }
 
         /// <summary>Leaves the stump (Definition.LeavesBehindPrefab) and spawns the next stage
@@ -122,7 +199,38 @@ namespace NAV.Gameplay.Items
         /// this node's own motion (a log split from a still-rolling trunk keeps rolling) and gets
         /// Definition.FallImpulse pushed into its top, away from the interactor - that's what
         /// topples a felled tree away from the player.</summary>
-        private void SpawnNextStage(GameObject interactor)
+        private void SpawnNextStage(Vector3 fromPosition)
+        {
+            LeaveLeftover();
+            if (_definition.BecomesPrefab == null)
+            {
+                return;
+            }
+
+            Vector3 away = transform.position - fromPosition;
+            away.y = 0f;
+            away = away.sqrMagnitude > 0.0001f ? away.normalized : Vector3.forward;
+
+            var spawned = new System.Collections.Generic.List<GameObject>();
+            if (_becomesSpawnPoints.Length == 0)
+            {
+                spawned.Add(SpawnStageAt(transform.position, transform.rotation, away));
+            }
+            else
+            {
+                foreach (Transform point in _becomesSpawnPoints)
+                {
+                    if (point != null)
+                    {
+                        spawned.Add(SpawnStageAt(point.position, point.rotation, away));
+                    }
+                }
+            }
+
+            StagesSpawned?.Invoke(this, spawned);
+        }
+
+        private void LeaveLeftover()
         {
             if (_definition.LeavesBehindPrefab != null)
             {
@@ -130,29 +238,6 @@ namespace NAV.Gameplay.Items
                 GameObject leftover = Instantiate(_definition.LeavesBehindPrefab, transform.position, transform.rotation, transform.parent);
                 InheritScale(leftover.transform);
                 SetLayerRecursively(leftover.transform, gameObject.layer);
-            }
-
-            if (_definition.BecomesPrefab == null)
-            {
-                return;
-            }
-
-            Vector3 away = interactor != null ? transform.position - interactor.transform.position : transform.forward;
-            away.y = 0f;
-            away = away.sqrMagnitude > 0.0001f ? away.normalized : Vector3.forward;
-
-            if (_becomesSpawnPoints.Length == 0)
-            {
-                SpawnStageAt(transform.position, transform.rotation, away);
-                return;
-            }
-
-            foreach (Transform point in _becomesSpawnPoints)
-            {
-                if (point != null)
-                {
-                    SpawnStageAt(point.position, point.rotation, away);
-                }
             }
         }
 
@@ -163,7 +248,7 @@ namespace NAV.Gameplay.Items
             spawned.localScale = Vector3.Scale(spawned.localScale, transform.localScale);
         }
 
-        private void SpawnStageAt(Vector3 position, Quaternion rotation, Vector3 away)
+        private GameObject SpawnStageAt(Vector3 position, Quaternion rotation, Vector3 away)
         {
             GameObject instance = Instantiate(_definition.BecomesPrefab, position, rotation, transform.parent);
             InheritScale(instance.transform);
@@ -171,7 +256,7 @@ namespace NAV.Gameplay.Items
             var body = instance.GetComponent<Rigidbody>();
             if (body == null)
             {
-                return;
+                return instance;
             }
 
             var ownBody = GetComponent<Rigidbody>();
@@ -188,6 +273,8 @@ namespace NAV.Gameplay.Items
                 Vector3 top = collider != null ? new Vector3(position.x, collider.bounds.max.y, position.z) : position + Vector3.up;
                 body.AddForceAtPosition(away * _definition.FallImpulse, top, ForceMode.Impulse);
             }
+
+            return instance;
         }
 
         /// <summary>

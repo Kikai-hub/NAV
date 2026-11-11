@@ -52,6 +52,19 @@ namespace NAV.Core.Save
         public float ForestWrath;
         public int LeshyDefeats;
         public float LeshyCooldownSeconds;
+
+        /// <summary>The map's explored cells (MapExploration), one bit per 4 m cell in 512 m tiles.
+        /// Empty in saves from before 2026-11-10 - the map starts unexplored.</summary>
+        public List<ExploredTileSaveData> ExploredMap = new();
+    }
+
+    /// <summary>One explored map tile: its key and its cells' bits (Base64).</summary>
+    [Serializable]
+    public class ExploredTileSaveData
+    {
+        public int X;
+        public int Y;
+        public string Bits;
     }
 
     [Serializable]

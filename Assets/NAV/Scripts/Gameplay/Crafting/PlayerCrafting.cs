@@ -42,6 +42,10 @@ namespace NAV.Gameplay.Crafting
         /// re-checks which pieces are known).</summary>
         public event Action DiscoveryChanged;
 
+        /// <summary>Raised after a successful craft; the flag says the player never had the
+        /// output item before (the end-of-demo screen listens).</summary>
+        public event Action<RecipeDefinition, bool> Crafted;
+
         public IEnumerable<string> DiscoveredItems => _discoveredItems;
 
         /// <summary>The player has had this item at some point.</summary>
@@ -56,7 +60,7 @@ namespace NAV.Gameplay.Crafting
         /// </summary>
         public bool IsUnlocked(RecipeDefinition recipe)
         {
-            if (recipe == null || recipe.OutputItem == null)
+            if (recipe == null || recipe.OutputItem == null || !NAV.Gameplay.Demo.DemoMode.Allows(recipe))
             {
                 return false;
             }
@@ -373,15 +377,17 @@ namespace NAV.Gameplay.Crafting
 
         public bool TryCraft(RecipeDefinition recipe)
         {
-            if (!enabled || recipe == null)
+            if (!enabled || recipe == null || !NAV.Gameplay.Demo.DemoMode.Allows(recipe))
             {
                 return false;
             }
 
+            bool firstOfItsKind = !IsDiscovered(recipe.OutputItem);
             bool crafted = recipe.TryCraft(_playerInventory.Inventory, GetStationLevel(recipe.Station));
             if (crafted)
             {
                 Debug.Log($"{name} crafted {recipe.OutputAmount}x {recipe.OutputItem.DisplayName} ({recipe.DisplayName}).", this);
+                Crafted?.Invoke(recipe, firstOfItsKind);
             }
 
             return crafted;

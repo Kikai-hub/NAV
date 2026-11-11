@@ -81,6 +81,9 @@ namespace NAV.Editor
             FillGableDefinition(gable);
             SetDirectional("WoodRoofPiece");
             SetDirectional("WoodDoorPiece");
+            // Slopes and gables turn their high side to the middle of the house when they snap.
+            SetRisesTowardCentre("WoodRoofPiece");
+            SetRisesTowardCentre("WoodGablePiece");
             AssetDatabase.SaveAssets();
             Debug.Log("RusBuildingStyleSetup: wall, foundation, palisade, door, roof slope and gable built in the Old Rus style.");
         }
@@ -563,6 +566,15 @@ namespace NAV.Editor
             CreatureLootSetup.AddToList(new SerializedObject(building), "_knownPieces", gable);
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(building.gameObject.scene);
             UnityEditor.SceneManagement.EditorSceneManager.SaveScene(building.gameObject.scene);
+        }
+
+        internal static void SetRisesTowardCentre(string definitionName)
+        {
+            var definition = AssetDatabase.LoadAssetAtPath<BuildingPieceDefinition>($"{PieceFolder}{definitionName}.asset");
+            var serialized = new SerializedObject(definition);
+            serialized.FindProperty("_risesTowardCentre").boolValue = true;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(definition);
         }
 
         private static void SetDirectional(string definitionName)

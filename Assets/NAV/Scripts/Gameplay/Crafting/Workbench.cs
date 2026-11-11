@@ -52,7 +52,7 @@ namespace NAV.Gameplay.Crafting
 
         /// <summary>The station's level: its definition's base Tier plus one per distinct
         /// WorkbenchExtension of its kind nearby (see WorkbenchExtension).</summary>
-        public int Tier => _definition != null ? _definition.Tier + _extensionLevels : 0;
+        public int Tier => _definition != null ? NAV.Gameplay.Demo.DemoMode.ClampStationLevel(_definition, _definition.Tier + _extensionLevels) : 0;
         public WorkbenchDefinition Definition => _definition;
         public string DisplayName => _definition != null ? _definition.DisplayName : name;
         public float BuildRadius => _definition != null ? _definition.BuildRadius : 0f;

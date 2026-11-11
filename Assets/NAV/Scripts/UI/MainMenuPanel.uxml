@@ -36,7 +36,7 @@
                         <ui:TextField name="host-room-password-field" password="true" class="create-world-field__input nav-input" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:RadioButtonGroup name="host-pvp-choice" choices="PvE - no player damage,PvP - players can fight" value="0" class="create-world-pvp" />
+                <ui:RadioButtonGroup name="host-pvp-choice" choices="PvE - co-op,PvP - duels" value="0" class="create-world-pvp" />
             </ui:VisualElement>
             <ui:Label name="create-world-status" class="create-world-status" />
             <ui:Button name="create-world-button" text="Create World" class="create-world-button nav-button" />

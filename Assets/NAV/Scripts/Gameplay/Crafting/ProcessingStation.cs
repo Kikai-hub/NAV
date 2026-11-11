@@ -116,8 +116,17 @@ namespace NAV.Gameplay.Crafting
             RefreshVisuals();
         }
 
+        /// <summary>Multiplayer: only one machine (the host) runs the stations, so a furnace
+        /// doesn't smelt the same ore on two machines - the others see its contents change.</summary>
+        public static bool SimulationSuppressed { get; set; }
+
         private void Update()
         {
+            if (SimulationSuppressed)
+            {
+                return;
+            }
+
             if (_current == null)
             {
                 _current = NextRecipe();
@@ -156,7 +165,7 @@ namespace NAV.Gameplay.Crafting
         {
             foreach (ProcessingRecipe recipe in _recipes)
             {
-                if (Contents.GetTotalQuantity(recipe.Input) >= recipe.InputAmount && HasFuelFor(recipe))
+                if (NAV.Gameplay.Demo.DemoMode.Allows(recipe) && Contents.GetTotalQuantity(recipe.Input) >= recipe.InputAmount && HasFuelFor(recipe))
                 {
                     return recipe;
                 }
@@ -186,6 +195,11 @@ namespace NAV.Gameplay.Crafting
             int loaded = 0;
             foreach (ProcessingRecipe recipe in _recipes)
             {
+                if (!NAV.Gameplay.Demo.DemoMode.Allows(recipe))
+                {
+                    continue; // the demo doesn't smelt what is past it (tin, iron, silver...)
+                }
+
                 int room = _inputCapacity - QueuedInputs;
                 loaded += Move(from, recipe.Input, Mathf.Min(room, from.GetTotalQuantity(recipe.Input)));
             }

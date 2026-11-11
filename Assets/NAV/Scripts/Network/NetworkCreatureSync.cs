@@ -31,6 +31,8 @@ namespace NAV.Network
         private const byte SnapshotCode = 110;
         private const byte HitCode = 111;
         private const byte DiedCode = 112;
+        private const byte ActionCode = 113;
+        private const int Stride = 9; // position, yaw, velocity, health, engaged
         private const int IdsPerActor = 100000;
 
         [Tooltip("Every creature prefab that can spawn (copies are made from these by name).")]
@@ -128,10 +130,11 @@ namespace NAV.Network
 
             if (suppressed && !CreaturePopulation.SpawningSuppressed)
             {
-                // The other player's creatures are the ones around here now - ours go.
+                // The other player's creatures are the ones around here now - ours go. Not a boss
+                // or anything else an encounter brought (no SpawnSource): it stays ours to the end.
                 foreach (Creature creature in new List<Creature>(Creature.All))
                 {
-                    if (!creature.IsRemoteCopy && creature.IsAlive)
+                    if (!creature.IsRemoteCopy && creature.IsAlive && creature.SpawnSource != null)
                     {
                         Destroy(creature.gameObject);
                     }
@@ -159,6 +162,10 @@ namespace NAV.Network
                 _own[id] = creature;
                 creature.AttackPerformed += () => _attacked.Add(id);
                 creature.Died += () => AnnounceDeath(creature, id);
+                if (creature.TryGetComponent(out INetworkedActions actions))
+                {
+                    actions.ActionForNetwork += action => PhotonNetwork.RaiseEvent(ActionCode, new object[] { id, action }, ToOthers, SendOptions.SendReliable);
+                }
             }
         }
 
@@ -206,7 +213,7 @@ namespace NAV.Network
 
             var ids = new int[count];
             var names = new string[count];
-            var state = new float[count * 7];
+            var state = new float[count * Stride];
             var attacked = new bool[count];
             for (int i = 0; i < count; i++)
             {
@@ -216,7 +223,7 @@ namespace NAV.Network
                 Vector3 position = creature.transform.position;
                 var agent = creature.GetComponent<NavMeshAgent>();
                 Vector3 velocity = agent != null && agent.enabled ? agent.velocity : Vector3.zero;
-                int o = i * 7;
+                int o = i * Stride;
                 state[o] = position.x;
                 state[o + 1] = position.y;
                 state[o + 2] = position.z;
@@ -224,6 +231,8 @@ namespace NAV.Network
                 state[o + 4] = velocity.x;
                 state[o + 5] = velocity.y;
                 state[o + 6] = velocity.z;
+                state[o + 7] = creature.CurrentHealth;
+                state[o + 8] = creature.IsEngaged ? 1f : 0f;
                 attacked[i] = _attacked.Contains(ids[i]);
             }
 
@@ -243,6 +252,15 @@ namespace NAV.Network
                     if (_own.TryGetValue((int)hit[0], out Creature target) && target != null)
                     {
                         target.TakeDamageFrom((float)hit[1], photonEvent.Sender);
+                    }
+
+                    break;
+                case ActionCode:
+                    var act = (object[])photonEvent.CustomData;
+                    if (_copies.TryGetValue((int)act[0], out Copy acting) && acting.Creature != null
+                        && acting.Creature.TryGetComponent(out INetworkedActions copyActions))
+                    {
+                        copyActions.PlayActionAsCopy((int)act[1]);
                     }
 
                     break;
@@ -269,7 +287,7 @@ namespace NAV.Network
             var attacked = (bool[])data[3];
             for (int i = 0; i < ids.Length; i++)
             {
-                int o = i * 7;
+                int o = i * Stride;
                 var position = new Vector3(state[o], state[o + 1], state[o + 2]);
                 if (!_copies.TryGetValue(ids[i], out Copy copy))
                 {
@@ -300,6 +318,11 @@ namespace NAV.Network
                 copy.Yaw = state[o + 3];
                 copy.Velocity = new Vector3(state[o + 4], state[o + 5], state[o + 6]);
                 copy.LastHeard = Time.time;
+                if (copy.Creature != null)
+                {
+                    copy.Creature.ApplyRemoteState(state[o + 7], state[o + 8] > 0.5f);
+                }
+
                 if (attacked[i] && copy.Creature != null)
                 {
                     copy.Creature.PlayAttackAsCopy();

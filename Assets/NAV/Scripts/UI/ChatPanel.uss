@@ -1,0 +1,81 @@
+/* The chat, bottom left above the health bar: a dark, half-transparent panel in the HUD's
+   style (gold edge, warm light text). Lines fade out a while after they come; the panel shows
+   only while there are lines or the player types. */
+
+.chat {
+    position: absolute;
+    left: 64px;
+    bottom: 120px;
+    width: 460px;
+}
+
+.chat__log {
+    padding: 6px 10px;
+    background-color: rgba(18, 12, 8, 0.62);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(176, 132, 52, 0.55);
+    border-right-color: rgba(176, 132, 52, 0.55);
+    border-top-color: rgba(176, 132, 52, 0.55);
+    border-bottom-color: rgba(176, 132, 52, 0.55);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    transition-property: opacity;
+    transition-duration: 0.4s;
+}
+
+.chat__log--hidden {
+    opacity: 0;
+}
+
+.chat__line {
+    color: rgb(240, 230, 210);
+    font-size: 15px;
+    white-space: normal;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+.chat__line--system {
+    color: rgb(232, 198, 120);
+    -unity-font-style: italic;
+}
+
+.chat__line--name {
+    color: rgb(225, 205, 160);
+}
+
+.chat__input {
+    margin: 4px 0 0 0;
+}
+
+.chat__input .unity-base-text-field__input {
+    height: 32px;
+    padding: 4px 10px;
+    background-color: rgba(12, 8, 5, 0.82);
+    color: rgb(245, 235, 215);
+    font-size: 15px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(176, 132, 52, 0.8);
+    border-right-color: rgba(176, 132, 52, 0.8);
+    border-top-color: rgba(176, 132, 52, 0.8);
+    border-bottom-color: rgba(176, 132, 52, 0.8);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    --unity-cursor-color: rgb(232, 198, 120);
+    --unity-selection-color: rgba(176, 132, 52, 0.5);
+}
+
+.chat__input .unity-text-element {
+    color: rgb(245, 235, 215);
+}

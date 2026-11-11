@@ -285,6 +285,20 @@ namespace NAV.Gameplay.Inventory
             Changed?.Invoke();
         }
 
+        /// <summary>Replaces every slot at once (null / 0 = empty), raising Changed once -
+        /// multiplayer puts another machine's chest or station contents in place.</summary>
+        public void SetAllSlots(ItemDefinition[] definitions, int[] quantities)
+        {
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                ItemDefinition definition = definitions != null && i < definitions.Length ? definitions[i] : null;
+                int quantity = quantities != null && i < quantities.Length ? quantities[i] : 0;
+                _slots[i] = definition != null && quantity > 0 ? new ItemStack(definition, quantity) : new ItemStack();
+            }
+
+            Changed?.Invoke();
+        }
+
         /// <summary>
         /// Creates a new, unlimited-weight Inventory with the same Capacity as this one,
         /// copies every slot's contents into the matching slot index there, and clears this

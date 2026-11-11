@@ -17,6 +17,23 @@ namespace NAV.Gameplay.Items
 
         public string InteractionPrompt => _definition != null ? $"Pick up {_definition.DisplayName}" : "Pick up";
 
+        public ItemDefinition Definition => _definition;
+        public int Quantity => _quantity;
+
+        /// <summary>Multiplayer: told about every pickup spawned here and asked before one is
+        /// picked up (IItemPickupNetwork). Null offline.</summary>
+        public static IItemPickupNetwork Network { get; set; }
+
+        /// <summary>Network id (0 = not shared: offline, or a world-generated pickup).</summary>
+        public long NetworkId { get; set; }
+
+        /// <summary>Set while the network itself spawns a copy, so it isn't announced back.</summary>
+        public static bool SpawningFromNetwork { get; set; }
+
+        /// <summary>Something was picked up here: the pickup (destroyed at the end of the
+        /// frame when emptied), who, how many, and whether it is now empty.</summary>
+        public static event System.Action<ItemPickup, GameObject, int, bool> PickedUp;
+
         private void Awake()
         {
             ApplyRigidbodyMass();
@@ -72,6 +89,11 @@ namespace NAV.Gameplay.Items
                 rb.AddForce(impulse, ForceMode.Impulse);
             }
 
+            if (!SpawningFromNetwork)
+            {
+                Network?.OnSpawned(pickup, impulse);
+            }
+
             return pickup;
         }
 
@@ -98,11 +120,24 @@ namespace NAV.Gameplay.Items
 
         public void Interact(GameObject interactor)
         {
+            // Online: one item, one owner - the network asks who gets it first (GiveTo then).
+            if (Network != null && Network.InterceptPickup(this, interactor))
+            {
+                return;
+            }
+
+            GiveTo(interactor);
+        }
+
+        /// <summary>Puts as much as fits into the interactor's inventory (the rest stays here).
+        /// Returns how many were taken.</summary>
+        public int GiveTo(GameObject interactor)
+        {
             var inventory = interactor.GetComponent<PlayerInventory>();
             if (inventory == null)
             {
                 Debug.LogWarning($"{name} was interacted with by '{interactor.name}', which has no PlayerInventory.", this);
-                return;
+                return 0;
             }
 
             int leftover = inventory.Inventory.AddItem(_definition, _quantity);
@@ -111,7 +146,7 @@ namespace NAV.Gameplay.Items
             if (picked <= 0)
             {
                 Debug.Log($"{interactor.name}'s inventory is full; could not pick up {_definition.DisplayName}.", this);
-                return;
+                return 0;
             }
 
             Debug.Log($"{interactor.name} picked up {picked}x {_definition.DisplayName} (now has {inventory.Inventory.GetTotalQuantity(_definition)}).", this);
@@ -119,8 +154,12 @@ namespace NAV.Gameplay.Items
             _quantity = leftover;
             if (_quantity <= 0)
             {
+                gameObject.SetActive(false);
                 Destroy(gameObject);
             }
+
+            PickedUp?.Invoke(this, interactor, picked, _quantity <= 0);
+            return picked;
         }
     }
 }
