@@ -517,7 +517,7 @@ namespace NAV.World.Generation
 
             foreach (BiomeCreatureSpawn spawn in biome.CreatureSpawns)
             {
-                if (spawn.Prefab == null || spawn.Count <= 0)
+                if (spawn.Prefab == null || spawn.Count <= 0 || !NAV.Gameplay.Demo.DemoMode.AllowsSpawn(biome, spawn.Prefab))
                 {
                     continue;
                 }

@@ -50,7 +50,7 @@ namespace NAV.Gameplay.Combat
         [SerializeField] private float _blockStaminaCostPerHit = 10f;
         [SerializeField] private float _parryWindowSeconds = 0.25f;
 
-        public string DisplayName => _displayName;
+        public string DisplayName => NAV.Core.Localization.Loc.T(_displayName);
         public Sprite Icon => _icon;
         public WeaponClass WeaponClass => _weaponClass;
         public float Damage => _damage;

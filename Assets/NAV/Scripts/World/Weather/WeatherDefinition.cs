@@ -65,7 +65,7 @@ namespace NAV.World.Weather
         [SerializeField, Min(0.5f)] private float _maxLightningInterval = 16f;
 
         public string Id => _id;
-        public string DisplayName => _displayName;
+        public string DisplayName => NAV.Core.Localization.Loc.T(_displayName);
 
         /// <summary>HUD icon for this weather at this time of day, or null.</summary>
         public Sprite GetIcon(bool night) => night && _nightIcon != null ? _nightIcon : _icon;

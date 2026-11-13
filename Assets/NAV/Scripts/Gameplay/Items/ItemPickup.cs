@@ -15,7 +15,7 @@ namespace NAV.Gameplay.Items
         [SerializeField] private ItemDefinition _definition;
         [SerializeField] private int _quantity = 1;
 
-        public string InteractionPrompt => _definition != null ? $"Pick up {_definition.DisplayName}" : "Pick up";
+        public string InteractionPrompt => _definition != null ? NAV.Core.Localization.Loc.F("Pick up {0}", _definition.DisplayName) : NAV.Core.Localization.Loc.T("Pick up");
 
         public ItemDefinition Definition => _definition;
         public int Quantity => _quantity;

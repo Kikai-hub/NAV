@@ -56,8 +56,8 @@ namespace NAV.Gameplay.Items
         [SerializeField] private AmmoDefinition _ammo;
 
         public string Id => _id;
-        public string DisplayName => _displayName;
-        public string Description => _description;
+        public string DisplayName => NAV.Core.Localization.Loc.T(_displayName);
+        public string Description => NAV.Core.Localization.Loc.T(_description);
         public Sprite Icon => _icon;
         public ItemCategory Category => _category;
         public int MaxStackSize => _maxStackSize;

@@ -17,7 +17,7 @@ namespace NAV.Gameplay.Player
     [RequireComponent(typeof(Collider))]
     public class Gravestone : MonoBehaviour, IInteractable, NAV.Gameplay.Inventory.IItemContainer
     {
-        public string ContainerTitle => "Gravestone";
+        public string ContainerTitle => NAV.Core.Localization.Loc.T("Gravestone");
         public bool IsStorage => false;
 
         // Fully-qualified everywhere in this file (rather than "using NAV.Gameplay.Inventory;"):
@@ -28,7 +28,7 @@ namespace NAV.Gameplay.Player
         // wins before reaching it.
         public NAV.Gameplay.Inventory.Inventory Contents { get; private set; }
 
-        public string InteractionPrompt => "Open gravestone";
+        public string InteractionPrompt => NAV.Core.Localization.Loc.T("Open gravestone");
 
         /// <summary>Instantiates prefab at position, snapped to sit on top of it (position is
         /// assumed to be ground level - e.g. the dying player's own transform.position) rather
@@ -40,6 +40,28 @@ namespace NAV.Gameplay.Player
             instance.SnapToGround(position);
             instance.Configure(contents);
             return instance;
+        }
+
+        /// <summary>Every gravestone in the world - SaveManager saves them with their contents
+        /// (2026-11-12: dying, quitting and loading used to lose the stone and everything in it).</summary>
+        public static readonly System.Collections.Generic.List<Gravestone> All = new();
+
+        /// <summary>Puts a saved gravestone back exactly where it stood (already on the ground).</summary>
+        public static Gravestone Restore(Gravestone prefab, Vector3 position, Quaternion rotation, NAV.Gameplay.Inventory.Inventory contents)
+        {
+            Gravestone instance = Instantiate(prefab, position, rotation);
+            instance.Configure(contents);
+            return instance;
+        }
+
+        private void OnEnable()
+        {
+            All.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            All.Remove(this);
         }
 
         private void OnDestroy()

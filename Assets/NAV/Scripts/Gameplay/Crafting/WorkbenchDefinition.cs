@@ -32,7 +32,7 @@ namespace NAV.Gameplay.Crafting
         [Tooltip("Crafting at it only works while it stands under a roof (a placed building piece overhead).")]
         [SerializeField] private bool _requiresRoof = true;
 
-        public string DisplayName => _displayName;
+        public string DisplayName => NAV.Core.Localization.Loc.T(_displayName);
         public int Tier => _tier;
         public float Range => _range;
         public float BuildRadius => _buildRadius;

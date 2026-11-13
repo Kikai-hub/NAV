@@ -22,9 +22,9 @@ namespace NAV.Gameplay.Inventory
         [SerializeField, Min(1)] private int _capacity = 10;
 
         public Inventory Contents { get; private set; }
-        public string ContainerTitle => _title;
+        public string ContainerTitle => NAV.Core.Localization.Loc.T(_title);
         public bool IsStorage => true;
-        public string InteractionPrompt => $"Open {_title}";
+        public string InteractionPrompt => NAV.Core.Localization.Loc.F("Open {0}", NAV.Core.Localization.Loc.T(_title));
 
         /// <summary>True while the container panel shows this container.</summary>
         public bool IsOpen { get; private set; }

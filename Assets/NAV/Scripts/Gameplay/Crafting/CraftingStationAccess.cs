@@ -16,7 +16,7 @@ namespace NAV.Gameplay.Crafting
 
         public Workbench Station => _workbench;
 
-        public string InteractionPrompt => _workbench != null ? $"Use {_workbench.DisplayName}" : "Use";
+        public string InteractionPrompt => _workbench != null ? NAV.Core.Localization.Loc.F("Use {0}", _workbench.DisplayName) : NAV.Core.Localization.Loc.T("Use");
 
         private void Awake()
         {

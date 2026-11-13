@@ -78,8 +78,8 @@ namespace NAV.Gameplay.Crafting
             {
                 string queued = $"{QueuedInputs}/{_inputCapacity}";
                 string fuel = _fuel != null ? $", {_fuel.DisplayName} {Contents.GetTotalQuantity(_fuel)}/{_fuelCapacity}" : "";
-                string status = IsWorking ? $" - making {_current.Output.DisplayName} {Mathf.CeilToInt(_current.Seconds - _progress)}s" : "";
-                return $"Load {_stationName} ({queued}{fuel}){status}";
+                string status = IsWorking ? NAV.Core.Localization.Loc.F(" - making {0} {1}s", _current.Output.DisplayName, Mathf.CeilToInt(_current.Seconds - _progress)) : "";
+                return NAV.Core.Localization.Loc.F("Load {0} ({1}{2}){3}", NAV.Core.Localization.Loc.T(_stationName), queued, fuel, status);
             }
         }
 

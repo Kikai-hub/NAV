@@ -51,6 +51,13 @@ namespace NAV.Editor
             "CastingMouldPiece", // forge upgrade for bronze casting - tier 3
         };
 
+        // Biomes of tiers 3-6 (and the unused desert/permafrost): no resource nodes, no creatures.
+        private static readonly string[] LockedBiomeNames =
+        {
+            "SeaIslandsBiome", "SwampBiome", "MountainsBiome", "SnowPeaksBiome", "BlackForestBiome",
+            "PermafrostBiome", "DesertBiome",
+        };
+
         // Full copper armour - needs ore, so the Stone Pickaxe, so the Leshy's heartwood first.
         private static readonly string[] FinaleItemNames = { "CopperHelm", "CopperScaleShirt", "CopperGreaves" };
 
@@ -91,6 +98,7 @@ namespace NAV.Editor
                 caps,
                 Find<ItemDefinition>(LockedItemNames),
                 Find<BuildingPieceDefinition>(LockedPieceNames),
+                Find<NAV.World.Biomes.BiomeDefinition>(LockedBiomeNames),
                 Find<ItemDefinition>(FinaleItemNames),
                 AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath),
                 AssetDatabase.LoadAssetAtPath<StyleSheet>(FinaleStylePath));

@@ -181,27 +181,27 @@ namespace NAV.Gameplay.Building
 
                 if (!_hasValidHit)
                 {
-                    return "Aim at the ground";
+                    return NAV.Core.Localization.Loc.T("Aim at the ground");
                 }
 
                 if (SelectedPiece.FloatsOnWater && !_onWater)
                 {
-                    return "Place it on deeper water";
+                    return NAV.Core.Localization.Loc.T("Place it on deeper water");
                 }
 
                 if (!IsInBuildArea)
                 {
                     return SelectedPiece.RequiredStation != null
-                        ? $"Needs a {SelectedPiece.RequiredStation.DisplayName} (level {SelectedPiece.RequiredStationLevel}) nearby"
-                        : "Needs a workbench nearby";
+                        ? NAV.Core.Localization.Loc.F("Needs a {0} (level {1}) nearby", SelectedPiece.RequiredStation.DisplayName, SelectedPiece.RequiredStationLevel)
+                        : NAV.Core.Localization.Loc.T("Needs a workbench nearby");
                 }
 
                 if (_occupied)
                 {
-                    return "Already built here";
+                    return NAV.Core.Localization.Loc.T("Already built here");
                 }
 
-                return CanAffordSelected ? null : "Not enough materials";
+                return CanAffordSelected ? null : NAV.Core.Localization.Loc.T("Not enough materials");
             }
         }
 

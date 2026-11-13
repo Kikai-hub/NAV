@@ -133,25 +133,25 @@ namespace NAV.UI
             panel.AddToClassList("demo-panel");
             _root.Add(panel);
 
-            AddLabel(panel, "Thank you for playing!", "demo-title");
+            AddLabel(panel, NAV.Core.Localization.Loc.T("Thank you for playing!"), "demo-title");
             var divider = new VisualElement();
             divider.AddToClassList("demo-divider");
             divider.AddToClassList("nav-divider");
             panel.Add(divider);
-            AddLabel(panel, "You have reached the end of the NAV demo: the Leshy is defeated and your first copper armour is forged.", "demo-text");
-            AddLabel(panel, "In the full game the road goes on - to the sea islands, the swamp, the mountains and the Black Forest, with new bosses on the way.", "demo-text");
+            AddLabel(panel, NAV.Core.Localization.Loc.T("You have reached the end of the NAV demo: the Leshy is defeated and your first copper armour is forged."), "demo-text");
+            AddLabel(panel, NAV.Core.Localization.Loc.T("In the full game the road goes on - to the sea islands, the swamp, the mountains and the Black Forest, with new bosses on the way."), "demo-text");
 
             if (!string.IsNullOrWhiteSpace(config.WishlistUrl))
             {
-                AddButton(panel, "Add to Wishlist", "demo-button--main", () => Application.OpenURL(config.WishlistUrl));
+                AddButton(panel, NAV.Core.Localization.Loc.T("Add to Wishlist"), "demo-button--main", () => Application.OpenURL(config.WishlistUrl));
             }
 
             if (!string.IsNullOrWhiteSpace(config.FeedbackUrl))
             {
-                AddButton(panel, "Share Feedback", null, () => Application.OpenURL(config.FeedbackUrl));
+                AddButton(panel, NAV.Core.Localization.Loc.T("Share Feedback"), null, () => Application.OpenURL(config.FeedbackUrl));
             }
 
-            AddButton(panel, "Keep Playing", null, Close);
+            AddButton(panel, NAV.Core.Localization.Loc.T("Keep Playing"), null, Close);
         }
 
         private static void AddLabel(VisualElement parent, string text, string cssClass)

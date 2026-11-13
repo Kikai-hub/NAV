@@ -56,6 +56,17 @@ namespace NAV.Core.Save
         /// <summary>The map's explored cells (MapExploration), one bit per 4 m cell in 512 m tiles.
         /// Empty in saves from before 2026-11-10 - the map starts unexplored.</summary>
         public List<ExploredTileSaveData> ExploredMap = new();
+        public List<GravestoneSaveData> Gravestones = new();
+    }
+
+    /// <summary>A gravestone left in the world with what it holds (2026-11-12).</summary>
+    [Serializable]
+    public class GravestoneSaveData
+    {
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public int Capacity;
+        public List<InventorySlotSaveData> Slots = new();
     }
 
     /// <summary>One explored map tile: its key and its cells' bits (Base64).</summary>

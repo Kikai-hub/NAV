@@ -66,7 +66,7 @@ namespace NAV.Gameplay.AI
         [Header("Loot")]
         [SerializeField] private List<ResourceNodeDrop> _lootDrops = new();
 
-        public string DisplayName => _displayName;
+        public string DisplayName => NAV.Core.Localization.Loc.T(_displayName);
 
         /// <summary>Hostile creatures chase/attack on sight; neutral creatures only flee once
         /// actually damaged.</summary>

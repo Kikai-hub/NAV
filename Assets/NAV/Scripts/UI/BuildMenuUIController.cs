@@ -154,7 +154,7 @@ namespace NAV.UI
             _slotContainer.Clear();
             _slots.Clear();
 
-            AddSlot(DemolishSlot, _demolishIcon, "Demolish");
+            AddSlot(DemolishSlot, _demolishIcon, NAV.Core.Localization.Loc.T("Demolish"));
             IReadOnlyList<BuildingPieceDefinition> pieces = _building.KnownPieces;
             for (int i = 0; i < pieces.Count; i++)
             {
@@ -234,7 +234,7 @@ namespace NAV.UI
         {
             if (index == DemolishSlot)
             {
-                _infoLabel.text = "Demolish - LMB removes the piece you aim at; its materials drop on the ground.";
+                _infoLabel.text = NAV.Core.Localization.Loc.T("Demolish - LMB removes the piece you aim at; its materials drop on the ground.");
                 _infoLabel.RemoveFromClassList(ShortClass);
                 return;
             }

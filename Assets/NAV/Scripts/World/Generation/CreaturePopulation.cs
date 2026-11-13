@@ -113,7 +113,7 @@ namespace NAV.World.Generation
 
                 foreach (BiomeCreatureSpawn spawn in biome.CreatureSpawns)
                 {
-                    if (spawn.Prefab != null)
+                    if (spawn.Prefab != null && NAV.Gameplay.Demo.DemoMode.AllowsSpawn(biome, spawn.Prefab))
                     {
                         Balance(biome, spawn, spawn.GetCount(night));
                     }

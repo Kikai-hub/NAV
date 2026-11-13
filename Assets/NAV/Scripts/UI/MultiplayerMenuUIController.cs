@@ -156,7 +156,7 @@ namespace NAV.UI
                 bool locked = room.CustomProperties.TryGetValue(NetworkSession.LockedKey, out object lockValue) && lockValue is bool isLocked && isLocked;
                 bool pvp = room.CustomProperties.TryGetValue(NetworkSession.PvpKey, out object pvpValue) && pvpValue is bool isPvp && isPvp;
                 string world = room.CustomProperties.TryGetValue(NetworkSession.WorldKey, out object worldValue) ? worldValue as string : null;
-                var name = new Label(room.Name) { pickingMode = PickingMode.Ignore };
+                var name = new Label(room.Name) { pickingMode = PickingMode.Ignore }; name.AddToClassList(NAV.Core.Localization.Loc.NoLocClass);
                 name.AddToClassList("room-list-item__name");
                 info.Add(name);
                 var details = new Label($"{(string.IsNullOrEmpty(world) ? "World" : world)}  ·  {(pvp ? "PvP" : "PvE")}{(locked ? "  ·  password" : string.Empty)}") { pickingMode = PickingMode.Ignore };

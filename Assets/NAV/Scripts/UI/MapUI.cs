@@ -73,7 +73,7 @@ namespace NAV.UI
             frame.AddToClassList("minimap");
             root.Add(frame);
             _mini = MakeView(frame, "minimap__view", _miniScale);
-            var north = new Label("N") { pickingMode = PickingMode.Ignore };
+            var north = new Label(NAV.Core.Localization.Loc.T("N")) { pickingMode = PickingMode.Ignore };
             north.AddToClassList("minimap__north");
             frame.Add(north);
             var key = new Label("M") { pickingMode = PickingMode.Ignore };
@@ -88,12 +88,12 @@ namespace NAV.UI
             var window = new VisualElement();
             window.AddToClassList("worldmap__window");
             _worldRoot.Add(window);
-            var title = new Label("Map");
+            var title = new Label(NAV.Core.Localization.Loc.T("Map"));
             title.AddToClassList("worldmap__title");
             window.Add(title);
             _world = MakeView(window, "worldmap__field", 0.35f);
             _world.Field.pickingMode = PickingMode.Position;
-            var hint = new Label("Hold the mouse button and drag - move  ·  Mouse wheel - zoom  ·  M - close");
+            var hint = new Label(NAV.Core.Localization.Loc.T("Hold the mouse button and drag - move  ·  Mouse wheel - zoom  ·  M - close"));
             hint.AddToClassList("worldmap__hint");
             window.Add(hint);
             _world.Field.RegisterCallback<WheelEvent>(HandleWheel);
@@ -238,7 +238,7 @@ namespace NAV.UI
             while (view.Others.Count < others.Count)
             {
                 var dot = new DotElement { pickingMode = PickingMode.Ignore };
-                dot.AddToClassList("map-marker");
+                dot.AddToClassList("map-marker"); dot.AddToClassList(NAV.Core.Localization.Loc.NoLocClass);
                 var label = new Label { pickingMode = PickingMode.Ignore };
                 label.AddToClassList("map-marker__name");
                 dot.Add(label);

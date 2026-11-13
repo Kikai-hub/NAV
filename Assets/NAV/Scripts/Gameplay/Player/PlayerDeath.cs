@@ -38,6 +38,9 @@ namespace NAV.Gameplay.Player
 
         public bool IsDead { get; private set; }
 
+        /// <summary>The stone this player leaves (SaveManager restores saved ones with it).</summary>
+        public Gravestone GravestonePrefab => _gravestonePrefab;
+
         public event Action Died;
         public event Action Respawned;
 

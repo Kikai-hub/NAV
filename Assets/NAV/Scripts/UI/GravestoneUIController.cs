@@ -107,7 +107,7 @@ namespace NAV.UI
             IReadOnlyList<ItemStack> slots = _current.Contents.Slots;
             if (index < slots.Count && !slots[index].IsEmpty)
             {
-                _tooltip.Show(slots[index].Definition, slot, "Drag to your inventory");
+                _tooltip.Show(slots[index].Definition, slot, NAV.Core.Localization.Loc.T("Drag to your inventory"));
             }
             else
             {

@@ -27,6 +27,7 @@ namespace NAV.Gameplay.Demo
             _loaded = false;
             _lockedItems = null;
             _lockedPieces = null;
+            _yieldsLocked = null;
         }
 
         public static DemoConfig Config
@@ -155,6 +156,118 @@ namespace NAV.Gameplay.Demo
             }
 
             return true;
+        }
+
+        public static bool IsLockedBiome(NAV.World.Biomes.BiomeDefinition biome)
+        {
+            if (!IsActive || biome == null)
+            {
+                return false;
+            }
+
+            foreach (NAV.World.Biomes.BiomeDefinition locked in Config.LockedBiomes)
+            {
+                if (locked == biome)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>A biome's resource node or creature may spawn: not in a locked biome, and it
+        /// yields nothing locked.</summary>
+        public static bool AllowsSpawn(NAV.World.Biomes.BiomeDefinition biome, GameObject prefab)
+        {
+            return !IsActive || (!IsLockedBiome(biome) && !YieldsLocked(prefab));
+        }
+
+        /// <summary>Decor stays in every biome (it is the land's look) unless it can be gathered
+        /// into something locked.</summary>
+        public static bool AllowsDecor(GameObject prefab) => !IsActive || !YieldsLocked(prefab);
+
+        private static Dictionary<GameObject, bool> _yieldsLocked;
+
+        /// <summary>The prefab (a node and what it becomes, a pickup, a creature's loot) gives
+        /// a locked item. Cached per prefab.</summary>
+        public static bool YieldsLocked(GameObject prefab)
+        {
+            if (!IsActive || prefab == null)
+            {
+                return false;
+            }
+
+            _yieldsLocked ??= new Dictionary<GameObject, bool>();
+            if (!_yieldsLocked.TryGetValue(prefab, out bool locked))
+            {
+                locked = Yields(prefab, IsLocked);
+                _yieldsLocked[prefab] = locked;
+            }
+
+            return locked;
+        }
+
+        /// <summary>The prefab gives an item matching <paramref name="match"/>: its resource nodes'
+        /// drops (and what they become / leave behind), its pickups, its creatures' loot.</summary>
+        public static bool Yields(GameObject prefab, System.Predicate<ItemDefinition> match, int depth = 0)
+        {
+            if (prefab == null || depth > 4)
+            {
+                return false;
+            }
+
+            foreach (ResourceNode node in prefab.GetComponentsInChildren<ResourceNode>(true))
+            {
+                ResourceNodeDefinition definition = node.Definition;
+                if (definition == null)
+                {
+                    continue;
+                }
+
+                if (Drops(definition.Drops, match)
+                    || Yields(definition.BecomesPrefab, match, depth + 1)
+                    || Yields(definition.LeavesBehindPrefab, match, depth + 1))
+                {
+                    return true;
+                }
+            }
+
+            foreach (ItemPickup pickup in prefab.GetComponentsInChildren<ItemPickup>(true))
+            {
+                if (pickup.Definition != null && match(pickup.Definition))
+                {
+                    return true;
+                }
+            }
+
+            foreach (NAV.Gameplay.AI.Creature creature in prefab.GetComponentsInChildren<NAV.Gameplay.AI.Creature>(true))
+            {
+                if (creature.Definition != null && Drops(creature.Definition.LootDrops, match))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool Drops(IReadOnlyList<ResourceNodeDrop> drops, System.Predicate<ItemDefinition> match)
+        {
+            if (drops == null)
+            {
+                return false;
+            }
+
+            foreach (ResourceNodeDrop drop in drops)
+            {
+                if (drop != null && drop.Item != null && match(drop.Item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>A smelter/kiln conversion (locked ore in or locked bar out = not done).</summary>

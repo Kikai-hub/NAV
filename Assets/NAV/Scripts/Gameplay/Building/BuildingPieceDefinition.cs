@@ -49,7 +49,7 @@ namespace NAV.Gameplay.Building
         /// definition from a save file (JSON can't hold a direct asset reference) - same pattern
         /// as ItemDefinition.Id. Auto-fills from the asset name if left blank.</summary>
         public string Id => _id;
-        public string DisplayName => _displayName;
+        public string DisplayName => NAV.Core.Localization.Loc.T(_displayName);
         public Sprite Icon => _icon;
         public IReadOnlyList<RecipeIngredient> Cost => _cost;
 

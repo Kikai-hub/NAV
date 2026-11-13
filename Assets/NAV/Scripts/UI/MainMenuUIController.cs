@@ -85,7 +85,7 @@ namespace NAV.UI
             Label versionLabel = documentRoot.Q<Label>("version-label");
             if (versionLabel != null)
             {
-                versionLabel.text = $"v{Application.version}";
+                versionLabel.text = $"v{Application.version}"; versionLabel.AddToClassList(NAV.Core.Localization.Loc.NoLocClass);
             }
             _confirmDialogRoot = documentRoot.Q<VisualElement>("confirm-dialog-root");
             _confirmDialogMessage = documentRoot.Q<Label>("confirm-dialog-message");
@@ -269,14 +269,14 @@ namespace NAV.UI
                 var info = new VisualElement();
                 info.AddToClassList("save-list-item__info");
 
-                string displayName = string.IsNullOrWhiteSpace(save.WorldName) ? "Unnamed World" : save.WorldName;
+                string displayName = string.IsNullOrWhiteSpace(save.WorldName) ? NAV.Core.Localization.Loc.T("Unnamed World") : save.WorldName;
 
                 DateTime savedAt = DateTimeOffset.FromUnixTimeSeconds(save.SavedAtUnixSeconds).LocalDateTime;
-                var nameLabel = new Label(displayName);
+                var nameLabel = new Label(displayName); nameLabel.AddToClassList(NAV.Core.Localization.Loc.NoLocClass);
                 nameLabel.AddToClassList("save-list-item__name");
                 info.Add(nameLabel);
 
-                var seedLabel = new Label($"Seed: {save.WorldSeed}");
+                var seedLabel = new Label(NAV.Core.Localization.Loc.F("Seed: {0}", save.WorldSeed));
                 seedLabel.AddToClassList("save-list-item__seed");
                 info.Add(seedLabel);
 
@@ -303,7 +303,7 @@ namespace NAV.UI
                 info.RegisterCallback<ClickEvent>(_ => HandleSaveEntryClicked(capturedId, capturedName, fromNewerGame, outdatedWorld));
                 item.Add(info);
 
-                var deleteButton = new Button(() => HandleDeleteClicked(capturedId, capturedName)) { text = string.Empty, tooltip = "Delete" };
+                var deleteButton = new Button(() => HandleDeleteClicked(capturedId, capturedName)) { text = string.Empty, tooltip = NAV.Core.Localization.Loc.T("Delete") };
                 deleteButton.AddToClassList("save-list-item__delete-button");
                 item.Add(deleteButton);
 
@@ -316,13 +316,13 @@ namespace NAV.UI
             if (fromNewerGame)
             {
                 // Can't be read safely by this build - the dialog only explains; confirming does nothing.
-                ShowConfirm($"'{worldName}' was saved by a newer version of the game and can't be loaded.", () => { });
+                ShowConfirm(NAV.Core.Localization.Loc.F("'{0}' was saved by a newer version of the game and can't be loaded.", worldName), () => { });
                 return;
             }
 
             string message = outdatedWorld
                 ? $"Load '{worldName}'? It was made with an older world version: the terrain may have changed, buildings may be out of place and gathered resources will grow back."
-                : $"Load '{worldName}'?";
+                : NAV.Core.Localization.Loc.F("Load '{0}'?", worldName);
             ShowConfirm(message, () =>
             {
                 SaveSystem.PendingLoadSaveId = saveId;
@@ -332,7 +332,7 @@ namespace NAV.UI
 
         private void HandleDeleteClicked(string saveId, string worldName)
         {
-            ShowConfirm($"Delete '{worldName}'? This cannot be undone.", () =>
+            ShowConfirm(NAV.Core.Localization.Loc.F("Delete '{0}'? This cannot be undone.", worldName), () =>
             {
                 SaveSystem.DeleteSave(saveId);
                 BuildSaveList();

@@ -21,10 +21,13 @@
 
 /* --- Tabs: kit buttons; the open tab glows --- */
 
+/* flex-shrink 0: a long page (the Controls list) used to squeeze this row to ~17 px while the
+   44 px buttons kept their height, so the page's top border ran through them. */
 .settings-tabs {
     flex-direction: row;
     justify-content: center;
     margin-bottom: 8px;
+    flex-shrink: 0;
 }
 
 .settings-tab {
@@ -213,6 +216,7 @@
     flex-direction: row;
     justify-content: space-between;
     margin-top: 10px;
+    flex-shrink: 0;
 }
 
 .settings-button {

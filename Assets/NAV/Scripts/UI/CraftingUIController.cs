@@ -176,7 +176,7 @@ namespace NAV.UI
             _station = station;
             if (_title != null)
             {
-                _title.text = station != null ? station.DisplayName : "Crafting";
+                _title.text = station != null ? station.DisplayName : NAV.Core.Localization.Loc.T("Crafting");
             }
 
             BuildRecipeList();
@@ -264,8 +264,8 @@ namespace NAV.UI
             if (_entries.Count == 0)
             {
                 var empty = new Label(_station != null
-                    ? "Nothing to make here yet - find new materials."
-                    : "Nothing to craft by hand. Use a workbench (E) for more.");
+                    ? NAV.Core.Localization.Loc.T("Nothing to make here yet - find new materials.")
+                    : NAV.Core.Localization.Loc.T("Nothing to craft by hand. Use a workbench (E) for more."));
                 empty.AddToClassList("recipe-list-empty");
                 _recipeListView.Add(empty);
             }
@@ -315,7 +315,7 @@ namespace NAV.UI
             {
                 _detailIcon.style.backgroundImage = new StyleBackground();
                 _detailName.text = string.Empty;
-                _detailDescription.text = "No known recipes yet.";
+                _detailDescription.text = NAV.Core.Localization.Loc.T("No known recipes yet.");
                 _detailDescription.AddToClassList("recipe-detail__placeholder");
                 _detailStats.Clear();
                 _detailRequirement.style.display = DisplayStyle.None;
@@ -350,11 +350,11 @@ namespace NAV.UI
 
             if (output.IsArmor)
             {
-                AddStatRow("Armour", $"{output.Armor.Armor:0.#}");
-                AddStatRow("Slot", output.Armor.Slot.ToString());
+                AddStatRow(NAV.Core.Localization.Loc.T("Armour"), $"{output.Armor.Armor:0.#}");
+                AddStatRow(NAV.Core.Localization.Loc.T("Slot"), NAV.Core.Localization.Loc.T(output.Armor.Slot.ToString()));
             }
 
-            AddStatRow("Weight", $"{output.Weight:F1}");
+            AddStatRow(NAV.Core.Localization.Loc.T("Weight"), $"{output.Weight:F1}");
         }
 
         private void AddStatRow(string label, string value)
@@ -382,15 +382,15 @@ namespace NAV.UI
             }
 
             WorkbenchDefinition station = _selectedRecipe.Station;
-            string stationName = station != null ? station.DisplayName : "Workbench";
+            string stationName = station != null ? station.DisplayName : NAV.Core.Localization.Loc.T("Workbench");
             int level = _selectedRecipe.RequiredWorkbenchTier;
             bool hasWorkbench = _playerCrafting.GetStationLevel(station) >= level;
             // A station of the right level is near but has no roof - say so (Valheim-style).
             bool needsRoof = !hasWorkbench && _playerCrafting.GetUnshelteredStationLevel(station) >= level;
-            string levelText = level > 1 ? $" level {level}" : "";
+            string levelText = level > 1 ? NAV.Core.Localization.Loc.F(" level {0}", level) : "";
             _detailRequirement.text = needsRoof
-                ? $"Requires {stationName}{levelText} - it needs a roof"
-                : $"Requires {stationName}{levelText}";
+                ? NAV.Core.Localization.Loc.F("Requires {0}{1} - it needs a roof", stationName, levelText)
+                : NAV.Core.Localization.Loc.F("Requires {0}{1}", stationName, levelText);
             _detailRequirement.EnableInClassList("recipe-detail__requirement--missing", !hasWorkbench);
             _detailRequirement.style.display = DisplayStyle.Flex;
         }

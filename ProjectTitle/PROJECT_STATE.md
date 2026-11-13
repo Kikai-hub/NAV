@@ -170,11 +170,16 @@ altar + ritual items; - bosses tied to progression.
 
 ## Technical Debt
 
+-   **Performance in builds (2026-11-12, smoke test):** a ~55-73 ms hitch every ~90 m of travel (cause not found -
+    not NavMesh collection, not the streaming Update) and a ~2.1 s first frame after every world load. Profile a
+    Development Build before the demo. Details: Change Log 2026-11-12 "Steam demo: far biomes off...".
+
 -   **Steam demo limits (2026-11-12):** not played through in a build with demo mode on; the end-of-demo
-    texts are English (localization stage); wishlist/feedback URLs empty until the Steam page exists; ores,
-    furs and mobs of tiers 3-6 still spawn (only crafting/building/smelting is locked - decide whether to
-    turn off their spawning in the demo); the dev console is gated but `Scripts/Dev` still ships.
-    Plan and remaining stages: `STEAM_DEMO_PLAN.md`.
+    texts are English (localization stage); wishlist/feedback URLs empty until the Steam page exists; the
+    far biomes (no nodes/creatures in the demo) look empty - fine for a demo, but nothing tells the player
+    why; the dev console is gated but `Scripts/Dev` still ships (BuildSmokeTest is in there and only runs
+    with its command-line flag). Not saved: items lying on the ground, the campfire spit's contents, a
+    Leshy mid-fight. Plan and remaining stages: `STEAM_DEMO_PLAN.md`.
 
 -   **2026-11-10 HUD batch:** the fog fix (Graphics > Fog Modes = Custom) not yet seen in a build; the map's
     explored area not yet round-tripped through a real save/load; chat not re-tested between two clients after the
@@ -317,7 +322,17 @@ altar + ritual items; - bosses tied to progression.
 
 ## Current Next Step
 
-**Where we stopped - 2026-10-25 (read this first).** Done in the last session (details in the
+**Where we stopped - 2026-11-12 night (read this first).** Working toward the first Steam demo -
+`STEAM_DEMO_PLAN.md`. Commit 5b6b77a holds the plan, the demo limits and the 2026-11-10 batch. **Uncommitted**
+since then: far biomes off in the demo, NAV > Demo > Validate Demo Progression (OK), gravestones saved,
+stack traces off for Log/Warning in builds, `Scripts/Dev/BuildSmokeTest.cs` (0 fails in `Builds/SmokeTest`).
+Demo mode is **off** in the project (NAV > Demo > Demo Mode). Screenshots of the demo state were taken
+(Temp/Tour, not kept). Open choice for the developer: commit, then either profile the ~65 ms hitch every
+~90 m of travel (Development Build + Profiler) or start stage 3 (onboarding hints, RU/EN, tier 1-2 visuals).
+Noticed on the screenshots: the camera passes into tree crowns (only trunks stop it); the main menu has no
+background. Still theirs to do: make the GitHub repo private, new Photon AppId.
+
+**Earlier - 2026-10-25.** Done in the last session (details in the
 Change Log entries of 2026-10-25): hybrid world radius 15 km in the game (terrain tiles around the
 player; core 0-3%, archipelago 3-80% with big mountain islands, ocean 80-100%; forest copses 1:3 in the
 plains band; POIs with placeholder prefabs), real water (Gerstner waves shared by shader and physics,
@@ -6337,3 +6352,61 @@ rewrite, the map's save/load round trip in a real save, the fog in a build.
     frees the cursor, closes back to timeScale 1; MainMenu shows no Multiplayer button and the controller
     is disabled. Compile clean. The editor screenshot capture drops the veil's transparency (an opaque test
     colour covered the screen). The play-test save was deleted; demo mode switched back off.
+
+### v0.1 --- 2026-11-12 (Steam demo: far biomes off, progression check, gravestone saves, smoke test)
+
+-   **Far biomes off in the demo** (developer's choice): `DemoConfig.LockedBiomes` = sea islands, swamp,
+    mountains, snow peaks, black forest (+ unused desert/permafrost). There no resource nodes and no
+    creatures spawn (`WorldGenerator.PlaceNodes`, `SpawnBiomeCreatures`, `CreaturePopulation`); decor stays.
+    Anywhere, a node/pickup/creature/decor that yields a locked item doesn't spawn (`DemoMode.AllowsSpawn`,
+    `AllowsDecor`, `Yields`). A node's id is taken before the filter, so kept nodes keep their full-game ids.
+-   **NAV > Demo > Validate Demo Progression** (`Editor/DemoProgressionValidator`): a data-only fixed-point walk
+    from bare hands for the full game and the demo - spawns per biome with tool needs (node -> becomes -> logs),
+    pickups, creature loot, the Leshy via ForestWrath biomes, POI prefabs, pieces (hammer, cost, workbench in
+    range - no roof needed to build), station levels (extensions, demo caps, roof for crafting), recipes,
+    ProcessingStation (with fuel) and the campfire's CookingStation. Result 2026-11-12: **OK** - full copper armour
+    reachable (Leshy -> heartwood -> Stone Pickaxe -> copper ore in the dense forest -> bloomery + charcoal kiln ->
+    forge 1; leather from deer hide on the tanning rack); 0 dead recipes/pieces in the demo. Full game: 103 items,
+    workbench 4, forge 5; demo: 39 items, workbench 3, forge 1.
+-   **Gravestones are saved** (was a save blocker: die -> quit (autosave) -> load lost the stone and everything in
+    it). `SaveGameData.Gravestones` (position, rotation, capacity, slots), `Gravestone.All`/`Restore`,
+    `PlayerDeath.GravestonePrefab`. Old saves load with none. Verified in Play Mode (die with items, save, reload).
+-   Player Settings: stack traces off for Log/Warning in builds (errors keep ScriptOnly). The 45 runtime
+    `Debug.Log` calls are all on rare events, kept for players' bug reports.
+-   `Scripts/Dev/BuildSmokeTest.cs`: start a build with `-navSmokeTest` (new world, frame times idle and at
+    30 m/s, craft, roofed workbench, build, eat, die, respawn, save) and then `-navSmokeTest -navSmokeLoad <id>`
+    (load, check pieces/gravestone/inventory). Logs "SMOKE ..." lines; does nothing without the flag.
+-   Smoke test results 2026-11-12 (demo build, GTX 1660 / Ryzen 7 5700, 1280x720, `Builds/SmokeTest`): new world
+    and load runs both **0 fails** (hammer by hand, stone axe + pickaxe at a roofed workbench, eat, die ->
+    gravestone, respawn, save; load -> 2 pieces, gravestone with 9 stacks incl. the hammer, inventory marker).
+    180-240 fps average, p99 ~11 ms. Spikes: ~2.1 s on the first frame after the world is ready (every load);
+    ~55-73 ms every ~3 s at 30 m/s (~every 90 m) - not NavMesh collection (2 ms) and not the streaming Update
+    (< 10 ms), cause still open (profile a Development Build: far-plane LateUpdate, first render of new chunks,
+    creature spawns); ~420 ms on a far teleport (expected). A teleport into a trigger doesn't fire
+    OnTriggerEnter (the test walks the player in) - irrelevant for real play.
+
+### v0.1 --- 2026-11-13 (Localization RU + EN; settings tab fix)
+
+-   `Core/Localization/Loc` (static): the English text is the key; `T(en)` / `F(enFormat, args)` return the current
+    language's text from `Resources/Localization/Strings.json` (`{"entries":[{"en","ru"}]}`), English when missing.
+    Language in `GameSettingsData.Language` ("en"/"ru", empty = from the system language: ru/uk/be -> Russian);
+    `Loc.SetLanguage` saves it and raises `Loc.Changed`.
+-   Data: `DisplayName` (items + Description, pieces, recipes, stations, creatures, biomes, weather, POIs, resource
+    nodes, weapons) goes through `Loc.T`. Code: every player-facing literal in UI controllers, interaction prompts,
+    building hints, tooltips, HUD (clock, cold, ammo), map, death/finale, Leshy messages (translated where shown, so
+    network messages too), Settings rows/choices/hints. UXML: `LocalizationRuntime` (self-bootstrapping,
+    DontDestroyOnLoad) applies `Loc.Apply` to every UIDocument after a scene load, on language change and once a
+    second; it remembers each element's English source and leaves text that code has since rewritten. Elements with
+    the USS class `no-loc` (key buttons, chat, map name dots, version, world/room names, dev console) are skipped;
+    text fields' input is never touched.
+-   Settings > Controls: "Language / Язык" dropdown (English / Русский), rebuilds the pages.
+-   **NAV > Localization > Collect Strings** (`Editor/LocalizationCollector`): UXML attributes, data-asset display
+    strings, ForestWrath lines, prefab titles/station names, `Loc.T/F` literals, Settings labels and choices,
+    ArmorSlot names -> merged into Strings.json (keeps translations), reports missing/stale. 630 strings, 0 missing.
+-   Verified in Play Mode: main menu and Settings in Russian, live switch to English and back. Kurale has full
+    Cyrillic. Not translated: the logo's subtitle (it's the image), dev console output.
+-   Settings window: the tab row and footer had flex-shrink 1, so the long Controls page squeezed the tab row to
+    17 px while its 44 px buttons kept their height - the page border ran through the tabs. Both now flex-shrink 0.
+-   Perf (paused at the developer's request): the Development Build `Builds/SmokeTestDev` + `-navSmokeProfile`
+    capture and `NAV > Dev > Analyze Smoke Profile` exist; the first analysis is saved unread in
+    `Builds/SmokeTestDev/smoke_profile_report.txt`.

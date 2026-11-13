@@ -209,6 +209,17 @@ namespace NAV.UI
             _keyButtons.Clear();
             GameSettingsData data = GameSettings.Current;
 
+            // Language / Язык - each language in its own name, so it can be found in either.
+            AddSection(page, "Language");
+            var languages = NAV.Core.Localization.Loc.Languages;
+            string[] languageNames = Array.ConvertAll(languages, l => l.Name);
+            int languageIndex = Mathf.Max(0, Array.FindIndex(languages, l => l.Code == NAV.Core.Localization.Loc.Language));
+            AddDropdown(page, "Language / Язык", languageNames, languageIndex, i =>
+            {
+                NAV.Core.Localization.Loc.SetLanguage(languages[i].Code);
+                ScheduleNextFrame(BuildAllPages);
+            }, false);
+
             AddSection(page, "Mouse");
             AddSlider(page, "Mouse Sensitivity", 0.2f, 3f, data.MouseSensitivity, v => v.ToString("0.00") + "x", v => data.MouseSensitivity = v);
             AddToggle(page, "Invert Vertical Look", data.InvertY, v => data.InvertY = v);
@@ -242,7 +253,7 @@ namespace NAV.UI
             {
                 for (int i = 0; i < hotbar.bindings.Count; i++)
                 {
-                    AddKeyRow(page, "Hotbar Slot " + (i + 1), hotbar, i);
+                    AddKeyRow(page, NAV.Core.Localization.Loc.F("Hotbar Slot {0}", i + 1), hotbar, i);
                 }
             }
 
@@ -271,7 +282,7 @@ namespace NAV.UI
         private void AddKeyRow(VisualElement page, string label, InputAction action, int index)
         {
             VisualElement row = AddRow(page, label);
-            var button = new Button { text = KeyText(action, index) };
+            var button = new Button { text = KeyText(action, index) }; button.AddToClassList(NAV.Core.Localization.Loc.NoLocClass);
             button.AddToClassList("settings-key-button");
             button.clicked += () => StartRebind(action, index, button);
             row.Add(button);
@@ -299,7 +310,7 @@ namespace NAV.UI
             string oldPath = action.bindings[index].effectivePath;
             bool wasEnabled = action.enabled;
             action.Disable();
-            button.text = "Press a key...";
+            button.text = NAV.Core.Localization.Loc.T("Press a key...");
             button.AddToClassList("settings-key-button--listening");
 
             _rebind = action.PerformInteractiveRebinding(index)
@@ -421,13 +432,13 @@ namespace NAV.UI
                 }
             }, false);
 
-            AddSlider(page, "View Distance", 250f, 1200f, data.EffectiveViewDistance, v => Mathf.RoundToInt(v) + " m",
+            AddSlider(page, "View Distance", 250f, 1200f, data.EffectiveViewDistance, v => NAV.Core.Localization.Loc.F("{0} m", Mathf.RoundToInt(v)),
                 v => data.ViewDistance = Mathf.Round(v / 50f) * 50f, true);
 
             // Right end of the slider = no limit (stored as 0).
             float distance = data.ObjectDrawDistance > 0f ? data.ObjectDrawDistance : MaxObjectDistance;
             AddSlider(page, "Object Draw Distance", MinObjectDistance, MaxObjectDistance, distance,
-                v => v >= MaxObjectDistance - 1f ? "Max" : Mathf.RoundToInt(v) + " m",
+                v => v >= MaxObjectDistance - 1f ? NAV.Core.Localization.Loc.T("Max") : NAV.Core.Localization.Loc.F("{0} m", Mathf.RoundToInt(v)),
                 v => data.ObjectDrawDistance = v >= MaxObjectDistance - 1f ? 0f : Mathf.Round(v / 10f) * 10f, true);
             AddSlider(page, "Render Scale", 0.5f, 1f, data.RenderScale, v => Mathf.RoundToInt(v * 100f) + "%", v => data.RenderScale = Mathf.Round(v * 20f) / 20f, true);
             AddDropdown(page, "Shadows", new[] { "Off", "Low", "Medium", "High" }, (int)data.Shadows, i => data.Shadows = (ShadowLevel)i, true);
@@ -470,14 +481,14 @@ namespace NAV.UI
 
         private static void AddSection(VisualElement page, string title)
         {
-            var label = new Label(title);
+            var label = new Label(NAV.Core.Localization.Loc.T(title));
             label.AddToClassList("settings-section");
             page.Add(label);
         }
 
         private static void AddHint(VisualElement page, string text)
         {
-            var label = new Label(text);
+            var label = new Label(NAV.Core.Localization.Loc.T(text));
             label.AddToClassList("settings-hint");
             page.Add(label);
         }
@@ -486,7 +497,7 @@ namespace NAV.UI
         {
             var row = new VisualElement();
             row.AddToClassList("settings-row");
-            var text = new Label(label);
+            var text = new Label(NAV.Core.Localization.Loc.T(label));
             text.AddToClassList("settings-row__label");
             row.Add(text);
             page.Add(row);
@@ -533,7 +544,7 @@ namespace NAV.UI
         private void AddDropdown(VisualElement page, string label, string[] choices, int index, Action<int> set, bool graphics)
         {
             VisualElement row = AddRow(page, label);
-            var dropdown = new DropdownField(new List<string>(choices), Mathf.Clamp(index, 0, choices.Length - 1));
+            var dropdown = new DropdownField(new List<string>(System.Array.ConvertAll(choices, NAV.Core.Localization.Loc.T)), Mathf.Clamp(index, 0, choices.Length - 1));
             dropdown.AddToClassList("settings-row__control");
             dropdown.RegisterValueChangedCallback(evt =>
             {

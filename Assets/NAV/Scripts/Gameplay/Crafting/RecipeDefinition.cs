@@ -32,7 +32,7 @@ namespace NAV.Gameplay.Crafting
 
         public string DisplayName => string.IsNullOrWhiteSpace(_displayName) && _outputItem != null
             ? _outputItem.DisplayName
-            : _displayName;
+            : NAV.Core.Localization.Loc.T(_displayName);
 
         public IReadOnlyList<RecipeIngredient> Ingredients => _ingredients;
         public ItemDefinition OutputItem => _outputItem;

@@ -36,6 +36,10 @@ namespace NAV.Gameplay.Demo
         [Tooltip("Pieces past the demo that the locked items don't already catch (e.g. the boat).")]
         [SerializeField] private List<BuildingPieceDefinition> _lockedPieces = new();
 
+        [Header("World")]
+        [Tooltip("Biomes past the demo: no resource nodes and no creatures spawn there (decor stays, so the land still looks like itself). Anywhere else a node, pickup or creature that yields a locked item doesn't spawn either.")]
+        [SerializeField] private List<NAV.World.Biomes.BiomeDefinition> _lockedBiomes = new();
+
         [Header("End of the demo")]
         [Tooltip("Crafting the last of these (all of them owned) shows the end-of-demo screen.")]
         [SerializeField] private List<ItemDefinition> _finaleItems = new();
@@ -55,6 +59,7 @@ namespace NAV.Gameplay.Demo
         public IReadOnlyList<StationCap> StationCaps => _stationCaps;
         public IReadOnlyList<ItemDefinition> LockedItems => _lockedItems;
         public IReadOnlyList<BuildingPieceDefinition> LockedPieces => _lockedPieces;
+        public IReadOnlyList<NAV.World.Biomes.BiomeDefinition> LockedBiomes => _lockedBiomes;
         public IReadOnlyList<ItemDefinition> FinaleItems => _finaleItems;
         public string WishlistUrl => _wishlistUrl;
         public string FeedbackUrl => _feedbackUrl;
@@ -66,13 +71,14 @@ namespace NAV.Gameplay.Demo
 #if UNITY_EDITOR
         /// <summary>Editor setup only (DemoSetup).</summary>
         public void EditorFill(bool enabled, List<StationCap> caps, List<ItemDefinition> lockedItems,
-            List<BuildingPieceDefinition> lockedPieces, List<ItemDefinition> finaleItems,
-            PanelSettings panelSettings, StyleSheet finaleStyle)
+            List<BuildingPieceDefinition> lockedPieces, List<NAV.World.Biomes.BiomeDefinition> lockedBiomes,
+            List<ItemDefinition> finaleItems, PanelSettings panelSettings, StyleSheet finaleStyle)
         {
             _enabled = enabled;
             _stationCaps = caps;
             _lockedItems = lockedItems;
             _lockedPieces = lockedPieces;
+            _lockedBiomes = lockedBiomes;
             _finaleItems = finaleItems;
             _panelSettings = panelSettings;
             _finaleStyle = finaleStyle;

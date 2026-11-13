@@ -48,6 +48,10 @@ namespace NAV.Core.Settings
         public float AmbienceVolume = 1f;
         public float MusicVolume = 0.7f;
 
+        [Header("Language")]
+        [Tooltip("\"en\" / \"ru\". Empty = picked from the system language on first start (Loc).")]
+        public string Language = string.Empty;
+
         [Header("Controls")]
         [Tooltip("Multiplier on the camera's base mouse sensitivity.")]
         public float MouseSensitivity = 1f;

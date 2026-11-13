@@ -63,8 +63,8 @@ namespace NAV.Gameplay.Vehicles
         {
             get
             {
-                string name = _piece != null && _piece.Definition != null ? _piece.Definition.DisplayName : "boat";
-                return $"Board {name}";
+                string name = _piece != null && _piece.Definition != null ? _piece.Definition.DisplayName : NAV.Core.Localization.Loc.T("boat");
+                return NAV.Core.Localization.Loc.F("Board {0}", name);
             }
         }
 

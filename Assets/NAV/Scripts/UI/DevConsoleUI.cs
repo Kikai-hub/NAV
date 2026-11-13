@@ -65,7 +65,7 @@ namespace NAV.UI
                 root.styleSheets.Add(_style);
             }
 
-            _panel = new VisualElement();
+            _panel = new VisualElement(); _panel.AddToClassList(NAV.Core.Localization.Loc.NoLocClass);
             _panel.AddToClassList("console");
             _panel.AddToClassList("console--hidden");
             root.Add(_panel);

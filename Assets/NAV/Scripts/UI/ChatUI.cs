@@ -89,7 +89,7 @@ namespace NAV.UI
                 return;
             }
 
-            var label = new Label(who == null ? text : $"{who}: {text}") { pickingMode = PickingMode.Ignore };
+            var label = new Label(who == null ? text : $"{who}: {text}") { pickingMode = PickingMode.Ignore }; label.AddToClassList(NAV.Core.Localization.Loc.NoLocClass);
             label.AddToClassList("chat__line");
             if (who == null)
             {

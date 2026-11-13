@@ -32,8 +32,8 @@ namespace NAV.Gameplay.Building
         {
             get
             {
-                string name = _piece != null && _piece.Definition != null ? _piece.Definition.DisplayName : "door";
-                return IsOpen ? $"Close {name}" : $"Open {name}";
+                string name = _piece != null && _piece.Definition != null ? _piece.Definition.DisplayName : NAV.Core.Localization.Loc.T("door");
+                return IsOpen ? NAV.Core.Localization.Loc.F("Close {0}", name) : NAV.Core.Localization.Loc.F("Open {0}", name);
             }
         }
 

@@ -466,13 +466,21 @@ namespace NAV.World.Generation
                                 continue;
                             }
 
+                            // The id is taken before the demo's filter, so the nodes it keeps have the
+                            // same ids (and saved depletion) as in the full game.
+                            int id = chunkIndex * MaxNodesPerChunk + localIndex++;
+                            if (!NAV.Gameplay.Demo.DemoMode.AllowsSpawn(biome, spawn.Prefab))
+                            {
+                                continue;
+                            }
+
                             results.Add(new NodePlacement
                             {
                                 Spawn = spawn,
                                 Position = position,
                                 Rotation = Quaternion.Euler(0f, WorldHash.Value(_seed, kind, ix, iz, 3) * 360f, 0f),
                                 Scale = Mathf.Lerp(spawn.MinScale, spawn.MaxScale, WorldHash.Value(_seed, kind, ix, iz, 4)),
-                                Id = chunkIndex * MaxNodesPerChunk + localIndex++,
+                                Id = id,
                             });
                         }
                     }
@@ -541,7 +549,7 @@ namespace NAV.World.Generation
         /// gatherable, not saved. Walk-through unless Keep Colliders.</summary>
         private void LoadDecor(Vector2Int c, BiomeDefinition biome, BiomeDecorSpawn spawn, int kind, float minX, float minZ, Transform parent)
         {
-            if (spawn.Prefab == null || spawn.Density <= 0f || spawn.MinSpacing <= 0f)
+            if (spawn.Prefab == null || spawn.Density <= 0f || spawn.MinSpacing <= 0f || !NAV.Gameplay.Demo.DemoMode.AllowsDecor(spawn.Prefab))
             {
                 return;
             }

@@ -1,0 +1,2524 @@
+{
+    "entries": [
+        {
+            "en": " - making {0} {1}s",
+            "ru": " - готовится {0}, {1} с"
+        },
+        {
+            "en": " level {0}",
+            "ru": " уровня {0}"
+        },
+        {
+            "en": "'{0}' was saved by a newer version of the game and can't be loaded.",
+            "ru": "«{0}» сохранён более новой версией игры и не может быть загружен."
+        },
+        {
+            "en": "0 / 0 kg",
+            "ru": "0 / 0 кг"
+        },
+        {
+            "en": "A bar of black steel - harder than silver, if not as hated by the unclean.",
+            "ru": "Слиток чёрной стали - твёрже серебра, хоть нечисть и не так его боится."
+        },
+        {
+            "en": "A black steel axe - the only edge a bog oak gives way to.",
+            "ru": "Топор из чёрной стали - лишь перед ним поддаётся морёный дуб."
+        },
+        {
+            "en": "A black steel pickaxe for what lies deeper still.",
+            "ru": "Кирка из чёрной стали - для того, что лежит ещё глубже."
+        },
+        {
+            "en": "A black steel sword on a bog-oak grip.",
+            "ru": "Меч из чёрной стали с рукоятью из морёного дуба."
+        },
+        {
+            "en": "A bright bar of silver. Нечисть can't abide it.",
+            "ru": "Светлый слиток серебра. Нечисть его не выносит."
+        },
+        {
+            "en": "A bright silver-faced blade. Нечисть fears it.",
+            "ru": "Светлый клинок с серебряной облицовкой. Нечисть его боится."
+        },
+        {
+            "en": "A broad black steel axe - for battle, and it bites the bog oaks.",
+            "ru": "Широкий топор из чёрной стали - для боя, и морёный дуб он берёт."
+        },
+        {
+            "en": "A bronze axe - keeps its edge longer than copper.",
+            "ru": "Бронзовый топор - держит заточку дольше медного."
+        },
+        {
+            "en": "A bronze hand axe - for battle and for trees.",
+            "ru": "Бронзовый ручной топор - и для боя, и для деревьев."
+        },
+        {
+            "en": "A bronze pickaxe - hard enough for bog iron.",
+            "ru": "Бронзовая кирка - достаточно тверда для болотного железа."
+        },
+        {
+            "en": "A cast bronze blade - harder than copper.",
+            "ru": "Литой бронзовый клинок - твёрже медного."
+        },
+        {
+            "en": "A cast bronze dagger with a golden guard.",
+            "ru": "Литой бронзовый кинжал с золочёной гардой."
+        },
+        {
+            "en": "A cast bronze helm with cheek guards and a nose guard.",
+            "ru": "Литой бронзовый шлем с нащёчниками и наносником."
+        },
+        {
+            "en": "A clay flask of wild-rosemary brew. Ends poisoning and keeps the swamp's venom off for a while.",
+            "ru": "Глиняная фляга отвара багульника. Снимает отравление и на время защищает от яда топи."
+        },
+        {
+            "en": "A cloak of black volkolak pelt. Warm, and the forest's нечисть smells its own kind on it.",
+            "ru": "Плащ из чёрной шкуры волколака. Тёплый, и лесная нечисть чует в нём своего."
+        },
+        {
+            "en": "A copper pickaxe - hard enough for tin.",
+            "ru": "Медная кирка - достаточно тверда для олова."
+        },
+        {
+            "en": "A copper-headed axe. Fells trees faster than stone.",
+            "ru": "Топор с медным лезвием. Рубит деревья быстрее каменного."
+        },
+        {
+            "en": "A copper-headed mace.",
+            "ru": "Булава с медным навершием."
+        },
+        {
+            "en": "A crude blade of knapped flint on a wooden grip. Hits harder than any tool.",
+            "ru": "Грубый клинок из колотого кремня на деревянной рукояти. Бьёт сильнее любого инструмента."
+        },
+        {
+            "en": "A crushing two-handed hammer.",
+            "ru": "Сокрушительный двуручный молот."
+        },
+        {
+            "en": "A curved blade carved from bone.",
+            "ru": "Изогнутый клинок, вырезанный из кости."
+        },
+        {
+            "en": "A dark, thin blade quenched in the black forest's water.",
+            "ru": "Тёмный тонкий клинок, закалённый в водах Чернолесья."
+        },
+        {
+            "en": "A deep hood of snow-leopard fur. Warm.",
+            "ru": "Глубокий капюшон из меха снежного барса. Тёплый."
+        },
+        {
+            "en": "A double-bitted silver hand axe - for battle and for trees.",
+            "ru": "Обоюдоострый серебряный ручной топор - и для боя, и для деревьев."
+        },
+        {
+            "en": "A fire-hardened wooden point. Cheap, light, breaks often.",
+            "ru": "Деревянный наконечник, закалённый огнём. Дешёвый, лёгкий, часто ломается."
+        },
+        {
+            "en": "A flanged iron mace.",
+            "ru": "Железный шестопёр."
+        },
+        {
+            "en": "A forged iron bodkin - goes through mail and bone.",
+            "ru": "Кованый железный бронебойный наконечник - пробивает кольчугу и кость."
+        },
+        {
+            "en": "A forged strap hinge with its pin - for gates and doors that have to stand a beating.",
+            "ru": "Кованая петля со штырём - для ворот и дверей, которым нужно выдерживать удары."
+        },
+        {
+            "en": "A great black steel battle axe.",
+            "ru": "Большая боевая секира из чёрной стали."
+        },
+        {
+            "en": "A great silver battle axe.",
+            "ru": "Большая серебряная боевая секира."
+        },
+        {
+            "en": "A great two-handed axe.",
+            "ru": "Большая двуручная секира."
+        },
+        {
+            "en": "A heavy black steel head - it dents what silver only scratches.",
+            "ru": "Тяжёлое навершие из чёрной стали - мнёт то, что серебро лишь царапает."
+        },
+        {
+            "en": "A heavy cloak of snow-leopard fur - keeps the mountain cold off.",
+            "ru": "Тяжёлый плащ из меха снежного барса - спасает от горного холода."
+        },
+        {
+            "en": "A heavy iron axe.",
+            "ru": "Тяжёлый железный топор."
+        },
+        {
+            "en": "A heavy two-handed club.",
+            "ru": "Тяжёлая двуручная дубина."
+        },
+        {
+            "en": "A hunting spear tipped with wolf fangs.",
+            "ru": "Охотничье копьё с наконечником из волчьих клыков."
+        },
+        {
+            "en": "A keen iron dagger.",
+            "ru": "Острый железный кинжал."
+        },
+        {
+            "en": "A kite shield rimmed with silver, a charm-stone at its heart.",
+            "ru": "Каплевидный щит с серебряной оковкой и оберег-камнем в центре."
+        },
+        {
+            "en": "A kite shield with a bronze rim.",
+            "ru": "Каплевидный щит с бронзовой оковкой."
+        },
+        {
+            "en": "A knapped flint head - cuts deep into hide.",
+            "ru": "Наконечник из колотого кремня - глубоко входит в шкуру."
+        },
+        {
+            "en": "A knotty club. Better than bare fists.",
+            "ru": "Сучковатая дубина. Лучше голых кулаков."
+        },
+        {
+            "en": "A light copper axe - for battle and for trees.",
+            "ru": "Лёгкий медный топор - и для боя, и для деревьев."
+        },
+        {
+            "en": "A long bog-oak shaft with a black steel head.",
+            "ru": "Длинное древко из морёного дуба с наконечником из чёрной стали."
+        },
+        {
+            "en": "A long bow of black bog wood with a leather grip. Hold LMB to draw, release to loose an arrow; a full draw flies farthest and hits hardest.",
+            "ru": "Длинный лук из чёрного болотного дерева с кожаной рукоятью. Удерживайте ЛКМ, чтобы натянуть, отпустите, чтобы выстрелить; при полном натяжении стрела летит дальше и бьёт сильнее."
+        },
+        {
+            "en": "A long iron-tipped spear.",
+            "ru": "Длинное копьё с железным наконечником."
+        },
+        {
+            "en": "A long shirt of iron rings - heavy, but a wolf's teeth can't get through.",
+            "ru": "Длинная рубаха из железных колец - тяжёлая, но волчьи зубы её не прокусят."
+        },
+        {
+            "en": "A mace with a silver head - it breaks the unclean.",
+            "ru": "Булава с серебряным навершием - крушит нечисть."
+        },
+        {
+            "en": "A one-handed copper sword.",
+            "ru": "Одноручный медный меч."
+        },
+        {
+            "en": "A rolled animal hide. Tanned into leather for armour and grips.",
+            "ru": "Свёрнутая звериная шкура. Из неё выделывают кожу для брони и рукоятей."
+        },
+        {
+            "en": "A round shield faced with copper.",
+            "ru": "Круглый щит, обитый медью."
+        },
+        {
+            "en": "A rounded copper helm with a nose guard.",
+            "ru": "Круглый медный шлем с наносником."
+        },
+        {
+            "en": "A sharp predator's fang. Prized for spear points and charms.",
+            "ru": "Острый клык хищника. Ценится для наконечников копий и оберегов."
+        },
+        {
+            "en": "A sharp-edged stone chip, gathered from coastal deposits. Placeholder Tier 1 resource - not final content.",
+            "ru": "Острый каменный скол, собранный в прибрежных россыпях. Временный ресурс тира 1 - не финальный."
+        },
+        {
+            "en": "A short copper blade.",
+            "ru": "Короткий медный клинок."
+        },
+        {
+            "en": "A silver pickaxe for what lies deeper.",
+            "ru": "Серебряная кирка - для того, что лежит глубже."
+        },
+        {
+            "en": "A silver-edged axe - fells the mountain's old pines.",
+            "ru": "Топор с серебряным лезвием - валит старые горные сосны."
+        },
+        {
+            "en": "A snug cap of tanned leather.",
+            "ru": "Плотная шапка из выделанной кожи."
+        },
+        {
+            "en": "A spear with a bronze head and butt.",
+            "ru": "Копьё с бронзовым наконечником и подтоком."
+        },
+        {
+            "en": "A spear with a copper head.",
+            "ru": "Копьё с медным наконечником."
+        },
+        {
+            "en": "A spear with a long silver blade.",
+            "ru": "Копьё с длинным серебряным пером."
+        },
+        {
+            "en": "A spiked bronze mace.",
+            "ru": "Шипастая бронзовая булава."
+        },
+        {
+            "en": "A spongy bloom of black iron. Forged with bog oak charcoal and quenched, it becomes black steel.",
+            "ru": "Пористая крица чёрного железа. Прокованная на угле морёного дуба и закалённая, она становится чёрной сталью."
+        },
+        {
+            "en": "A stone pickaxe head on a haft of the Leshy's heartwood - ordinary wood splits on stone. The first tool for ore.",
+            "ru": "Каменная кирка на рукояти из сердцевины Лешего - обычное дерево о камень раскалывается. Первый инструмент для руды."
+        },
+        {
+            "en": "A sturdy animal bone. Carved into tools, needles and weapon parts.",
+            "ru": "Крепкая звериная кость. Из неё режут инструменты, иглы и детали оружия."
+        },
+        {
+            "en": "A sturdy piece of wood. Placeholder item for testing gathering/inventory - not final content.",
+            "ru": "Крепкий кусок дерева. Временный предмет для проверки сбора и инвентаря - не финальный."
+        },
+        {
+            "en": "A tall black steel shelom with a mask over the eyes.",
+            "ru": "Высокий шелом из чёрной стали с личиной."
+        },
+        {
+            "en": "A tall pointed iron helmet, as the old warriors wore.",
+            "ru": "Высокий островерхий железный шлем, как у древних воинов."
+        },
+        {
+            "en": "A tall silver helm with a nose guard and a mail aventail - bright, and hated by the unclean.",
+            "ru": "Высокий серебряный шлем с наносником и кольчужной бармицей - светлый и ненавистный нечисти."
+        },
+        {
+            "en": "A tanned hide, soft and tough. For armour, grips and straps.",
+            "ru": "Выделанная шкура, мягкая и прочная. Для брони, рукоятей и ремней."
+        },
+        {
+            "en": "A thick leather tunic, stitched and glued in layers.",
+            "ru": "Толстая кожаная рубаха, сшитая и проклеенная в несколько слоёв."
+        },
+        {
+            "en": "A thick snow-leopard pelt. Woven into hoods and cloaks on the loom, it keeps the mountain cold off.",
+            "ru": "Толстая шкура снежного барса. На ткацком станке из неё делают капюшоны и плащи от горного холода."
+        },
+        {
+            "en": "A two-handed black steel hammer.",
+            "ru": "Двуручный молот из чёрной стали."
+        },
+        {
+            "en": "A two-handed hammer with a silver head.",
+            "ru": "Двуручный молот с серебряным бойком."
+        },
+        {
+            "en": "A two-handed iron sword.",
+            "ru": "Двуручный железный меч."
+        },
+        {
+            "en": "A two-handed silver sword.",
+            "ru": "Двуручный серебряный меч."
+        },
+        {
+            "en": "A well-balanced iron sword.",
+            "ru": "Хорошо сбалансированный железный меч."
+        },
+        {
+            "en": "A wide two-handed blade of black steel.",
+            "ru": "Широкий двуручный клинок из чёрной стали."
+        },
+        {
+            "en": "A worked bloom of iron - stronger than bronze.",
+            "ru": "Прокованная железная крица - прочнее бронзы."
+        },
+        {
+            "en": "Add to Wishlist",
+            "ru": "Добавить в желаемое"
+        },
+        {
+            "en": "Aim at the ground",
+            "ru": "Наведите на землю"
+        },
+        {
+            "en": "Already built here",
+            "ru": "Здесь уже построено"
+        },
+        {
+            "en": "Ambience (weather)",
+            "ru": "Окружение (погода)"
+        },
+        {
+            "en": "An iron hand axe - for battle and for trees.",
+            "ru": "Железный ручной топор - и для боя, и для деревьев."
+        },
+        {
+            "en": "An iron pickaxe for the hardest ore.",
+            "ru": "Железная кирка для самой твёрдой руды."
+        },
+        {
+            "en": "Ancient Tree",
+            "ru": "Древнее дерево"
+        },
+        {
+            "en": "Anti-Aliasing",
+            "ru": "Сглаживание"
+        },
+        {
+            "en": "Antidote",
+            "ru": "Противоядие"
+        },
+        {
+            "en": "Antidote x2",
+            "ru": "Противоядие x2"
+        },
+        {
+            "en": "Anvil",
+            "ru": "Наковальня"
+        },
+        {
+            "en": "Armour",
+            "ru": "Броня"
+        },
+        {
+            "en": "Armour {0:0.#}",
+            "ru": "Броня {0:0.#}"
+        },
+        {
+            "en": "Armour: {0:0.#} ({1})",
+            "ru": "Броня: {0:0.#} ({1})"
+        },
+        {
+            "en": "Attack",
+            "ru": "Атака"
+        },
+        {
+            "en": "Audio",
+            "ru": "Звук"
+        },
+        {
+            "en": "Back",
+            "ru": "Назад"
+        },
+        {
+            "en": "Banded Shield",
+            "ru": "Окованный щит"
+        },
+        {
+            "en": "Battle Axe 10",
+            "ru": "Секира 10"
+        },
+        {
+            "en": "Battle Axe 11",
+            "ru": "Секира 11"
+        },
+        {
+            "en": "Battle Axe 2",
+            "ru": "Секира 2"
+        },
+        {
+            "en": "Battle Axe 4",
+            "ru": "Секира 4"
+        },
+        {
+            "en": "Battle Axe 6",
+            "ru": "Секира 6"
+        },
+        {
+            "en": "Battle Axe 7",
+            "ru": "Секира 7"
+        },
+        {
+            "en": "Battle Axe 8",
+            "ru": "Секира 8"
+        },
+        {
+            "en": "Battle Axe 9",
+            "ru": "Секира 9"
+        },
+        {
+            "en": "Battle Axe from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Секира из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Bellows",
+            "ru": "Мехи"
+        },
+        {
+            "en": "Birch",
+            "ru": "Берёза"
+        },
+        {
+            "en": "Birch Grove",
+            "ru": "Березняк"
+        },
+        {
+            "en": "Bitter-smelling marsh shrub (багульник). Brewed with resin it draws the swamp's poison out.",
+            "ru": "Горько пахнущий болотный кустарник - багульник. Отвар со смолой вытягивает болотный яд."
+        },
+        {
+            "en": "Black Forest",
+            "ru": "Чернолесье"
+        },
+        {
+            "en": "Black Gate",
+            "ru": "Чёрные ворота"
+        },
+        {
+            "en": "Black Iron",
+            "ru": "Чёрное железо"
+        },
+        {
+            "en": "Black Ore",
+            "ru": "Чёрная руда"
+        },
+        {
+            "en": "Black Ore Vein",
+            "ru": "Жила чёрной руды"
+        },
+        {
+            "en": "Black Steel Axe",
+            "ru": "Топор из чёрной стали"
+        },
+        {
+            "en": "Black Steel Bar",
+            "ru": "Слиток чёрной стали"
+        },
+        {
+            "en": "Black Steel Battle Axe",
+            "ru": "Секира из чёрной стали"
+        },
+        {
+            "en": "Black Steel Cuirass",
+            "ru": "Кираса из чёрной стали"
+        },
+        {
+            "en": "Black Steel Dagger",
+            "ru": "Кинжал из чёрной стали"
+        },
+        {
+            "en": "Black Steel Greatsword",
+            "ru": "Двуручный меч из чёрной стали"
+        },
+        {
+            "en": "Black Steel Greaves",
+            "ru": "Поножи из чёрной стали"
+        },
+        {
+            "en": "Black Steel Hand Axe",
+            "ru": "Ручной топор из чёрной стали"
+        },
+        {
+            "en": "Black Steel Helm",
+            "ru": "Шлем из чёрной стали"
+        },
+        {
+            "en": "Black Steel Mace",
+            "ru": "Булава из чёрной стали"
+        },
+        {
+            "en": "Black Steel Pickaxe",
+            "ru": "Кирка из чёрной стали"
+        },
+        {
+            "en": "Black Steel Shield",
+            "ru": "Щит из чёрной стали"
+        },
+        {
+            "en": "Black Steel Spear",
+            "ru": "Копьё из чёрной стали"
+        },
+        {
+            "en": "Black Steel Sword",
+            "ru": "Меч из чёрной стали"
+        },
+        {
+            "en": "Black Steel Warhammer",
+            "ru": "Боевой молот из чёрной стали"
+        },
+        {
+            "en": "Black boughs and knots broken off fallen bog oaks. Too twisted to build with - burn them into charcoal.",
+            "ru": "Чёрные сучья и наросты с упавших морёных дубов. Слишком кривые для стройки - пережгите их на уголь."
+        },
+        {
+            "en": "Black steel plates over mail, lined with volkolak pelt.",
+            "ru": "Пластины чёрной стали поверх кольчуги, подбитые шкурой волколака."
+        },
+        {
+            "en": "Black steel shin and knee guards over mail leggings.",
+            "ru": "Поножи и наколенники из чёрной стали поверх кольчужных чулок."
+        },
+        {
+            "en": "Black, iron-hard oak from the cursed forest. For the highest buildings and the hafts of the best weapons.",
+            "ru": "Чёрный, твёрдый как железо дуб из проклятого леса. Для лучших построек и рукоятей лучшего оружия."
+        },
+        {
+            "en": "Black, resin-soaked timber from logs sunk in the bog - hard and it never rots. For iron-age building and hafts.",
+            "ru": "Чёрная просмолённая древесина из брёвен, утонувших в болоте - твёрдая и не гниёт. Для построек и рукоятей железного века."
+        },
+        {
+            "en": "Block / Build Mode",
+            "ru": "Блок / режим стройки"
+        },
+        {
+            "en": "Bloomery",
+            "ru": "Сыродутный горн"
+        },
+        {
+            "en": "Board {0}",
+            "ru": "Сесть: {0}"
+        },
+        {
+            "en": "Bog Iron",
+            "ru": "Болотное железо"
+        },
+        {
+            "en": "Bog Iron Ore",
+            "ru": "Болотная руда"
+        },
+        {
+            "en": "Bog Lurker",
+            "ru": "Болотник"
+        },
+        {
+            "en": "Bog Oak",
+            "ru": "Морёный дуб"
+        },
+        {
+            "en": "Bog Oak Charcoal",
+            "ru": "Уголь морёного дуба"
+        },
+        {
+            "en": "Bog Oak Deadfall",
+            "ru": "Валежник морёного дуба"
+        },
+        {
+            "en": "Bog Oak Knots",
+            "ru": "Наросты морёного дуба"
+        },
+        {
+            "en": "Bog Oak Log",
+            "ru": "Бревно морёного дуба"
+        },
+        {
+            "en": "Bog Oak Wall",
+            "ru": "Стена из морёного дуба"
+        },
+        {
+            "en": "Bog Oak Wood",
+            "ru": "Морёный дуб"
+        },
+        {
+            "en": "Bog Wood",
+            "ru": "Болотное дерево"
+        },
+        {
+            "en": "Bog-oak boards under rows of black steel studs.",
+            "ru": "Доски морёного дуба под рядами заклёпок из чёрной стали."
+        },
+        {
+            "en": "Bone",
+            "ru": "Кость"
+        },
+        {
+            "en": "Bone Glue",
+            "ru": "Костяной клей"
+        },
+        {
+            "en": "Bone Knife",
+            "ru": "Костяной нож"
+        },
+        {
+            "en": "Bones boiled down to a strong glue. Binds bows and layered armour.",
+            "ru": "Кости, вываренные в крепкий клей. Скрепляет луки и слоёную броню."
+        },
+        {
+            "en": "Boss arena (slot)",
+            "ru": "Арена босса (место)"
+        },
+        {
+            "en": "Boss arena slot - tier 4 (Swamp)",
+            "ru": "Место арены босса - тир 4 (Топь)"
+        },
+        {
+            "en": "Boss arena slot - tier 5 (Mountains)",
+            "ru": "Место арены босса - тир 5 (Горы)"
+        },
+        {
+            "en": "Boss arena slot - tier 6 (Black Forest)",
+            "ru": "Место арены босса - тир 6 (Чернолесье)"
+        },
+        {
+            "en": "Branches creak behind your back. The forest is angry.",
+            "ru": "За спиной скрипят ветви. Лес гневается."
+        },
+        {
+            "en": "Bronze Axe",
+            "ru": "Бронзовый топор"
+        },
+        {
+            "en": "Bronze Bar",
+            "ru": "Слиток бронзы"
+        },
+        {
+            "en": "Bronze Cuirass",
+            "ru": "Бронзовая кираса"
+        },
+        {
+            "en": "Bronze Dagger",
+            "ru": "Бронзовый кинжал"
+        },
+        {
+            "en": "Bronze Greaves",
+            "ru": "Бронзовые поножи"
+        },
+        {
+            "en": "Bronze Hand Axe",
+            "ru": "Бронзовый ручной топор"
+        },
+        {
+            "en": "Bronze Helm",
+            "ru": "Бронзовый шлем"
+        },
+        {
+            "en": "Bronze Mace",
+            "ru": "Бронзовая булава"
+        },
+        {
+            "en": "Bronze Pickaxe",
+            "ru": "Бронзовая кирка"
+        },
+        {
+            "en": "Bronze Shield",
+            "ru": "Бронзовый щит"
+        },
+        {
+            "en": "Bronze Spear",
+            "ru": "Бронзовое копьё"
+        },
+        {
+            "en": "Bronze Sword",
+            "ru": "Бронзовый меч"
+        },
+        {
+            "en": "Bronze shin and knee guards.",
+            "ru": "Бронзовые поножи и наколенники."
+        },
+        {
+            "en": "Build",
+            "ru": "Стройка"
+        },
+        {
+            "en": "Bush",
+            "ru": "Куст"
+        },
+        {
+            "en": "Campfire",
+            "ru": "Костёр"
+        },
+        {
+            "en": "Cancel",
+            "ru": "Отмена"
+        },
+        {
+            "en": "Carved Arch",
+            "ru": "Резная арка"
+        },
+        {
+            "en": "Carved Pillar",
+            "ru": "Резной столб"
+        },
+        {
+            "en": "Carved Ridge",
+            "ru": "Резной конёк"
+        },
+        {
+            "en": "Carved Table",
+            "ru": "Резной стол"
+        },
+        {
+            "en": "Casting Mould",
+            "ru": "Литейная форма"
+        },
+        {
+            "en": "Charcoal",
+            "ru": "Древесный уголь"
+        },
+        {
+            "en": "Charcoal Kiln",
+            "ru": "Углежогная печь"
+        },
+        {
+            "en": "Charcoal burned from bog oak - it burns hot and clean enough to turn black iron into steel.",
+            "ru": "Уголь из морёного дуба - горит так жарко и чисто, что превращает чёрное железо в сталь."
+        },
+        {
+            "en": "Chest",
+            "ru": "Сундук"
+        },
+        {
+            "en": "Clear",
+            "ru": "Ясно"
+        },
+        {
+            "en": "Click a key, then press the new key or mouse button. Esc cancels. A key already used by another action is swapped onto it. Esc itself (pause) can't be rebound.",
+            "ru": "Нажмите на клавишу, затем новую клавишу или кнопку мыши. Esc - отмена. Если клавиша уже занята другим действием, они поменяются местами. Сам Esc (пауза) переназначить нельзя."
+        },
+        {
+            "en": "Click a piece to build it, or the hammer to demolish",
+            "ru": "Выберите деталь для стройки или молот, чтобы разбирать"
+        },
+        {
+            "en": "Cloak",
+            "ru": "Плащ"
+        },
+        {
+            "en": "Close {0}",
+            "ru": "Закрыть: {0}"
+        },
+        {
+            "en": "Cold - find a fire or a warm cloak",
+            "ru": "Холодно - найдите огонь или тёплый плащ"
+        },
+        {
+            "en": "Confirm",
+            "ru": "Подтвердить"
+        },
+        {
+            "en": "Connect",
+            "ru": "Подключиться"
+        },
+        {
+            "en": "Controls",
+            "ru": "Управление"
+        },
+        {
+            "en": "Cook",
+            "ru": "Готовить"
+        },
+        {
+            "en": "Cook ({0})",
+            "ru": "Готовить ({0})"
+        },
+        {
+            "en": "Cooked Meat",
+            "ru": "Жареное мясо"
+        },
+        {
+            "en": "Cooked Shellfish",
+            "ru": "Печёные мидии"
+        },
+        {
+            "en": "Cooking {0}... {1}s",
+            "ru": "Готовится {0}... {1} с"
+        },
+        {
+            "en": "Copper Axe",
+            "ru": "Медный топор"
+        },
+        {
+            "en": "Copper Bar",
+            "ru": "Слиток меди"
+        },
+        {
+            "en": "Copper Dagger",
+            "ru": "Медный кинжал"
+        },
+        {
+            "en": "Copper Greaves",
+            "ru": "Медные поножи"
+        },
+        {
+            "en": "Copper Hand Axe",
+            "ru": "Медный ручной топор"
+        },
+        {
+            "en": "Copper Helm",
+            "ru": "Медный шлем"
+        },
+        {
+            "en": "Copper Mace",
+            "ru": "Медная булава"
+        },
+        {
+            "en": "Copper Ore",
+            "ru": "Медная руда"
+        },
+        {
+            "en": "Copper Pickaxe",
+            "ru": "Медная кирка"
+        },
+        {
+            "en": "Copper Scale Shirt",
+            "ru": "Медная чешуйчатая рубаха"
+        },
+        {
+            "en": "Copper Shield",
+            "ru": "Медный щит"
+        },
+        {
+            "en": "Copper Spear",
+            "ru": "Медное копьё"
+        },
+        {
+            "en": "Copper Sword",
+            "ru": "Медный меч"
+        },
+        {
+            "en": "Copper Vein",
+            "ru": "Медная жила"
+        },
+        {
+            "en": "Copper hardened with tin - the smith's first true alloy.",
+            "ru": "Медь, закалённая оловом - первый настоящий сплав кузнеца."
+        },
+        {
+            "en": "Copper plates strapped over the shins.",
+            "ru": "Медные пластины, пристёгнутые к голеням."
+        },
+        {
+            "en": "Copper scales riveted onto leather.",
+            "ru": "Медные чешуйки, приклёпанные к коже."
+        },
+        {
+            "en": "Craft",
+            "ru": "Создать"
+        },
+        {
+            "en": "Crafting",
+            "ru": "Ремесло"
+        },
+        {
+            "en": "Create World",
+            "ru": "Создать мир"
+        },
+        {
+            "en": "Custom",
+            "ru": "Свои"
+        },
+        {
+            "en": "Dagger 1",
+            "ru": "Кинжал 1"
+        },
+        {
+            "en": "Dagger 10",
+            "ru": "Кинжал 10"
+        },
+        {
+            "en": "Dagger 10b",
+            "ru": "Кинжал 10b"
+        },
+        {
+            "en": "Dagger 1b",
+            "ru": "Кинжал 1b"
+        },
+        {
+            "en": "Dagger 2b",
+            "ru": "Кинжал 2b"
+        },
+        {
+            "en": "Dagger 3b",
+            "ru": "Кинжал 3b"
+        },
+        {
+            "en": "Dagger 4",
+            "ru": "Кинжал 4"
+        },
+        {
+            "en": "Dagger 4b",
+            "ru": "Кинжал 4b"
+        },
+        {
+            "en": "Dagger 5",
+            "ru": "Кинжал 5"
+        },
+        {
+            "en": "Dagger 5b",
+            "ru": "Кинжал 5b"
+        },
+        {
+            "en": "Dagger 6b",
+            "ru": "Кинжал 6b"
+        },
+        {
+            "en": "Dagger 7",
+            "ru": "Кинжал 7"
+        },
+        {
+            "en": "Dagger 8",
+            "ru": "Кинжал 8"
+        },
+        {
+            "en": "Dagger 8b",
+            "ru": "Кинжал 8b"
+        },
+        {
+            "en": "Dagger 9b",
+            "ru": "Кинжал 9b"
+        },
+        {
+            "en": "Dagger from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Кинжал из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Damage: {0:0.#}",
+            "ru": "Урон: {0:0.#}"
+        },
+        {
+            "en": "Dark tinstone in pale rock. Smelt it into tin - copper's partner in bronze.",
+            "ru": "Тёмный оловянный камень в светлой породе. Выплавьте из него олово - напарника меди в бронзе."
+        },
+        {
+            "en": "Day {0} · {1:00}:{2:00}",
+            "ru": "День {0} · {1:00}:{2:00}"
+        },
+        {
+            "en": "Dead Tree",
+            "ru": "Сухое дерево"
+        },
+        {
+            "en": "Deer",
+            "ru": "Олень"
+        },
+        {
+            "en": "Delete",
+            "ru": "Удалить"
+        },
+        {
+            "en": "Delete '{0}'? This cannot be undone.",
+            "ru": "Удалить «{0}»? Это нельзя отменить."
+        },
+        {
+            "en": "Demolish",
+            "ru": "Разобрать"
+        },
+        {
+            "en": "Demolish - LMB removes the piece you aim at; its materials drop on the ground.",
+            "ru": "Разборка - ЛКМ убирает деталь под прицелом; её материалы падают на землю."
+        },
+        {
+            "en": "Dense Forest",
+            "ru": "Дремучий лес"
+        },
+        {
+            "en": "Desert",
+            "ru": "Пустыня"
+        },
+        {
+            "en": "Developer",
+            "ru": "Разработчик"
+        },
+        {
+            "en": "Developer Console",
+            "ru": "Консоль разработчика"
+        },
+        {
+            "en": "Display",
+            "ru": "Экран"
+        },
+        {
+            "en": "Display Mode",
+            "ru": "Режим экрана"
+        },
+        {
+            "en": "Display mode and resolution only take effect in a built game, not in the editor.",
+            "ru": "Режим экрана и разрешение работают только в собранной игре, не в редакторе."
+        },
+        {
+            "en": "Drag to your inventory",
+            "ru": "Перетащите в инвентарь"
+        },
+        {
+            "en": "Driftwood",
+            "ru": "Плавник"
+        },
+        {
+            "en": "Effects",
+            "ru": "Эффекты"
+        },
+        {
+            "en": "Exclusive Fullscreen",
+            "ru": "Полный экран (эксклюзивный)"
+        },
+        {
+            "en": "Fallen Bog Oak",
+            "ru": "Упавший морёный дуб"
+        },
+        {
+            "en": "Fallen Oak",
+            "ru": "Упавший дуб"
+        },
+        {
+            "en": "Fallen Spruce",
+            "ru": "Упавшая ель"
+        },
+        {
+            "en": "Fang",
+            "ru": "Клык"
+        },
+        {
+            "en": "Fang Spear",
+            "ru": "Копьё с клыком"
+        },
+        {
+            "en": "Field of View",
+            "ru": "Поле зрения"
+        },
+        {
+            "en": "Fists",
+            "ru": "Кулаки"
+        },
+        {
+            "en": "Flint",
+            "ru": "Кремень"
+        },
+        {
+            "en": "Flint Arrow",
+            "ru": "Кремнёвая стрела"
+        },
+        {
+            "en": "Flint Arrow x10",
+            "ru": "Кремнёвая стрела x10"
+        },
+        {
+            "en": "Forest",
+            "ru": "Лес"
+        },
+        {
+            "en": "Forest Wolf",
+            "ru": "Лесной волк"
+        },
+        {
+            "en": "Forge",
+            "ru": "Кузня"
+        },
+        {
+            "en": "Frame Rate Limit (VSync off)",
+            "ru": "Ограничение кадров (без VSync)"
+        },
+        {
+            "en": "Freezing! Find a fire or a warm cloak",
+            "ru": "Вы замерзаете! Найдите огонь или тёплый плащ"
+        },
+        {
+            "en": "Full",
+            "ru": "Полное"
+        },
+        {
+            "en": "Fullscreen (Borderless)",
+            "ru": "Полный экран (без рамки)"
+        },
+        {
+            "en": "Fur",
+            "ru": "Мех"
+        },
+        {
+            "en": "Fur Cloak",
+            "ru": "Меховой плащ"
+        },
+        {
+            "en": "Fur Hood",
+            "ru": "Меховой капюшон"
+        },
+        {
+            "en": "Graphics",
+            "ru": "Графика"
+        },
+        {
+            "en": "Gravestone",
+            "ru": "Надгробие"
+        },
+        {
+            "en": "Great Club",
+            "ru": "Великая дубина"
+        },
+        {
+            "en": "Greatsword 10",
+            "ru": "Двуручный меч 10"
+        },
+        {
+            "en": "Greatsword 10b",
+            "ru": "Двуручный меч 10b"
+        },
+        {
+            "en": "Greatsword 11",
+            "ru": "Двуручный меч 11"
+        },
+        {
+            "en": "Greatsword 11b",
+            "ru": "Двуручный меч 11b"
+        },
+        {
+            "en": "Greatsword 12",
+            "ru": "Двуручный меч 12"
+        },
+        {
+            "en": "Greatsword 12b",
+            "ru": "Двуручный меч 12b"
+        },
+        {
+            "en": "Greatsword 13",
+            "ru": "Двуручный меч 13"
+        },
+        {
+            "en": "Greatsword 13b",
+            "ru": "Двуручный меч 13b"
+        },
+        {
+            "en": "Greatsword 14",
+            "ru": "Двуручный меч 14"
+        },
+        {
+            "en": "Greatsword 14b",
+            "ru": "Двуручный меч 14b"
+        },
+        {
+            "en": "Greatsword 15",
+            "ru": "Двуручный меч 15"
+        },
+        {
+            "en": "Greatsword 15b",
+            "ru": "Двуручный меч 15b"
+        },
+        {
+            "en": "Greatsword 1b",
+            "ru": "Двуручный меч 1b"
+        },
+        {
+            "en": "Greatsword 2b",
+            "ru": "Двуручный меч 2b"
+        },
+        {
+            "en": "Greatsword 3",
+            "ru": "Двуручный меч 3"
+        },
+        {
+            "en": "Greatsword 3b",
+            "ru": "Двуручный меч 3b"
+        },
+        {
+            "en": "Greatsword 4",
+            "ru": "Двуручный меч 4"
+        },
+        {
+            "en": "Greatsword 4b",
+            "ru": "Двуручный меч 4b"
+        },
+        {
+            "en": "Greatsword 5b",
+            "ru": "Двуручный меч 5b"
+        },
+        {
+            "en": "Greatsword 6",
+            "ru": "Двуручный меч 6"
+        },
+        {
+            "en": "Greatsword 6b",
+            "ru": "Двуручный меч 6b"
+        },
+        {
+            "en": "Greatsword 7",
+            "ru": "Двуручный меч 7"
+        },
+        {
+            "en": "Greatsword 7b",
+            "ru": "Двуручный меч 7b"
+        },
+        {
+            "en": "Greatsword 8",
+            "ru": "Двуручный меч 8"
+        },
+        {
+            "en": "Greatsword 8b",
+            "ru": "Двуручный меч 8b"
+        },
+        {
+            "en": "Greatsword 9",
+            "ru": "Двуручный меч 9"
+        },
+        {
+            "en": "Greatsword 9b",
+            "ru": "Двуручный меч 9b"
+        },
+        {
+            "en": "Greatsword from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Двуручный меч из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Grey rock shot through with silver. Smelt it in the furnace with charcoal.",
+            "ru": "Серая порода с серебряными прожилками. Выплавляйте в печи на угле."
+        },
+        {
+            "en": "Half",
+            "ru": "Половина"
+        },
+        {
+            "en": "Hammered bronze plates over a leather jerkin.",
+            "ru": "Кованые бронзовые пластины поверх кожаной куртки."
+        },
+        {
+            "en": "Hand Axe 6",
+            "ru": "Ручной топор 6"
+        },
+        {
+            "en": "Hand Axe 7",
+            "ru": "Ручной топор 7"
+        },
+        {
+            "en": "Hand Axe 8",
+            "ru": "Ручной топор 8"
+        },
+        {
+            "en": "Hand Axe from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Ручной топор из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Hard-wearing leather trousers.",
+            "ru": "Прочные кожаные штаны."
+        },
+        {
+            "en": "Head",
+            "ru": "Голова"
+        },
+        {
+            "en": "Heavy Rain",
+            "ru": "Ливень"
+        },
+        {
+            "en": "Heavy black rock with a dull red glint, dug in the black forest. The smelting furnace makes a bloom of it.",
+            "ru": "Тяжёлый чёрный камень с тусклым красным отблеском, добытый в Чернолесье. Плавильная печь делает из него крицу."
+        },
+        {
+            "en": "Heavy, dark oak from an old tree. For beams, upper floors, gates and carved work.",
+            "ru": "Тяжёлый тёмный дуб со старого дерева. Для балок, верхних этажей, ворот и резьбы."
+        },
+        {
+            "en": "Hide",
+            "ru": "Шкура"
+        },
+        {
+            "en": "High",
+            "ru": "Высокое"
+        },
+        {
+            "en": "Hold the mouse button and drag - move  ·  Mouse wheel - zoom  ·  M - close",
+            "ru": "Зажмите кнопку мыши и тяните - сдвиг  ·  Колесо мыши - масштаб  ·  M - закрыть"
+        },
+        {
+            "en": "Hotbar Slot {0}",
+            "ru": "Ячейка панели {0}"
+        },
+        {
+            "en": "Hunting Bow",
+            "ru": "Охотничий лук"
+        },
+        {
+            "en": "In the full game the road goes on - to the sea islands, the swamp, the mountains and the Black Forest, with new bosses on the way.",
+            "ru": "В полной игре путь продолжится - к морским островам, в топь, в горы и в Чернолесье, а по дороге ждут новые боссы."
+        },
+        {
+            "en": "Inventory",
+            "ru": "Инвентарь"
+        },
+        {
+            "en": "Invert Vertical Look",
+            "ru": "Инвертировать по вертикали"
+        },
+        {
+            "en": "Iron Arrow",
+            "ru": "Железная стрела"
+        },
+        {
+            "en": "Iron Arrow x10",
+            "ru": "Железная стрела x10"
+        },
+        {
+            "en": "Iron Axe",
+            "ru": "Железный топор"
+        },
+        {
+            "en": "Iron Bar",
+            "ru": "Слиток железа"
+        },
+        {
+            "en": "Iron Battle Axe",
+            "ru": "Железная секира"
+        },
+        {
+            "en": "Iron Chainmail",
+            "ru": "Железная кольчуга"
+        },
+        {
+            "en": "Iron Dagger",
+            "ru": "Железный кинжал"
+        },
+        {
+            "en": "Iron Greatsword",
+            "ru": "Железный двуручный меч"
+        },
+        {
+            "en": "Iron Greaves",
+            "ru": "Железные поножи"
+        },
+        {
+            "en": "Iron Hand Axe",
+            "ru": "Железный ручной топор"
+        },
+        {
+            "en": "Iron Hinge",
+            "ru": "Железная петля"
+        },
+        {
+            "en": "Iron Hinge x2",
+            "ru": "Железная петля x2"
+        },
+        {
+            "en": "Iron Mace",
+            "ru": "Железная булава"
+        },
+        {
+            "en": "Iron Pickaxe",
+            "ru": "Железная кирка"
+        },
+        {
+            "en": "Iron Shelom",
+            "ru": "Железный шелом"
+        },
+        {
+            "en": "Iron Spear",
+            "ru": "Железное копьё"
+        },
+        {
+            "en": "Iron Sword",
+            "ru": "Железный меч"
+        },
+        {
+            "en": "Iron Warhammer",
+            "ru": "Железный боевой молот"
+        },
+        {
+            "en": "Iron shin guards over mail leggings.",
+            "ru": "Железные поножи поверх кольчужных чулок."
+        },
+        {
+            "en": "Iron-Bound Gate",
+            "ru": "Окованные ворота"
+        },
+        {
+            "en": "Joiner's Bench",
+            "ru": "Столярный верстак"
+        },
+        {
+            "en": "Jump",
+            "ru": "Прыжок"
+        },
+        {
+            "en": "Keep Playing",
+            "ru": "Играть дальше"
+        },
+        {
+            "en": "Key rebinding is unavailable here (no Input Actions asset assigned).",
+            "ru": "Переназначение клавиш здесь недоступно (не назначен ассет Input Actions)."
+        },
+        {
+            "en": "Keys",
+            "ru": "Клавиши"
+        },
+        {
+            "en": "Ladya",
+            "ru": "Ладья"
+        },
+        {
+            "en": "Language",
+            "ru": "Язык"
+        },
+        {
+            "en": "Language / Язык",
+            "ru": "Language / Язык"
+        },
+        {
+            "en": "Leather",
+            "ru": "Кожа"
+        },
+        {
+            "en": "Leather Cap",
+            "ru": "Кожаная шапка"
+        },
+        {
+            "en": "Leather Trousers",
+            "ru": "Кожаные штаны"
+        },
+        {
+            "en": "Leather Tunic",
+            "ru": "Кожаная рубаха"
+        },
+        {
+            "en": "Leave to Main Menu",
+            "ru": "Выйти в главное меню"
+        },
+        {
+            "en": "Legs",
+            "ru": "Ноги"
+        },
+        {
+            "en": "Leshy",
+            "ru": "Леший"
+        },
+        {
+            "en": "Leshy Heartwood",
+            "ru": "Сердцевина Лешего"
+        },
+        {
+            "en": "Living wood from the Leshy's heart - it still beats with green sap. Ordinary wood splits on stone; only a haft of heartwood holds a stone pickaxe head.",
+            "ru": "Живое дерево из сердца Лешего - в нём ещё бьётся зелёный сок. Обычное дерево о камень раскалывается; только рукоять из сердцевины держит каменную кирку."
+        },
+        {
+            "en": "Load",
+            "ru": "Загрузить"
+        },
+        {
+            "en": "Load '{0}'?",
+            "ru": "Загрузить «{0}»?"
+        },
+        {
+            "en": "Load Game",
+            "ru": "Загрузка"
+        },
+        {
+            "en": "Load {0} ({1}{2}){3}",
+            "ru": "Загрузить: {0} ({1}{2}){3}"
+        },
+        {
+            "en": "Loading",
+            "ru": "Загрузка"
+        },
+        {
+            "en": "Loom",
+            "ru": "Ткацкий станок"
+        },
+        {
+            "en": "Low",
+            "ru": "Низкое"
+        },
+        {
+            "en": "MSAA 2x",
+            "ru": "MSAA 2x"
+        },
+        {
+            "en": "MSAA 4x",
+            "ru": "MSAA 4x"
+        },
+        {
+            "en": "MSAA 8x",
+            "ru": "MSAA 8x"
+        },
+        {
+            "en": "Mace 3",
+            "ru": "Булава 3"
+        },
+        {
+            "en": "Mace 5",
+            "ru": "Булава 5"
+        },
+        {
+            "en": "Mace 6",
+            "ru": "Булава 6"
+        },
+        {
+            "en": "Mace 7",
+            "ru": "Булава 7"
+        },
+        {
+            "en": "Mace from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Булава из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Map",
+            "ru": "Карта"
+        },
+        {
+            "en": "Master Volume",
+            "ru": "Общая громкость"
+        },
+        {
+            "en": "Max",
+            "ru": "Макс."
+        },
+        {
+            "en": "Meat roasted over a campfire. Raises max health and stamina and restores health for a while.",
+            "ru": "Мясо, зажаренное на костре. На время повышает здоровье и выносливость и восстанавливает здоровье."
+        },
+        {
+            "en": "Medium",
+            "ru": "Среднее"
+        },
+        {
+            "en": "Mountains",
+            "ru": "Горы"
+        },
+        {
+            "en": "Mouse",
+            "ru": "Мышь"
+        },
+        {
+            "en": "Mouse Sensitivity",
+            "ru": "Чувствительность мыши"
+        },
+        {
+            "en": "Move Back",
+            "ru": "Назад"
+        },
+        {
+            "en": "Move Forward",
+            "ru": "Вперёд"
+        },
+        {
+            "en": "Move Left",
+            "ru": "Влево"
+        },
+        {
+            "en": "Move Right",
+            "ru": "Вправо"
+        },
+        {
+            "en": "Multiplayer",
+            "ru": "Мультиплеер"
+        },
+        {
+            "en": "Music",
+            "ru": "Музыка"
+        },
+        {
+            "en": "Mussels cooked on the fire - light, salty food that keeps you going.",
+            "ru": "Мидии, запечённые на огне - лёгкая солёная еда, придающая сил."
+        },
+        {
+            "en": "Mussels from the island shore. Cook them on a campfire.",
+            "ru": "Мидии с островного берега. Приготовьте их на костре."
+        },
+        {
+            "en": "N",
+            "ru": "С"
+        },
+        {
+            "en": "Needs a workbench nearby",
+            "ru": "Нужен верстак рядом"
+        },
+        {
+            "en": "Needs a {0} (level {1}) nearby",
+            "ru": "Нужен {0} (уровень {1}) рядом"
+        },
+        {
+            "en": "No arrows",
+            "ru": "Нет стрел"
+        },
+        {
+            "en": "No known recipes yet.",
+            "ru": "Пока нет известных рецептов."
+        },
+        {
+            "en": "No open servers yet",
+            "ru": "Открытых серверов пока нет"
+        },
+        {
+            "en": "No saves yet",
+            "ru": "Сохранений пока нет"
+        },
+        {
+            "en": "Not enough materials",
+            "ru": "Не хватает материалов"
+        },
+        {
+            "en": "Nothing to craft by hand. Use a workbench (E) for more.",
+            "ru": "Руками больше нечего сделать. Подойдите к верстаку (E)."
+        },
+        {
+            "en": "Nothing to make here yet - find new materials.",
+            "ru": "Здесь пока нечего сделать - найдите новые материалы."
+        },
+        {
+            "en": "Oak Beam",
+            "ru": "Дубовая балка"
+        },
+        {
+            "en": "Oak Floor",
+            "ru": "Дубовый пол"
+        },
+        {
+            "en": "Oak Gate",
+            "ru": "Дубовые ворота"
+        },
+        {
+            "en": "Oak Log",
+            "ru": "Дубовое бревно"
+        },
+        {
+            "en": "Oak Log Wall",
+            "ru": "Стена из дубовых брёвен"
+        },
+        {
+            "en": "Oak Post",
+            "ru": "Дубовый столб"
+        },
+        {
+            "en": "Oak Stairs",
+            "ru": "Дубовая лестница"
+        },
+        {
+            "en": "Oak Window Wall",
+            "ru": "Дубовая стена с окном"
+        },
+        {
+            "en": "Oak Wood",
+            "ru": "Дуб"
+        },
+        {
+            "en": "Oak boards bound with iron bands.",
+            "ru": "Дубовые доски, окованные железными полосами."
+        },
+        {
+            "en": "Object Draw Distance",
+            "ru": "Дальность прорисовки объектов"
+        },
+        {
+            "en": "Ocean",
+            "ru": "Океан"
+        },
+        {
+            "en": "Off",
+            "ru": "Выкл."
+        },
+        {
+            "en": "Old Oak",
+            "ru": "Старый дуб"
+        },
+        {
+            "en": "Old wood creaks somewhere among the trees...",
+            "ru": "Где-то среди деревьев скрипит старое дерево..."
+        },
+        {
+            "en": "Online",
+            "ru": "Онлайн"
+        },
+        {
+            "en": "Open gravestone",
+            "ru": "Открыть надгробие"
+        },
+        {
+            "en": "Open {0}",
+            "ru": "Открыть: {0}"
+        },
+        {
+            "en": "Opens with the ` key (under Esc). Type help for the commands.",
+            "ru": "Открывается клавишей ` (под Esc). Введите help, чтобы увидеть команды."
+        },
+        {
+            "en": "Password",
+            "ru": "Пароль"
+        },
+        {
+            "en": "Paused",
+            "ru": "Пауза"
+        },
+        {
+            "en": "Permafrost",
+            "ru": "Мерзлота"
+        },
+        {
+            "en": "Pick up",
+            "ru": "Подобрать"
+        },
+        {
+            "en": "Pick up {0}",
+            "ru": "Подобрать: {0}"
+        },
+        {
+            "en": "Place it on deeper water",
+            "ru": "Ставьте на более глубокую воду"
+        },
+        {
+            "en": "Plains",
+            "ru": "Луга"
+        },
+        {
+            "en": "Planks and a grip - stops a wolf's bite.",
+            "ru": "Доски и рукоять - остановит волчий укус."
+        },
+        {
+            "en": "Play",
+            "ru": "Играть"
+        },
+        {
+            "en": "Preset",
+            "ru": "Профиль"
+        },
+        {
+            "en": "Press a key...",
+            "ru": "Нажмите клавишу..."
+        },
+        {
+            "en": "Quality",
+            "ru": "Качество"
+        },
+        {
+            "en": "Quarter",
+            "ru": "Четверть"
+        },
+        {
+            "en": "Quench Tub",
+            "ru": "Закалочная бадья"
+        },
+        {
+            "en": "Quit",
+            "ru": "Выход"
+        },
+        {
+            "en": "Rain",
+            "ru": "Дождь"
+        },
+        {
+            "en": "Randomize",
+            "ru": "Случайный"
+        },
+        {
+            "en": "Raw Meat",
+            "ru": "Сырое мясо"
+        },
+        {
+            "en": "Raw meat from a hunted animal. Cook it on a campfire before eating.",
+            "ru": "Сырое мясо добытого зверя. Перед едой приготовьте его на костре."
+        },
+        {
+            "en": "Refresh",
+            "ru": "Обновить"
+        },
+        {
+            "en": "Render Scale",
+            "ru": "Масштаб рендера"
+        },
+        {
+            "en": "Requires",
+            "ru": "Требуется"
+        },
+        {
+            "en": "Requires {0}{1}",
+            "ru": "Требуется {0}{1}"
+        },
+        {
+            "en": "Requires {0}{1} - it needs a roof",
+            "ru": "Требуется {0}{1} - нужна крыша над ним"
+        },
+        {
+            "en": "Reset to Defaults",
+            "ru": "Сбросить"
+        },
+        {
+            "en": "Resin",
+            "ru": "Смола"
+        },
+        {
+            "en": "Resolution",
+            "ru": "Разрешение"
+        },
+        {
+            "en": "Respawn",
+            "ru": "Возродиться"
+        },
+        {
+            "en": "Resume",
+            "ru": "Продолжить"
+        },
+        {
+            "en": "Right-click to drink - cures poison",
+            "ru": "ПКМ - выпить, лечит отравление"
+        },
+        {
+            "en": "Right-click to eat",
+            "ru": "ПКМ - съесть"
+        },
+        {
+            "en": "Right-click to equip",
+            "ru": "ПКМ - надеть"
+        },
+        {
+            "en": "Rock",
+            "ru": "Камень"
+        },
+        {
+            "en": "Rock streaked with green and copper. Smelt it in a bloomery with charcoal.",
+            "ru": "Порода с зелёными и медными прожилками. Выплавляйте в сыродутном горне на угле."
+        },
+        {
+            "en": "Room",
+            "ru": "Комната"
+        },
+        {
+            "en": "Room Name",
+            "ru": "Название комнаты"
+        },
+        {
+            "en": "Rotate Building Piece",
+            "ru": "Повернуть деталь"
+        },
+        {
+            "en": "Ruins",
+            "ru": "Руины"
+        },
+        {
+            "en": "Rusty lumps dug from wet shores - iron for the bloomery.",
+            "ru": "Ржавые комья с сырых берегов - железо для горна."
+        },
+        {
+            "en": "Sea Islands",
+            "ru": "Морские острова"
+        },
+        {
+            "en": "Seed",
+            "ru": "Сид"
+        },
+        {
+            "en": "Seed: {0}",
+            "ru": "Сид: {0}"
+        },
+        {
+            "en": "Servers",
+            "ru": "Серверы"
+        },
+        {
+            "en": "Settings",
+            "ru": "Настройки"
+        },
+        {
+            "en": "Shadows",
+            "ru": "Тени"
+        },
+        {
+            "en": "Share Feedback",
+            "ru": "Оставить отзыв"
+        },
+        {
+            "en": "Shellfish",
+            "ru": "Мидии"
+        },
+        {
+            "en": "Shield 10",
+            "ru": "Щит 10"
+        },
+        {
+            "en": "Shield 10b",
+            "ru": "Щит 10b"
+        },
+        {
+            "en": "Shield 11b",
+            "ru": "Щит 11b"
+        },
+        {
+            "en": "Shield 12",
+            "ru": "Щит 12"
+        },
+        {
+            "en": "Shield 12b",
+            "ru": "Щит 12b"
+        },
+        {
+            "en": "Shield 13b",
+            "ru": "Щит 13b"
+        },
+        {
+            "en": "Shield 14b",
+            "ru": "Щит 14b"
+        },
+        {
+            "en": "Shield 15",
+            "ru": "Щит 15"
+        },
+        {
+            "en": "Shield 15b",
+            "ru": "Щит 15b"
+        },
+        {
+            "en": "Shield 16b",
+            "ru": "Щит 16b"
+        },
+        {
+            "en": "Shield 17",
+            "ru": "Щит 17"
+        },
+        {
+            "en": "Shield 17b",
+            "ru": "Щит 17b"
+        },
+        {
+            "en": "Shield 18b",
+            "ru": "Щит 18b"
+        },
+        {
+            "en": "Shield 19",
+            "ru": "Щит 19"
+        },
+        {
+            "en": "Shield 19b",
+            "ru": "Щит 19b"
+        },
+        {
+            "en": "Shield 1b",
+            "ru": "Щит 1b"
+        },
+        {
+            "en": "Shield 2",
+            "ru": "Щит 2"
+        },
+        {
+            "en": "Shield 2b",
+            "ru": "Щит 2b"
+        },
+        {
+            "en": "Shield 3",
+            "ru": "Щит 3"
+        },
+        {
+            "en": "Shield 3b",
+            "ru": "Щит 3b"
+        },
+        {
+            "en": "Shield 4",
+            "ru": "Щит 4"
+        },
+        {
+            "en": "Shield 4b",
+            "ru": "Щит 4b"
+        },
+        {
+            "en": "Shield 5",
+            "ru": "Щит 5"
+        },
+        {
+            "en": "Shield 5b",
+            "ru": "Щит 5b"
+        },
+        {
+            "en": "Shield 6",
+            "ru": "Щит 6"
+        },
+        {
+            "en": "Shield 6b",
+            "ru": "Щит 6b"
+        },
+        {
+            "en": "Shield 7",
+            "ru": "Щит 7"
+        },
+        {
+            "en": "Shield 7b",
+            "ru": "Щит 7b"
+        },
+        {
+            "en": "Shield 8",
+            "ru": "Щит 8"
+        },
+        {
+            "en": "Shield 8b",
+            "ru": "Щит 8b"
+        },
+        {
+            "en": "Shield 9",
+            "ru": "Щит 9"
+        },
+        {
+            "en": "Shield 9b",
+            "ru": "Щит 9b"
+        },
+        {
+            "en": "Shield from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Щит из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Ship's Hold",
+            "ru": "Трюм корабля"
+        },
+        {
+            "en": "Shipwreck",
+            "ru": "Кораблекрушение"
+        },
+        {
+            "en": "Shrine (kapishche)",
+            "ru": "Капище"
+        },
+        {
+            "en": "Silver Axe",
+            "ru": "Серебряный топор"
+        },
+        {
+            "en": "Silver Bar",
+            "ru": "Слиток серебра"
+        },
+        {
+            "en": "Silver Battle Axe",
+            "ru": "Серебряная секира"
+        },
+        {
+            "en": "Silver Cuirass",
+            "ru": "Серебряная кираса"
+        },
+        {
+            "en": "Silver Greatsword",
+            "ru": "Серебряный двуручный меч"
+        },
+        {
+            "en": "Silver Greaves",
+            "ru": "Серебряные поножи"
+        },
+        {
+            "en": "Silver Hand Axe",
+            "ru": "Серебряный ручной топор"
+        },
+        {
+            "en": "Silver Helm",
+            "ru": "Серебряный шлем"
+        },
+        {
+            "en": "Silver Mace",
+            "ru": "Серебряная булава"
+        },
+        {
+            "en": "Silver Ore",
+            "ru": "Серебряная руда"
+        },
+        {
+            "en": "Silver Pickaxe",
+            "ru": "Серебряная кирка"
+        },
+        {
+            "en": "Silver Shield",
+            "ru": "Серебряный щит"
+        },
+        {
+            "en": "Silver Spear",
+            "ru": "Серебряное копьё"
+        },
+        {
+            "en": "Silver Sword",
+            "ru": "Серебряный меч"
+        },
+        {
+            "en": "Silver Vein",
+            "ru": "Серебряная жила"
+        },
+        {
+            "en": "Silver Warhammer",
+            "ru": "Серебряный боевой молот"
+        },
+        {
+            "en": "Silver shin and knee guards over mail leggings.",
+            "ru": "Серебряные поножи и наколенники поверх кольчужных чулок."
+        },
+        {
+            "en": "Silver-faced plates over mail.",
+            "ru": "Пластины с серебряной облицовкой поверх кольчуги."
+        },
+        {
+            "en": "Slot",
+            "ru": "Слот"
+        },
+        {
+            "en": "Smelted copper, ready for the smith.",
+            "ru": "Выплавленная медь, готовая для кузнеца."
+        },
+        {
+            "en": "Smelting Furnace",
+            "ru": "Плавильная печь"
+        },
+        {
+            "en": "Snow Leopard",
+            "ru": "Снежный барс"
+        },
+        {
+            "en": "Snowy Peaks",
+            "ru": "Снежные вершины"
+        },
+        {
+            "en": "Soft white tin. Two parts copper to one of tin make bronze.",
+            "ru": "Мягкое белое олово. Две части меди на одну часть олова дают бронзу."
+        },
+        {
+            "en": "Spear 5",
+            "ru": "Копьё 5"
+        },
+        {
+            "en": "Spear 7",
+            "ru": "Копьё 7"
+        },
+        {
+            "en": "Spear 9",
+            "ru": "Копьё 9"
+        },
+        {
+            "en": "Spear from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Копьё из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Sprint",
+            "ru": "Бег"
+        },
+        {
+            "en": "Spruce Log",
+            "ru": "Еловое бревно"
+        },
+        {
+            "en": "Stake Trap",
+            "ru": "Ловушка с кольями"
+        },
+        {
+            "en": "Sticky tree sap, gathered from trees. Placeholder Tier 1 resource - not final content.",
+            "ru": "Липкая древесная смола. Временный ресурс тира 1 - не финальный."
+        },
+        {
+            "en": "Stone Axe",
+            "ru": "Каменный топор"
+        },
+        {
+            "en": "Stone Pickaxe",
+            "ru": "Каменная кирка"
+        },
+        {
+            "en": "Stone Sword",
+            "ru": "Каменный меч"
+        },
+        {
+            "en": "Sunken Log",
+            "ru": "Затонувшее бревно"
+        },
+        {
+            "en": "Swamp",
+            "ru": "Топь"
+        },
+        {
+            "en": "Sword 10b",
+            "ru": "Меч 10b"
+        },
+        {
+            "en": "Sword 1b",
+            "ru": "Меч 1b"
+        },
+        {
+            "en": "Sword 2b",
+            "ru": "Меч 2b"
+        },
+        {
+            "en": "Sword 3",
+            "ru": "Меч 3"
+        },
+        {
+            "en": "Sword 3b",
+            "ru": "Меч 3b"
+        },
+        {
+            "en": "Sword 4b",
+            "ru": "Меч 4b"
+        },
+        {
+            "en": "Sword 5",
+            "ru": "Меч 5"
+        },
+        {
+            "en": "Sword 5b",
+            "ru": "Меч 5b"
+        },
+        {
+            "en": "Sword 6b",
+            "ru": "Меч 6b"
+        },
+        {
+            "en": "Sword 7",
+            "ru": "Меч 7"
+        },
+        {
+            "en": "Sword 7b",
+            "ru": "Меч 7b"
+        },
+        {
+            "en": "Sword 8",
+            "ru": "Меч 8"
+        },
+        {
+            "en": "Sword 8b",
+            "ru": "Меч 8b"
+        },
+        {
+            "en": "Sword 9b",
+            "ru": "Меч 9b"
+        },
+        {
+            "en": "Sword from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Меч из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Take All",
+            "ru": "Забрать всё"
+        },
+        {
+            "en": "Take {0}",
+            "ru": "Забрать: {0}"
+        },
+        {
+            "en": "Tanning Rack",
+            "ru": "Дубильная рама"
+        },
+        {
+            "en": "Tent Roof",
+            "ru": "Шатровая крыша"
+        },
+        {
+            "en": "Texture Quality",
+            "ru": "Качество текстур"
+        },
+        {
+            "en": "Thank you for playing!",
+            "ru": "Спасибо за игру!"
+        },
+        {
+            "en": "The Leshy has come for you!",
+            "ru": "Леший пришёл за тобой!"
+        },
+        {
+            "en": "The Leshy has gone back into the thicket.",
+            "ru": "Леший ушёл обратно в чащу."
+        },
+        {
+            "en": "The Leshy is dead. The forest grows quiet.",
+            "ru": "Леший мёртв. Лес затихает."
+        },
+        {
+            "en": "The basic building tool - Tier 1 of the hammer progression (Wood -> Bronze -> Iron -> Silver -> Bulat -> Skymetal). Placeholder Tier 1 content - not final.",
+            "ru": "Простейший строительный инструмент - тир 1 молотов (дерево -> бронза -> железо -> серебро -> булат -> небесное железо). Временный контент тира 1 - не финальный."
+        },
+        {
+            "en": "The coarse black pelt of a volkolak, still smelling of the forest. For cloaks and armour linings.",
+            "ru": "Грубая чёрная шкура волколака, ещё пахнущая лесом. Для плащей и подбоя брони."
+        },
+        {
+            "en": "The forest has fallen silent...",
+            "ru": "Лес затих..."
+        },
+        {
+            "en": "The forest is watching you.",
+            "ru": "Лес следит за тобой."
+        },
+        {
+            "en": "The master of the forest is walking nearby. Leave him be.",
+            "ru": "Рядом бродит хозяин леса. Не тревожь его."
+        },
+        {
+            "en": "There is no music in the game yet - the Music volume is kept for when there is.",
+            "ru": "Музыки в игре пока нет - громкость музыки сохранится на будущее."
+        },
+        {
+            "en": "Thunderstorm",
+            "ru": "Гроза"
+        },
+        {
+            "en": "Tin Bar",
+            "ru": "Слиток олова"
+        },
+        {
+            "en": "Tin Ore",
+            "ru": "Оловянная руда"
+        },
+        {
+            "en": "Tin Vein",
+            "ru": "Оловянная жила"
+        },
+        {
+            "en": "Ultra",
+            "ru": "Ультра"
+        },
+        {
+            "en": "Unlimited",
+            "ru": "Без ограничения"
+        },
+        {
+            "en": "Unnamed World",
+            "ru": "Безымянный мир"
+        },
+        {
+            "en": "Use",
+            "ru": "Использовать"
+        },
+        {
+            "en": "Use / Pick Up",
+            "ru": "Использовать / подобрать"
+        },
+        {
+            "en": "Use {0}",
+            "ru": "Использовать: {0}"
+        },
+        {
+            "en": "VSync",
+            "ru": "VSync"
+        },
+        {
+            "en": "View Distance",
+            "ru": "Дальность обзора"
+        },
+        {
+            "en": "Volkolak",
+            "ru": "Волколак"
+        },
+        {
+            "en": "Volkolak Cloak",
+            "ru": "Плащ волколака"
+        },
+        {
+            "en": "Volkolak Pelt",
+            "ru": "Шкура волколака"
+        },
+        {
+            "en": "W",
+            "ru": "З"
+        },
+        {
+            "en": "Warhammer 10",
+            "ru": "Боевой молот 10"
+        },
+        {
+            "en": "Warhammer 2",
+            "ru": "Боевой молот 2"
+        },
+        {
+            "en": "Warhammer 3",
+            "ru": "Боевой молот 3"
+        },
+        {
+            "en": "Warhammer 5",
+            "ru": "Боевой молот 5"
+        },
+        {
+            "en": "Warhammer 7",
+            "ru": "Боевой молот 7"
+        },
+        {
+            "en": "Warhammer 9",
+            "ru": "Боевой молот 9"
+        },
+        {
+            "en": "Warhammer from the LowPoly Weapons Pack. Placeholder stats - no materials, tier or recipe yet.",
+            "ru": "Боевой молот из набора LowPoly Weapons. Временные характеристики - пока без материалов, тира и рецепта."
+        },
+        {
+            "en": "Weight",
+            "ru": "Вес"
+        },
+        {
+            "en": "Weight: {0:0.##} kg",
+            "ru": "Вес: {0:0.##} кг"
+        },
+        {
+            "en": "Wild Rosemary",
+            "ru": "Багульник"
+        },
+        {
+            "en": "Windowed",
+            "ru": "В окне"
+        },
+        {
+            "en": "Wood",
+            "ru": "Дерево"
+        },
+        {
+            "en": "Wood Arrow",
+            "ru": "Деревянная стрела"
+        },
+        {
+            "en": "Wood Arrow x10",
+            "ru": "Деревянная стрела x10"
+        },
+        {
+            "en": "Wood Door",
+            "ru": "Деревянная дверь"
+        },
+        {
+            "en": "Wood Foundation",
+            "ru": "Деревянный фундамент"
+        },
+        {
+            "en": "Wood Gable",
+            "ru": "Деревянный фронтон"
+        },
+        {
+            "en": "Wood Hammer",
+            "ru": "Деревянный молот"
+        },
+        {
+            "en": "Wood Roof",
+            "ru": "Деревянная крыша"
+        },
+        {
+            "en": "Wood Wall",
+            "ru": "Деревянная стена"
+        },
+        {
+            "en": "Wood burned slowly without air. Hot fuel for smelting.",
+            "ru": "Дерево, медленно пережжённое без воздуха. Жаркое топливо для плавки."
+        },
+        {
+            "en": "WoodPalisade",
+            "ru": "Частокол"
+        },
+        {
+            "en": "Wooden Club",
+            "ru": "Деревянная дубина"
+        },
+        {
+            "en": "Wooden Shield",
+            "ru": "Деревянный щит"
+        },
+        {
+            "en": "Workbench",
+            "ru": "Верстак"
+        },
+        {
+            "en": "World Name",
+            "ru": "Название мира"
+        },
+        {
+            "en": "You Died",
+            "ru": "Вы погибли"
+        },
+        {
+            "en": "You have angered the Leshy!",
+            "ru": "Ты разгневал Лешего!"
+        },
+        {
+            "en": "You have reached the end of the NAV demo: the Leshy is defeated and your first copper armour is forged.",
+            "ru": "Вы дошли до конца демо NAV: Леший повержен, а первая медная броня выкована."
+        },
+        {
+            "en": "Your belongings wait at your gravestone.",
+            "ru": "Ваши вещи ждут у надгробия."
+        },
+        {
+            "en": "Your name",
+            "ru": "Ваше имя"
+        },
+        {
+            "en": "boat",
+            "ru": "лодка"
+        },
+        {
+            "en": "door",
+            "ru": "дверь"
+        },
+        {
+            "en": "{0:0.#} / {1:0} kg",
+            "ru": "{0:0.#} / {1:0} кг"
+        },
+        {
+            "en": "{0:0.#} kg",
+            "ru": "{0:0.#} кг"
+        },
+        {
+            "en": "{0} kg",
+            "ru": "{0} кг"
+        },
+        {
+            "en": "{0} m",
+            "ru": "{0} м"
+        }
+    ]
+}

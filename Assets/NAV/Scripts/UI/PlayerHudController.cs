@@ -254,11 +254,11 @@ namespace NAV.UI
             }
             else if (_interactor.CurrentInteractable != null)
             {
-                prompt = $"[E] {_interactor.CurrentPrompt}";
+                prompt = $"[E] {NAV.Core.Localization.Loc.T(_interactor.CurrentPrompt)}";
             }
             else if (_archery != null && Time.time < _noArrowsUntil)
             {
-                prompt = "No arrows";
+                prompt = NAV.Core.Localization.Loc.T("No arrows");
             }
             else if (_archery != null && _archery.HasBow && _archery.CurrentAmmo != null)
             {
@@ -267,11 +267,11 @@ namespace NAV.UI
             }
             else if (_cold != null && _cold.State == PlayerCold.ColdState.Freezing)
             {
-                prompt = "Freezing! Find a fire or a warm cloak";
+                prompt = NAV.Core.Localization.Loc.T("Freezing! Find a fire or a warm cloak");
             }
             else if (_cold != null && _cold.State == PlayerCold.ColdState.Cold)
             {
-                prompt = "Cold - find a fire or a warm cloak";
+                prompt = NAV.Core.Localization.Loc.T("Cold - find a fire or a warm cloak");
             }
             else
             {
@@ -306,7 +306,7 @@ namespace NAV.UI
             }
 
             _lastClockMinute = minuteOfDay;
-            _clockLabel.text = $"Day {_worldClock.Day} · {Mathf.FloorToInt(_worldClock.Hour):00}:{_worldClock.Minute:00}";
+            _clockLabel.text = NAV.Core.Localization.Loc.F("Day {0} · {1:00}:{2:00}", _worldClock.Day, Mathf.FloorToInt(_worldClock.Hour), _worldClock.Minute);
             _clockLabel.EnableInClassList("clock-label--night", _worldClock.IsNight);
 
             // The weather shows as an icon on the sign (WeatherDefinition.GetIcon - the moon

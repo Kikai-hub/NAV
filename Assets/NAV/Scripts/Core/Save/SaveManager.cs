@@ -192,6 +192,7 @@ namespace NAV.Core.Save
             }
 
             ApplyBuildings(data.Buildings);
+            ApplyGravestones(data.Gravestones);
             if (_forestWrath != null)
             {
                 _forestWrath.Restore(data.ForestWrath, data.LeshyDefeats, data.LeshyCooldownSeconds);
@@ -344,7 +345,8 @@ namespace NAV.Core.Save
                 ForestWrath = _forestWrath != null ? _forestWrath.Wrath : 0f,
                 LeshyDefeats = _forestWrath != null ? _forestWrath.Defeats : 0,
                 LeshyCooldownSeconds = _forestWrath != null ? _forestWrath.CooldownSeconds : 0f,
-                ExploredMap = _map != null ? _map.Save() : new List<ExploredTileSaveData>()
+                ExploredMap = _map != null ? _map.Save() : new List<ExploredTileSaveData>(),
+                Gravestones = BuildGravestonesData()
             };
 
             SaveSystem.Save(data);
@@ -397,6 +399,57 @@ namespace NAV.Core.Save
             }
 
             return player;
+        }
+
+        private List<GravestoneSaveData> BuildGravestonesData()
+        {
+            var stones = new List<GravestoneSaveData>();
+            foreach (Gravestone stone in Gravestone.All)
+            {
+                if (stone == null || stone.Contents == null || stone.Contents.IsEmpty)
+                {
+                    continue;
+                }
+
+                stones.Add(new GravestoneSaveData
+                {
+                    Position = stone.transform.position,
+                    Rotation = stone.transform.rotation,
+                    Capacity = stone.Contents.Capacity,
+                    Slots = BuildSlotsData(stone.Contents)
+                });
+            }
+
+            return stones;
+        }
+
+        private void ApplyGravestones(List<GravestoneSaveData> stones)
+        {
+            if (stones == null || stones.Count == 0)
+            {
+                return;
+            }
+
+            Gravestone prefab = _playerDeath != null ? _playerDeath.GravestonePrefab : null;
+            if (prefab == null)
+            {
+                Debug.LogError($"{nameof(SaveManager)}: the save has {stones.Count} gravestone(s) but there is no PlayerDeath gravestone prefab to restore them with.", this);
+                return;
+            }
+
+            foreach (GravestoneSaveData saved in stones)
+            {
+                var contents = new Inventory(Mathf.Max(1, saved.Capacity));
+                if (saved.Slots != null)
+                {
+                    ApplySlots(contents, saved.Slots);
+                }
+
+                if (!contents.IsEmpty)
+                {
+                    Gravestone.Restore(prefab, saved.Position, saved.Rotation, contents);
+                }
+            }
         }
 
         private List<BuildingSaveData> BuildBuildingsData()

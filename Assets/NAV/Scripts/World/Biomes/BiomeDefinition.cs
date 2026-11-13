@@ -155,7 +155,7 @@ namespace NAV.World.Biomes
         [SerializeField] private AudioClip _windAmbience;
         [SerializeField, Range(0f, 1f)] private float _windVolume = 0.3f;
 
-        public string DisplayName => _displayName;
+        public string DisplayName => NAV.Core.Localization.Loc.T(_displayName);
         public TerrainLayer TerrainLayer => _terrainLayer;
         public bool IsWater => _isWater;
         public Color MapColor => _mapColor;

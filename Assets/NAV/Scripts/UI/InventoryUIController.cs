@@ -247,11 +247,11 @@ namespace NAV.UI
             bool hasLimit = inventory.MaxWeight > 0f;
 
             _weightLabel.text = hasLimit
-                ? $"{inventory.TotalWeight:0.#} / {inventory.MaxWeight:0} kg"
-                : $"{inventory.TotalWeight:0.#} kg";
+                ? NAV.Core.Localization.Loc.F("{0:0.#} / {1:0} kg", inventory.TotalWeight, inventory.MaxWeight)
+                : NAV.Core.Localization.Loc.F("{0:0.#} kg", inventory.TotalWeight);
             if (_playerEquipment != null && _playerEquipment.TotalArmor > 0f)
             {
-                _weightLabel.text += $"  ·  Armour {_playerEquipment.TotalArmor:0.#}";
+                _weightLabel.text += "  ·  " + NAV.Core.Localization.Loc.F("Armour {0:0.#}", _playerEquipment.TotalArmor);
             }
 
             _weightLabel.EnableInClassList("inventory-weight--overloaded", inventory.IsOverloaded);

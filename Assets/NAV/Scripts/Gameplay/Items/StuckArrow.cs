@@ -13,7 +13,7 @@ namespace NAV.Gameplay.Items
     {
         private ItemDefinition _item;
 
-        public string InteractionPrompt => _item != null ? $"Pick up {_item.DisplayName}" : "Pick up";
+        public string InteractionPrompt => _item != null ? NAV.Core.Localization.Loc.F("Pick up {0}", _item.DisplayName) : NAV.Core.Localization.Loc.T("Pick up");
 
         public static void Attach(GameObject arrow, ItemDefinition item)
         {

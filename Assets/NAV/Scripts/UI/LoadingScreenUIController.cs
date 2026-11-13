@@ -94,7 +94,7 @@ namespace NAV.UI
 
             _dotsTimer += Time.unscaledDeltaTime;
             int dotIndex = (int)(_dotsTimer / DotIntervalSeconds) % DotCycle.Length;
-            _label.text = "Loading" + DotCycle[dotIndex];
+            _label.text = NAV.Core.Localization.Loc.T("Loading") + DotCycle[dotIndex];
 
             float shimmerLeft = Mathf.PingPong(Time.unscaledTime * ShimmerTrackPercentPerSecond, 100f - ShimmerWidthPercent);
             _progressShimmer.style.left = Length.Percent(shimmerLeft);
@@ -107,7 +107,7 @@ namespace NAV.UI
             _dotsTimer = 0f;
             _root.style.display = DisplayStyle.Flex;
             _progressFill.style.width = Length.Percent(0f);
-            _label.text = "Loading";
+            _label.text = NAV.Core.Localization.Loc.T("Loading");
         }
 
         private void RefreshProgress(float fraction)

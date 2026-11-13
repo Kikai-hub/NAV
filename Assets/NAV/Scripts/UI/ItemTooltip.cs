@@ -66,14 +66,14 @@ namespace NAV.UI
             _description.text = item.Description;
             _description.style.display = string.IsNullOrEmpty(item.Description) ? DisplayStyle.None : DisplayStyle.Flex;
 
-            string stats = $"Weight: {item.Weight:0.##} kg";
+            string stats = NAV.Core.Localization.Loc.F("Weight: {0:0.##} kg", item.Weight);
             if (item.IsArmor)
             {
-                stats += $"\nArmour: {item.Armor.Armor:0.#} ({item.Armor.Slot})";
+                stats += "\n" + NAV.Core.Localization.Loc.F("Armour: {0:0.#} ({1})", item.Armor.Armor, NAV.Core.Localization.Loc.T(item.Armor.Slot.ToString()));
             }
             else if (item.Weapon != null)
             {
-                stats += $"\nDamage: {item.Weapon.Damage:0.#}";
+                stats += "\n" + NAV.Core.Localization.Loc.F("Damage: {0:0.#}", item.Weapon.Damage);
             }
 
             _stats.text = stats;
@@ -111,15 +111,15 @@ namespace NAV.UI
 
             if (item.IsEdible)
             {
-                return "Right-click to eat";
+                return NAV.Core.Localization.Loc.T("Right-click to eat");
             }
 
             if (item.IsAntidote)
             {
-                return "Right-click to drink - cures poison";
+                return NAV.Core.Localization.Loc.T("Right-click to drink - cures poison");
             }
 
-            return item.IsArmor || item.IsEquippable ? "Right-click to equip" : null;
+            return item.IsArmor || item.IsEquippable ? NAV.Core.Localization.Loc.T("Right-click to equip") : null;
         }
 
         private static Label NewLabel(string className)

@@ -45,7 +45,7 @@ namespace NAV.Gameplay.Items
 
         public string DisplayName => string.IsNullOrWhiteSpace(_displayName) && _drops.Count > 0 && _drops[0].Item != null
             ? _drops[0].Item.DisplayName
-            : _displayName;
+            : NAV.Core.Localization.Loc.T(_displayName);
 
         public IReadOnlyList<ResourceNodeDrop> Drops => _drops;
         public int HitsToDeplete => _hitsToDeplete;

@@ -50,9 +50,9 @@ namespace NAV.Gameplay.Survival
 
         public string InteractionPrompt => _state switch
         {
-            State.Cooking => $"Cooking {_current.Output.DisplayName}... {Mathf.CeilToInt(_timer)}s",
-            State.Ready => $"Take {_current.Output.DisplayName}",
-            _ => _recipes.Count > 0 && _recipes[0].Input != null ? $"Cook ({_recipes[0].Input.DisplayName})" : "Cook",
+            State.Cooking => NAV.Core.Localization.Loc.F("Cooking {0}... {1}s", _current.Output.DisplayName, Mathf.CeilToInt(_timer)),
+            State.Ready => NAV.Core.Localization.Loc.F("Take {0}", _current.Output.DisplayName),
+            _ => _recipes.Count > 0 && _recipes[0].Input != null ? NAV.Core.Localization.Loc.F("Cook ({0})", _recipes[0].Input.DisplayName) : NAV.Core.Localization.Loc.T("Cook"),
         };
 
         private void Awake()

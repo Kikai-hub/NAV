@@ -40,7 +40,7 @@ namespace NAV.World.Generation.Hybrid
         [SerializeField, Min(0f)] private float _clearRadius = 14f;
 
         public string Id => _id;
-        public string DisplayName => string.IsNullOrEmpty(_displayName) ? _id : _displayName;
+        public string DisplayName => NAV.Core.Localization.Loc.T(string.IsNullOrEmpty(_displayName) ? _id : _displayName);
         public GameObject Prefab => _prefab;
         public Color MapColor => _mapColor;
         public int Count => _count;

@@ -68,6 +68,14 @@ MonoBehaviour:
   _lockedPieces:
   - {fileID: 11400000, guid: 4f2de88249193a24ea89d365fdf0d6f2, type: 2}
   - {fileID: 11400000, guid: 12fccc4f4db91dc458c48cb450a43f74, type: 2}
+  _lockedBiomes:
+  - {fileID: 11400000, guid: 6310ec1c708272c4fa0be9729de77ccf, type: 2}
+  - {fileID: 11400000, guid: baa255d725ad0674092f6fab1a2e4a00, type: 2}
+  - {fileID: 11400000, guid: 8d8f0bdd8cc522b46986b8dde28e5236, type: 2}
+  - {fileID: 11400000, guid: e5bfdd4f969fed246a4d7f19e3a21ae3, type: 2}
+  - {fileID: 11400000, guid: e65ce6e89872d324b82b3912ce9186c1, type: 2}
+  - {fileID: 11400000, guid: cf41d6e4dabd9ae4dbcc5983882276db, type: 2}
+  - {fileID: 11400000, guid: ce772c5d04e9be241a0adac08e1cf524, type: 2}
   _finaleItems:
   - {fileID: 11400000, guid: b19d322f23785704fb21140ea5f912ce, type: 2}
   - {fileID: 11400000, guid: aa9d068fb00d69e44b08e4379acaa78d, type: 2}

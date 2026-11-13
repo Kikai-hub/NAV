@@ -60,7 +60,7 @@ namespace NAV.UI
 
         private void ShowMessage(string text)
         {
-            _message.text = text;
+            _message.text = NAV.Core.Localization.Loc.T(text);
             _message.AddToClassList("omen-message--shown");
             _messageUntil = Time.time + _messageSeconds;
         }
@@ -102,7 +102,7 @@ namespace NAV.UI
             {
                 _shown = boss;
                 _visible = true;
-                _name.text = boss.Title;
+                _name.text = NAV.Core.Localization.Loc.T(boss.Title);
                 _bar.RemoveFromClassList("boss-bar--hidden");
             }
 
