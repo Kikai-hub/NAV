@@ -102,6 +102,9 @@ namespace NAV.Gameplay.Player
         private InputAction _hotbarSlotAction;
         private InputActionAsset _actions;
 
+        /// <summary>The player's actions (with the rebinding overrides) - hints name their keys from it.</summary>
+        public InputActionAsset Actions => _actions;
+
         private void HandleSettingsChanged()
         {
             GameSettings.ApplyBindingOverrides(_actions);

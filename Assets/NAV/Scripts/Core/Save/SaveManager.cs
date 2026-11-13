@@ -85,8 +85,14 @@ namespace NAV.Core.Save
                 StartNewGame();
             }
 
+            _sessionReady = true;
             StartCoroutine(AutosaveLoop());
         }
+
+        // Set once Start has loaded the save (or made the new world). Before that the scene holds
+        // the default player, empty inventory and no buildings - quitting during the loading
+        // screen used to autosave exactly that over the player's real save (found 2026-11-13).
+        private bool _sessionReady;
 
         private void OnApplicationQuit()
         {
@@ -100,6 +106,7 @@ namespace NAV.Core.Save
         /// for standalone testing.</summary>
         private void StartNewGame()
         {
+            NAV.Gameplay.Tutorial.TutorialProgress.Restore(null); // a new world starts the hints again
             string name = SaveSystem.PendingNewGameName;
             SaveSystem.PendingNewGameName = null;
 
@@ -193,6 +200,8 @@ namespace NAV.Core.Save
 
             ApplyBuildings(data.Buildings);
             ApplyGravestones(data.Gravestones);
+            ApplyDroppedItems(data.DroppedItems);
+            NAV.Gameplay.Tutorial.TutorialProgress.Restore(data.CompletedHints);
             if (_forestWrath != null)
             {
                 _forestWrath.Restore(data.ForestWrath, data.LeshyDefeats, data.LeshyCooldownSeconds);
@@ -304,6 +313,60 @@ namespace NAV.Core.Save
                 {
                     ApplySlots(storage.Contents, saved.ContainerSlots);
                 }
+
+                var spit = instance.GetComponentInChildren<CookingStation>(true);
+                if (spit != null && !string.IsNullOrEmpty(saved.CookingInputId))
+                {
+                    spit.RestoreState(saved.CookingInputId, saved.CookingSeconds, saved.CookingReady);
+                }
+            }
+        }
+
+        // Dropped items above this many aren't saved (a guard against a runaway save file).
+        private const int MaxSavedDroppedItems = 1000;
+
+        private List<DroppedItemSaveData> BuildDroppedItemsData()
+        {
+            var items = new List<DroppedItemSaveData>();
+            foreach (ItemPickup pickup in ItemPickup.Dropped)
+            {
+                // Skip what has fallen out of the world (under unloaded terrain).
+                if (pickup == null || pickup.Definition == null || pickup.Quantity <= 0 || pickup.transform.position.y < -500f)
+                {
+                    continue;
+                }
+
+                items.Add(new DroppedItemSaveData
+                {
+                    ItemId = pickup.Definition.Id,
+                    Quantity = pickup.Quantity,
+                    Position = pickup.transform.position,
+                    Rotation = pickup.transform.rotation
+                });
+
+                if (items.Count >= MaxSavedDroppedItems)
+                {
+                    break;
+                }
+            }
+
+            return items;
+        }
+
+        private void ApplyDroppedItems(List<DroppedItemSaveData> items)
+        {
+            if (items == null)
+            {
+                return;
+            }
+
+            foreach (DroppedItemSaveData saved in items)
+            {
+                ItemDefinition definition = _itemDatabase.Get(saved.ItemId);
+                if (definition != null && saved.Quantity > 0)
+                {
+                    ItemPickup.Restore(definition, saved.Quantity, saved.Position, saved.Rotation);
+                }
             }
         }
 
@@ -324,7 +387,7 @@ namespace NAV.Core.Save
         public void Autosave()
         {
             // A guest in someone else's online world doesn't save it (the host does).
-            if (string.IsNullOrEmpty(SaveSystem.CurrentSaveId) || SaveSystem.SavingSuspended)
+            if (!_sessionReady || string.IsNullOrEmpty(SaveSystem.CurrentSaveId) || SaveSystem.SavingSuspended)
             {
                 return;
             }
@@ -346,7 +409,9 @@ namespace NAV.Core.Save
                 LeshyDefeats = _forestWrath != null ? _forestWrath.Defeats : 0,
                 LeshyCooldownSeconds = _forestWrath != null ? _forestWrath.CooldownSeconds : 0f,
                 ExploredMap = _map != null ? _map.Save() : new List<ExploredTileSaveData>(),
-                Gravestones = BuildGravestonesData()
+                Gravestones = BuildGravestonesData(),
+                CompletedHints = NAV.Gameplay.Tutorial.TutorialProgress.Save(),
+                DroppedItems = BuildDroppedItemsData()
             };
 
             SaveSystem.Save(data);
@@ -463,12 +528,16 @@ namespace NAV.Core.Save
                 }
 
                 var storage = piece.GetComponentInChildren<IStoredContents>(true);
+                var spit = piece.GetComponentInChildren<CookingStation>(true);
                 buildings.Add(new BuildingSaveData
                 {
                     PieceId = piece.Definition.Id,
                     Position = piece.transform.position,
                     Rotation = piece.transform.rotation,
-                    ContainerSlots = storage != null ? BuildSlotsData(storage.Contents) : new List<InventorySlotSaveData>()
+                    ContainerSlots = storage != null ? BuildSlotsData(storage.Contents) : new List<InventorySlotSaveData>(),
+                    CookingInputId = spit != null ? spit.SavedInputId : null,
+                    CookingSeconds = spit != null ? spit.SavedSeconds : 0f,
+                    CookingReady = spit != null && spit.SavedReady
                 });
             }
 

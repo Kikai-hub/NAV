@@ -57,6 +57,19 @@ namespace NAV.Core.Save
         /// Empty in saves from before 2026-11-10 - the map starts unexplored.</summary>
         public List<ExploredTileSaveData> ExploredMap = new();
         public List<GravestoneSaveData> Gravestones = new();
+        /// <summary>First-steps hints already done in this world (2026-11-13).</summary>
+        public List<string> CompletedHints = new();
+        /// <summary>Items lying in the world that were dropped, looted or refunded (2026-11-13).</summary>
+        public List<DroppedItemSaveData> DroppedItems = new();
+    }
+
+    [Serializable]
+    public class DroppedItemSaveData
+    {
+        public string ItemId;
+        public int Quantity;
+        public Vector3 Position;
+        public Quaternion Rotation;
     }
 
     /// <summary>A gravestone left in the world with what it holds (2026-11-12).</summary>
@@ -137,6 +150,12 @@ namespace NAV.Core.Save
         public string PieceId;
         public Vector3 Position;
         public Quaternion Rotation;
+
+        /// <summary>A campfire's spit (2026-11-13): the item put on it (empty = nothing), the
+        /// seconds of cooking left, and whether it is done and waiting to be taken.</summary>
+        public string CookingInputId;
+        public float CookingSeconds;
+        public bool CookingReady;
 
         /// <summary>Occupied slots of the piece's IStoredContents (a chest, a processing
         /// station's loaded inputs and fuel); empty for every

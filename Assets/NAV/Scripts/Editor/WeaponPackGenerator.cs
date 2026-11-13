@@ -22,7 +22,7 @@ namespace NAV.Editor
     /// its grip sits on the Kevin rig's B-handProp bone, plus a MeleeHitbox over the blade /
     /// head / tip / shield face), a world drop prefab (model lying flat - same components as
     /// StoneSword_item), its icon (ItemIconRenderer), its entry in DefaultItemDatabase (save
-    /// lookup) and in the dev WeaponArsenal racks. "_001" models are the pack's recoloured
+    /// lookup). (The dev WeaponArsenal racks were removed 2026-11-13.) "_001" models are the pack's recoloured
     /// variants ("b"). sword1H10 / axe1H9 are skipped - they are the Stone Sword / Stone Axe.
     ///
     /// The stats are placeholders per class (no materials/tiers yet) and there are no recipes:
@@ -36,8 +36,6 @@ namespace NAV.Editor
         private const string PrefabFolder = "Assets/NAV/Prefabs/Item/LowPoly";
         private const string WorldTemplatePath = "Assets/NAV/Prefabs/Item/StoneSword_item.prefab";
         private const string DatabasePath = "Assets/NAV/ScriptableObjects/Core/DefaultItemDatabase.asset";
-        private const string ArsenalPath = "Assets/NAV/ScriptableObjects/Dev/WeaponArsenal.asset";
-        private const int RackSize = 20;
 
         // Kevin's shield sits 8 cm in front of B-handProp.L (measured from his demo prefab).
         private const float ShieldPlateOffset = -0.081f;
@@ -136,7 +134,6 @@ namespace NAV.Editor
             }
 
             var allItems = new List<ItemDefinition>();
-            var racks = new List<WeaponArsenal.Rack>();
 
             foreach (ClassSpec spec in Classes)
             {
@@ -160,26 +157,15 @@ namespace NAV.Editor
                 }
 
                 allItems.AddRange(classItems);
-                for (int start = 0; start < classItems.Count; start += RackSize)
-                {
-                    int part = start / RackSize + 1;
-                    int parts = (classItems.Count + RackSize - 1) / RackSize;
-                    racks.Add(new WeaponArsenal.Rack
-                    {
-                        Title = parts > 1 ? $"{spec.Name}s ({part}/{parts})" : $"{spec.Name}s",
-                        Items = classItems.Skip(start).Take(RackSize).ToList(),
-                    });
-                }
             }
 
             AddToDatabase(database, allItems);
-            SaveArsenal(racks);
             AssetDatabase.SaveAssets();
             // Bladed weapons: the fist right under the guard (the pack pivots aren't at the guard).
             WeaponGripFitter.FitAll();
             ItemIconRenderer.RenderIcons(allItems);
             AssetDatabase.SaveAssets();
-            Debug.Log($"{nameof(WeaponPackGenerator)}: generated {allItems.Count} weapons in {Classes.Length} classes, {racks.Count} arsenal racks.");
+            Debug.Log($"{nameof(WeaponPackGenerator)}: generated {allItems.Count} weapons in {Classes.Length} classes.");
         }
 
         private static List<(string, GameObject, Bounds)> LoadModels(string folder)
@@ -404,13 +390,6 @@ namespace NAV.Editor
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(database);
-        }
-
-        private static void SaveArsenal(List<WeaponArsenal.Rack> racks)
-        {
-            WeaponArsenal arsenal = LoadOrCreate<WeaponArsenal>(ArsenalPath);
-            arsenal.SetRacks(racks);
-            EditorUtility.SetDirty(arsenal);
         }
 
         private static T LoadOrCreate<T>(string path) where T : ScriptableObject

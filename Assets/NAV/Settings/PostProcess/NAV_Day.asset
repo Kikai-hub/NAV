@@ -218,3 +218,32 @@ MonoBehaviour:
   - {fileID: -4820487203320996519}
   - {fileID: -2333082731620760644}
   - {fileID: -4734177090855343215}
+  - {fileID: 1079696168103885510}
+--- !u!114 &1079696168103885510
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8434fb2f7f634944aa3e3236fe32169, type: 3}
+  m_Name: SunShaftsVolume
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Lighting.SunShaftsVolume
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0.7
+  threshold:
+    m_OverrideState: 0
+    m_Value: 0.2
+  length:
+    m_OverrideState: 1
+    m_Value: 0.75
+  sunRadius:
+    m_OverrideState: 0
+    m_Value: 1
+  tint:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 0.85, b: 0.65, a: 1}

@@ -55,6 +55,8 @@ namespace NAV.Core.Settings
 
         private static void Load()
         {
+            // The project's new name moved persistentDataPath - bring the old settings/saves over once.
+            NAV.Core.LegacyDataMigration.Run();
             _current = null;
             try
             {

@@ -181,6 +181,44 @@ namespace NAV.Presentation.Combat
             ResetEmit();
         }
 
+        private static readonly Color SoilDark = new(0.24f, 0.18f, 0.12f);
+        private static readonly Color SoilLight = new(0.47f, 0.38f, 0.26f);
+        private static readonly Color SoilDust = new(0.56f, 0.49f, 0.38f, 0.72f);
+
+        /// <summary>A heavy blow into the ground (the Leshy's slam, 2026-11-13): clods of earth
+        /// thrown up and a ring of dust rolling out over the blow's radius. No flash or sparks.</summary>
+        public void GroundSlam(Vector3 centre, float radius, float strength = 1f)
+        {
+            EmitChunks(_shards, centre + Vector3.up * 0.15f, Vector3.up, Mathf.RoundToInt(18 * strength), SoilDark, SoilLight, new Vector3(0.1f, 0.08f, 0.1f), 5.5f);
+
+            // A ring of big billows racing out along the ground...
+            int ring = Mathf.RoundToInt(22 * strength);
+            for (int i = 0; i < ring; i++)
+            {
+                float angle = (i + Random.value * 0.6f) / ring * Mathf.PI * 2f;
+                var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+                Vector3 position = centre + outward * Random.Range(0.3f, radius * 0.5f) + Vector3.up * Random.Range(0.1f, 0.5f);
+                Vector3 velocity = outward * Random.Range(2.5f, 4.5f) + Vector3.up * Random.Range(0.2f, 0.7f);
+                Emit(_dust, position, velocity, SoilDust, Random.Range(1.8f, 3.2f) * strength, Random.Range(2.2f, 3.6f));
+            }
+
+            // ...and a column rising where the blow landed.
+            int column = Mathf.RoundToInt(10 * strength);
+            for (int i = 0; i < column; i++)
+            {
+                Vector2 spread = Random.insideUnitCircle * radius * 0.35f;
+                Vector3 position = centre + new Vector3(spread.x, Random.Range(0.2f, 1f), spread.y);
+                Vector3 velocity = new Vector3(spread.x, 0f, spread.y) * 0.4f + Vector3.up * Random.Range(1.2f, 2.6f);
+                Emit(_dust, position, velocity, SoilDust, Random.Range(1.4f, 2.4f) * strength, Random.Range(1.8f, 3f));
+            }
+        }
+
+        /// <summary>A small puff of dust where something heavy steps.</summary>
+        public void Footfall(Vector3 point, float strength = 1f)
+        {
+            DustCloud(point, 0.45f * strength, Mathf.Max(2, Mathf.RoundToInt(4 * strength)), new Color(SoilDust.r, SoilDust.g, SoilDust.b, 0.45f));
+        }
+
         /// <summary>A cloud of dust rolling out from a point (a trunk hitting the ground).</summary>
         public void DustCloud(Vector3 centre, float radius, int count, Color color)
         {

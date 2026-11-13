@@ -268,12 +268,11 @@ namespace NAV.UI
 
             if (piece.RequiresWorkbench && piece.RequiredStation != null)
             {
-                text.Append("\nNeeds a ").Append(piece.RequiredStation.DisplayName)
-                    .Append(" (level ").Append(piece.RequiredStationLevel).Append(") nearby");
+                text.Append('\n').Append(NAV.Core.Localization.Loc.F("Needs a {0} (level {1}) nearby", piece.RequiredStation.DisplayName, piece.RequiredStationLevel));
             }
             else if (piece.RequiresWorkbench)
             {
-                text.Append("\nNeeds a workbench nearby");
+                text.Append('\n').Append(NAV.Core.Localization.Loc.T("Needs a workbench nearby"));
             }
 
             _infoLabel.text = text.ToString();

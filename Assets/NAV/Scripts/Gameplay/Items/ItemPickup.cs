@@ -34,9 +34,57 @@ namespace NAV.Gameplay.Items
         /// frame when emptied), who, how many, and whether it is now empty.</summary>
         public static event System.Action<ItemPickup, GameObject, int, bool> PickedUp;
 
+        /// <summary>Every item put into the world at runtime (SpawnInWorld: dropped, loot, demolish
+        /// refunds, station output) - SaveManager saves these. World-generated pickups (loose
+        /// branches and stones) are not in it: the world makes them again itself.</summary>
+        public static readonly System.Collections.Generic.List<ItemPickup> Dropped = new();
+
         private void Awake()
         {
+            // A dynamic Rigidbody can't use a non-convex MeshCollider - the item fell straight
+            // through the ground (Flint_item, found 2026-11-13).
+            foreach (MeshCollider meshCollider in GetComponentsInChildren<MeshCollider>(true))
+            {
+                if (!meshCollider.convex)
+                {
+                    meshCollider.convex = true;
+                }
+            }
+
             ApplyRigidbodyMass();
+        }
+
+        private void OnDestroy()
+        {
+            Dropped.Remove(this);
+        }
+
+        /// <summary>A saved dropped item put back (2026-11-13): frozen in place until the ground
+        /// under it has been built again, so it doesn't fall through unloaded terrain.</summary>
+        public static ItemPickup Restore(ItemDefinition definition, int quantity, Vector3 position, Quaternion rotation)
+        {
+            ItemPickup pickup = SpawnInWorld(definition, quantity, position, rotation, Vector3.zero);
+            if (pickup != null && pickup.TryGetComponent(out Rigidbody rb))
+            {
+                rb.isKinematic = true;
+                pickup.StartCoroutine(pickup.ReleaseWhenGrounded(rb));
+            }
+
+            return pickup;
+        }
+
+        private System.Collections.IEnumerator ReleaseWhenGrounded(Rigidbody rb)
+        {
+            var wait = new WaitForSeconds(0.5f);
+            while (rb != null && !HasGroundBelow())
+            {
+                yield return wait;
+            }
+
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+            }
         }
 
         private void OnValidate()
@@ -83,6 +131,7 @@ namespace NAV.Gameplay.Items
             }
 
             pickup.Configure(definition, quantity);
+            Dropped.Add(pickup);
 
             if (impulse != Vector3.zero && instance.TryGetComponent(out Rigidbody rb))
             {
@@ -95,6 +144,25 @@ namespace NAV.Gameplay.Items
             }
 
             return pickup;
+        }
+
+        private bool HasGroundBelow()
+        {
+            foreach (RaycastHit hit in Physics.RaycastAll(transform.position + Vector3.up * 0.5f, Vector3.down, 3f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (!hit.collider.transform.IsChildOf(transform))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Dropped.Clear();
         }
 
         private void ApplyRigidbodyMass()

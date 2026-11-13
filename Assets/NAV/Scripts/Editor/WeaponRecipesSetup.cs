@@ -211,14 +211,13 @@ namespace NAV.Editor
                 built++;
             }
 
-            int racks = RemoveRacks();
             if (crafting != null)
             {
                 EditorSceneManager.MarkSceneDirty(crafting.gameObject.scene);
             }
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"WeaponRecipesSetup: {built} pack weapons got a tier, stats and a recipe; {racks} temporary rack spawner(s) removed from the scene. Save the scene.");
+            Debug.Log($"WeaponRecipesSetup: {built} pack weapons got a tier, stats and a recipe. Save the scene.");
         }
 
         private static void ApplyItem(ItemDefinition item, Entry entry)
@@ -323,19 +322,6 @@ namespace NAV.Editor
             return recipe;
         }
 
-        /// <summary>Removes the temporary dev weapon arsenal (WeaponArsenalSpawner) from the open
-        /// scene - its racks were how the pack weapons were handed out before recipes existed.</summary>
-        private static int RemoveRacks()
-        {
-            int removed = 0;
-            foreach (NAV.Dev.WeaponArsenalSpawner spawner in Object.FindObjectsByType<NAV.Dev.WeaponArsenalSpawner>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                Object.DestroyImmediate(spawner.gameObject);
-                removed++;
-            }
-
-            return removed;
-        }
 
         private static ItemDefinition Item(string id) => AssetDatabase.LoadAssetAtPath<ItemDefinition>($"{Items}{id}.asset");
     }

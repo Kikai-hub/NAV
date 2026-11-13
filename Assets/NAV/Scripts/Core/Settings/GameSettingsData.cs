@@ -58,6 +58,8 @@ namespace NAV.Core.Settings
         public bool InvertY;
         [Tooltip("The developer console (` key): commands for quick testing - give items, teleport, time, weather, spawn.")]
         public bool DevConsole;
+        [Tooltip("First-steps hints on the left of the screen (HintsUI).")]
+        public bool ShowHints = true;
         [Tooltip("Input System binding overrides (InputActionAsset.SaveBindingOverridesAsJson). Empty = defaults.")]
         public string BindingOverrides = string.Empty;
 

@@ -193,7 +193,7 @@ altar + ritual items; - bosses tied to progression.
     IK in the clips themselves (crouches match the hip drop to the knee bend); in game `LegGrounding`
     plants the feet. Leshy boss: synced in multiplayer since 2026-11-10 (copies with health, rage,
     actions, encounter lines, omens and silence for nearby players); a Leshy on the way / in a fight is not saved (wrath, kills, cooldown are); no sounds
-    (placeholder sounds since 2026-11-06, no slam dust yet); balance (650 HP, slam 40, sweep 25, 2.1 m/s
+    (placeholder sounds since 2026-11-06; slam dust, leaves and footstep dust since 2026-11-13 - LeshyDust); balance (650 HP, slam 40, sweep 25, 2.1 m/s
     enraged) set on paper, tried only with fists. Old saves keep a Stone Pickaxe made the old way.
 
 -   **Hero model (2026-11-05):** textured since 2026-11-06 (see Change Log). The rigged FBX has no
@@ -6410,3 +6410,118 @@ rewrite, the map's save/load round trip in a real save, the fog in a build.
 -   Perf (paused at the developer's request): the Development Build `Builds/SmokeTestDev` + `-navSmokeProfile`
     capture and `NAV > Dev > Analyze Smoke Profile` exist; the first analysis is saved unread in
     `Builds/SmokeTestDev/smoke_profile_report.txt`.
+
+### v0.1 --- 2026-11-13 (First-steps hints; quit-during-load save fix)
+
+-   `UI/HintsUI` (self-bootstrapping in any scene with a PlayerMotor, panel settings borrowed from the scene's
+    UIDocuments, style `Resources/UI/HintsPanel.uss` importing NAVTheme): one hint card on the left (title, step
+    n/13, text). 13 steps: move (15 m actually walked - jumps over 10 m between checks are teleports), gather
+    (wood + rock discovered), hammer, build mode (or a workbench exists), workbench placed, workbench sheltered,
+    stone axe, food (active food or cooked meat), leather, Leshy heartwood, copper ore, copper bar, the full
+    copper armour. Checked twice a second; a done step shows a green "Done!" for 1.6 s; steps already done are
+    skipped silently. Key names from the player's bindings (`PlayerInputHandler.Actions`), mouse buttons as
+    LMB/RMB, single letters never translated. `Gameplay/Tutorial/TutorialProgress` holds the finished ids;
+    `SaveGameData.CompletedHints` saves them, a new world clears them. `GameSettingsData.ShowHints` + Settings >
+    Controls > Show Hints.
+-   The new world starts with Rock + Wood Hammer in the inventory, so the gather/hammer hints are skipped at once.
+-   **Save fix:** `SaveManager._sessionReady` (set at the end of Start, after LoadFrom/StartNewGame) gates
+    Autosave. Seen in testing: a save got overwritten with the scene's default player (-219, 539, -51), 08:00,
+    empty inventory, no buildings - consistent with OnApplicationQuit autosaving before Start had applied the
+    load. Verified after the fix: a manual save and the save on leaving Play Mode both keep the real state.
+-   Wood, Flint, Resin, Wood Hammer descriptions rewritten for players (were "Placeholder ... not final").
+-   Build menu: the "Needs a workbench nearby" / station line now localized. Strings.json: 658 entries, all with
+    Russian (4 old placeholder descriptions are stale and unused).
+-   Verified in Play Mode (Russian): hint card, inventory, hand crafting; hint progress saved and restored on load.
+
+### v0.1 --- 2026-11-13 (Dropped items and the campfire spit are saved; falling flint fixed)
+
+-   `ItemPickup.Dropped`: every pickup made by `SpawnInWorld` (inventory drops, creature loot, demolish refunds,
+    station output, spit overflow) registers itself, leaves on destroy. World-generated loose branches/stones
+    aren't in it (the world remakes them). `SaveGameData.DroppedItems` (item id, quantity, position, rotation;
+    capped at 1000, skipping anything below y -500). On load `ItemPickup.Restore` spawns them kinematic and
+    releases each once a ray finds ground under it (ignoring its own collider) - so items in not-yet-built
+    terrain don't fall through.
+-   Campfire spit: `BuildingSaveData.CookingInputId / CookingSeconds / CookingReady`, `CookingStation.SavedInputId,
+    SavedSeconds, SavedReady, RestoreState(...)`.
+-   Bug found while testing: `Flint_item` had a non-convex MeshCollider on its dynamic Rigidbody, so a dropped
+    flint fell straight through the ground (found at y -34.6 under a player at 19.5). Prefab made convex (the only
+    one of 233 pickup prefabs); `ItemPickup.Awake` now forces any non-convex MeshCollider convex.
+-   Verified in Play Mode: dropped flint and bone, a campfire with raw meat on the spit (40 s) -> save -> reload:
+    both items back at their places (bone released onto the ground), spit restored (done by then). Test save deleted.
+
+### v0.1 --- 2026-11-13 (Leshy dust)
+
+-   `Presentation/Combat/LeshyDust` on the Leshy prefab (also added by LeshySoundSetup.WirePrefab, so a rebuild keeps
+    it; it wires itself from the same object): Slam -> `ImpactEffects.GroundSlam` (clods + a ring of 1.8-3.2 m dust
+    billows racing out at 2.5-4.5 m/s + a rising column), Sweep -> leaves and bark off the branch arm + a dust puff,
+    Roar -> leaves from the crown (4.2 m), each LegGrounding footstep -> `ImpactEffects.Footfall`, death -> after
+    1.3 s (LeshyAudio's fall time) a long cloud along the body + leaves. Ground found with a ray ignoring his own
+    colliders. The camera shake for slam/fall already existed (LeshyAudio -> ThirdPersonCameraController.AddShake).
+-   Verified in Play Mode: the slam cloud is clearly visible at 10 m (the old DustCloud alone was a faint puff);
+    LeshyDust listens to Struck and ActionStarted next to LeshyAudio/LeshyAnimator. Not seen in a real fight yet.
+
+### v0.1 --- 2026-11-13 (Project clean-up, STEAM_DEMO_PLAN stage 4)
+
+-   Deleted (all unused, checked by GUID references first): `Assets/_Recovery` (crash-recovery scenes, the only user
+    of WeaponArsenalSpawner), `Assets/TutorialInfo` + `Assets/Readme.asset` (URP template readme),
+    `Assets/Scenes/SampleScene.unity` (and its disabled Build Settings entry), `Assets/_TerrainAutoUpgrade` (4 unused
+    terrain layers), the stale `NAVъ.slnx` (NAV.slnx is the current one), the temporary weapon arsenal - Scripts/Dev
+    WeaponArsenal, WeaponArsenalSpawner, WeaponRack, Prefabs/Dev/WeaponRack, ScriptableObjects/Dev/WeaponArsenal,
+    Materials/WeaponRack_Wood (WeaponPackGenerator no longer writes racks, WeaponRecipesSetup no longer removes
+    spawners). Scripts/Dev keeps VideoCapture/VideoCaptureLift (video pipeline) and BuildSmokeTest.
+-   Removed the unused `com.unity.visualscripting` package (no graphs, components or code used it; top-level, nothing
+    depends on it) and `Assets/Unity.VisualScripting.Generated` (37 MB). The "125 node options failed to load"
+    console errors are gone with it.
+-   Kept: `Assets/New Terrain.asset` (referenced by WorldGenTest), the asset packs' demo scenes (some packs' demo folders
+    hold prefabs the game uses, e.g. the Kevin Iglesias archer bow).
+-   Verified: project compiles, console empty, 0 missing scripts in NAV prefabs, MainMenu and WorldGenTest.
+-   MCP note: right after a package is removed, Unity MCP's execute_code may fail on stale assembly references
+    (Unity.VisualScripting.*.dll not found) until the next domain reload - not a project error.
+
+### v0.1 --- 2026-11-13 (Renamed: NAV / FakeStudios)
+
+-   Player Settings: company "FakeStudios" (was DefaultCompany), product "NAV" (was "NAVъ"), Standalone application id
+    `com.FakeStudios.NAV` (was the URP template's `com.Unity-Technologies.com.unity.template.urp-blank`).
+-   persistentDataPath moved to `LocalLow/FakeStudios/NAV`. `Core/LegacyDataMigration` (called first thing in
+    GameSettings.Load, before the first scene) copies settings.json and every Saves/ file from
+    `LocalLow/DefaultCompany/NAVъ` once, never overwriting, leaving the old folder as it was, and writes a marker
+    `migrated_from_DefaultCompany.txt`. Verified: 22 files copied on this PC, 19 worlds listed in Load, language kept.
+-   Version (Player Settings bundleVersion) 1.2.2 -> **1.2.3.a** (alpha, the developer's choice 2026-11-13). Only shown
+    in the main menu's corner and the smoke test log - nothing parses it as a number.
+
+### v0.1 --- 2026-11-13 (Main menu 3D background)
+
+-   The main menu's black background is replaced by a 3D diorama in `Assets/Scenes/MainMenu.unity`, after the
+    developer's reference (forest clearing at sunset, log house, campfire, valley with a lake), built only from
+    assets already in the game. `Scripts/Editor/MenuDioramaSetup.cs` (menu **NAV > UI > Build Main Menu Diorama**)
+    rebuilds the `MenuDiorama` root from scratch: a terrain (`Art/Menu/MenuTerrain.asset`, the world's
+    Plains/Forest/Grove layers), the NAVWater lake, a 2x2 house of the player's building pieces, palisade and
+    woodpile, the Campfire piece with UNS logs/stumps/branches, spruces/larches/birches near and on far hills,
+    grass/flowers/bushes/rocks, the FS003_Sunset sky, a low warm sun and exponential fog. Every placed copy has its
+    gameplay components stripped (NAV.Gameplay/NAV.World/NAV.Network/Photon, Rigidbody, NavMeshObstacle).
+-   `Presentation/Camera/MenuCameraDrift.cs` on the Main Camera: a slow sway/drift round its placed pose.
+-   `MainMenuPanel.uss/.uxml`: `.main-menu-root` is transparent; `main-menu-shade` (8 bands, UI Toolkit has no
+    gradients) darkens the left 46% behind the logo and buttons. Verified in Play Mode: menu over the scene, no
+    console errors.
+-   Not done yet: no distant church (none in the game); the campfire logs read dark against the fire; the fence is a
+    single palisade line. Tune with the menu item, then iterate on the reference.
+
+### v0.1 --- 2026-11-14 (Sun shafts; living campfire light)
+
+-   **Sun shafts** (crepuscular rays through the tree crowns): `Presentation/Lighting/SunShaftsFeature.cs` - a URP
+    ScriptableRendererFeature (RenderGraph) on `Assets/Settings/PC_Renderer.asset` (not on Mobile_Renderer):
+    quarter-res mask of the open sky round RenderSettings.sun (depth = far plane only, so trees/houses cut it),
+    three radial blurs towards the sun, additive composite before post-processing. Shader
+    `Assets/NAV/Shaders/SunShafts.shader` (Hidden/NAV/SunShafts, referenced by the feature so it is in builds).
+    Strength/colour follow the sun light (the moon at night) and fade as the sun leaves the screen.
+-   Settings: `SunShaftsVolume` (Volume override "NAV/Sun Shafts": intensity, threshold, length, sun radius, tint)
+    on the post-process profiles, blended with the time of day by DayNightGrading: NAV_Day 0.7, NAV_GoldenHour 1.4,
+    NAV_Night 0.3, NAV_Overcast 0. The main menu's Global Volume now uses NAV_GoldenHour (set by MenuDioramaSetup).
+-   **Campfire light**: `Presentation/Lighting/FireFlicker.cs` on Campfire/FireLight - intensity, colour and range
+    flicker on layered Perlin noise, the light wanders ~6 cm so its soft shadows sway; shadows only while the main
+    camera is within 35 m (checked twice a second) to keep several campfires cheap. URP PC asset already supports
+    additional-light shadows (2048 atlas).
+-   Menu diorama: the campfire sat 0.2 m into the ground (its pivot is above its base) - raised; the two
+    LooseBranch pickups by the fire removed (they read as red sticks).
+-   Not measured yet: the cost of the shafts and of campfire point-light shadows in the game world (perf work is
+    paused by the developer). The fire's shadows are subtle in the menu's sunset light - they show at dusk/night.

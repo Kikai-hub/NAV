@@ -236,6 +236,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3364999709986950213}
   - component: {fileID: 7019993649927754924}
+  - component: {fileID: 4589253503694397926}
   m_Layer: 0
   m_Name: FireLight
   m_TagString: Untagged
@@ -275,13 +276,13 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.9
     m_Bias: 0.05
     m_NormalBias: 0.4
-    m_NearPlane: 0.2
+    m_NearPlane: 0.1
     m_CullingMatrixOverride:
       e00: 1
       e01: 0
@@ -323,6 +324,26 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &4589253503694397926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465168388626908800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c62194cb0c4da074d82a13c04960c156, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Lighting.FireFlicker
+  _baseIntensity: 2.5
+  _flicker: 0.35
+  _speed: 7
+  _hot: {r: 1, g: 0.62, b: 0.26, a: 1}
+  _cool: {r: 1, g: 0.42, b: 0.12, a: 1}
+  _wanderMetres: 0.06
+  _shadowDistance: 35
+  _shadows: 2
 --- !u!1 &1699308901003921287
 GameObject:
   m_ObjectHideFlags: 0

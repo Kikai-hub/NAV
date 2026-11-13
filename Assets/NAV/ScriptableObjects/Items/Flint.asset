@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: Flint
   _displayName: Flint
-  _description: A sharp-edged stone chip, gathered from coastal deposits. Placeholder
-    Tier 1 resource - not final content.
+  _description: A sharp-edged stone chip. Knapped into blades and arrowheads.
   _icon: {fileID: 21300000, guid: eaf9120959b7997499d2fed3e752340b, type: 3}
   _category: 0
   _maxStackSize: 40
@@ -29,3 +28,6 @@ MonoBehaviour:
   _heldPrefab: {fileID: 0}
   _heldInLeftHand: 0
   _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

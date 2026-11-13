@@ -138,6 +138,28 @@ namespace NAV.Gameplay.Survival
             RefreshVisuals();
         }
 
+        /// <summary>For the save: the item on the spit (null = empty), seconds left, done.</summary>
+        public string SavedInputId => _state == State.Idle || _current == null ? null : _current.Input.Id;
+        public float SavedSeconds => _state == State.Cooking ? Mathf.Max(0f, _timer) : 0f;
+        public bool SavedReady => _state == State.Ready;
+
+        /// <summary>Puts a saved spit back: the recipe for that input, cooking or done.</summary>
+        public void RestoreState(string inputId, float seconds, bool ready)
+        {
+            _current = string.IsNullOrEmpty(inputId) ? null : _recipes.Find(r => r.Input != null && r.Input.Id == inputId);
+            if (_current == null)
+            {
+                _state = State.Idle;
+            }
+            else
+            {
+                _state = ready ? State.Ready : State.Cooking;
+                _timer = ready ? 0f : Mathf.Max(0.1f, seconds);
+            }
+
+            RefreshVisuals();
+        }
+
         private void RefreshVisuals()
         {
             if (_cookingVisual != null)

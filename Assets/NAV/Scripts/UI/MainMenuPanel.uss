@@ -1,6 +1,7 @@
 /* Main menu, Create World, Load Game and the confirm dialog - windows, buttons and inputs come
    from NAVTheme.uss. Layout follows the developer's mockup: logo and a column of buttons on
-   the left. The background is plain dark until the menu art (mockup without UI) exists. */
+   the left. Behind it is the 3D diorama in the MainMenu scene (NAV > UI > Build Main Menu
+   Diorama), so the root is transparent; a soft shade on the left keeps the buttons readable. */
 
 .main-menu-root {
     position: absolute;
@@ -10,8 +11,32 @@
     bottom: 0;
     align-items: center;
     justify-content: center;
-    background-color: rgb(18, 14, 10);
+    background-color: rgba(0, 0, 0, 0);
 }
+
+/* A left-to-right fade made of bands (UI Toolkit has no gradients). */
+.main-menu-shade {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 46%;
+    flex-direction: row;
+}
+
+.main-menu-shade__band {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.main-menu-shade__band--1 { background-color: rgba(14, 9, 5, 0.62); }
+.main-menu-shade__band--2 { background-color: rgba(14, 9, 5, 0.56); }
+.main-menu-shade__band--3 { background-color: rgba(14, 9, 5, 0.48); }
+.main-menu-shade__band--4 { background-color: rgba(14, 9, 5, 0.38); }
+.main-menu-shade__band--5 { background-color: rgba(14, 9, 5, 0.28); }
+.main-menu-shade__band--6 { background-color: rgba(14, 9, 5, 0.18); }
+.main-menu-shade__band--7 { background-color: rgba(14, 9, 5, 0.10); }
+.main-menu-shade__band--8 { background-color: rgba(14, 9, 5, 0.04); }
 
 /* --- Title screen --- */
 

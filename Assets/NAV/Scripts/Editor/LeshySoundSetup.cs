@@ -145,6 +145,12 @@ namespace NAV.Editor
                 serialized.FindProperty("_boss").objectReferenceValue = root.GetComponent<LeshyBoss>();
                 serialized.FindProperty("_legs").objectReferenceValue = root.GetComponent<LegGrounding>();
                 serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                // Dust, clods and leaves for the same blows (2026-11-13) - wires itself.
+                if (root.GetComponent<NAV.Presentation.Combat.LeshyDust>() == null)
+                {
+                    root.AddComponent<NAV.Presentation.Combat.LeshyDust>();
+                }
                 PrefabUtility.SaveAsPrefabAsset(root, BossPrefabPath);
             }
             finally

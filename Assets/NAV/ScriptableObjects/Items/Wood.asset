@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NAV.Gameplay.Items.ItemDefinition
   _id: wood
   _displayName: Wood
-  _description: A sturdy piece of wood. Placeholder item for testing gathering/inventory
-    - not final content.
+  _description: A sturdy piece of wood. The base of every building and tool.
   _icon: {fileID: 21300000, guid: f0bc55113da81bc45951f9853043345f, type: 3}
   _category: 0
   _maxStackSize: 50
@@ -29,3 +28,6 @@ MonoBehaviour:
   _heldPrefab: {fileID: 0}
   _heldInLeftHand: 0
   _armor: {fileID: 0}
+  _curesPoison: 0
+  _poisonImmunitySeconds: 0
+  _ammo: {fileID: 0}

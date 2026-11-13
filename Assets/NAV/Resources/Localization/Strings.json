@@ -229,6 +229,10 @@
             "ru": "Острый каменный скол, собранный в прибрежных россыпях. Временный ресурс тира 1 - не финальный."
         },
         {
+            "en": "A sharp-edged stone chip. Knapped into blades and arrowheads.",
+            "ru": "Острый каменный скол. Из него колют клинки и наконечники стрел."
+        },
+        {
             "en": "A short copper blade.",
             "ru": "Короткий медный клинок."
         },
@@ -277,6 +281,10 @@
             "ru": "Крепкий кусок дерева. Временный предмет для проверки сбора и инвентаря - не финальный."
         },
         {
+            "en": "A sturdy piece of wood. The base of every building and tool.",
+            "ru": "Крепкий кусок дерева. Основа любой постройки и инструмента."
+        },
+        {
             "en": "A tall black steel shelom with a mask over the eyes.",
             "ru": "Высокий шелом из чёрной стали с личиной."
         },
@@ -323,6 +331,10 @@
         {
             "en": "A wide two-handed blade of black steel.",
             "ru": "Широкий двуручный клинок из чёрной стали."
+        },
+        {
+            "en": "A workbench only works under a roof: put walls and a roof over it.",
+            "ru": "Верстак работает только под крышей: поставьте над ним стены и крышу."
         },
         {
             "en": "A worked bloom of iron - stronger than bronze.",
@@ -705,6 +717,18 @@
             "ru": "Стройка"
         },
         {
+            "en": "Build a Charcoal Kiln and a Bloomery: burn wood into charcoal, then smelt copper ore into bars.",
+            "ru": "Постройте углежогную печь и сыродутный горн: пережгите дерево на уголь, затем выплавьте из руды медные слитки."
+        },
+        {
+            "en": "Build a Forge and forge copper armour: a helm, a scale shirt and greaves.",
+            "ru": "Постройте кузню и выкуйте медную броню: шлем, чешуйчатую рубаху и поножи."
+        },
+        {
+            "en": "Build a Tanning Rack by the workbench: it raises the workbench to level 2 and turns hides into leather for armour.",
+            "ru": "Поставьте у верстака дубильную раму: она поднимает верстак до 2-го уровня и выделывает шкуры в кожу для брони."
+        },
+        {
             "en": "Bush",
             "ru": "Куст"
         },
@@ -881,6 +905,10 @@
             "ru": "Создать"
         },
         {
+            "en": "Craft a Stone Pickaxe and mine copper ore on the rocks of the dense forest.",
+            "ru": "Сделайте каменную кирку и добывайте медную руду на скалах дремучего леса."
+        },
+        {
             "en": "Crafting",
             "ru": "Ремесло"
         },
@@ -1021,6 +1049,10 @@
             "ru": "Режим экрана и разрешение работают только в собранной игре, не в редакторе."
         },
         {
+            "en": "Done!",
+            "ru": "Готово!"
+        },
+        {
             "en": "Drag to your inventory",
             "ru": "Перетащите в инвентарь"
         },
@@ -1031,6 +1063,10 @@
         {
             "en": "Effects",
             "ru": "Эффекты"
+        },
+        {
+            "en": "Escape",
+            "ru": "Esc"
         },
         {
             "en": "Exclusive Fullscreen",
@@ -1055,6 +1091,10 @@
         {
             "en": "Fang Spear",
             "ru": "Копьё с клыком"
+        },
+        {
+            "en": "Felling trees angers the forest, and its master, the Leshy, will come. Defeat him: a stone pickaxe needs his heartwood.",
+            "ru": "Рубка деревьев гневит лес, и придёт его хозяин - Леший. Победите его: для каменной кирки нужна его сердцевина."
         },
         {
             "en": "Field of View",
@@ -1297,6 +1337,10 @@
             "ru": "Высокое"
         },
         {
+            "en": "Hint",
+            "ru": "Подсказка"
+        },
+        {
             "en": "Hold the mouse button and drag - move  ·  Mouse wheel - zoom  ·  M - close",
             "ru": "Зажмите кнопку мыши и тяните - сдвиг  ·  Колесо мыши - масштаб  ·  M - закрыть"
         },
@@ -1305,8 +1349,16 @@
             "ru": "Ячейка панели {0}"
         },
         {
+            "en": "Hunt a deer, cook its meat on a Campfire and eat it: right-click the meat in the inventory. Food raises your health.",
+            "ru": "Добудьте оленя, приготовьте мясо на костре и съешьте его: ПКМ по мясу в инвентаре. Еда повышает здоровье."
+        },
+        {
             "en": "Hunting Bow",
             "ru": "Охотничий лук"
+        },
+        {
+            "en": "In build mode open the build menu ({0}), choose the Workbench and place it with {1}.",
+            "ru": "В режиме стройки откройте меню построек ({0}), выберите верстак и поставьте его на {1}."
         },
         {
             "en": "In the full game the road goes on - to the sea islands, the swamp, the mountains and the Black Forest, with new bosses on the way.",
@@ -1421,6 +1473,10 @@
             "ru": "Клавиши"
         },
         {
+            "en": "LMB",
+            "ru": "ЛКМ"
+        },
+        {
             "en": "Ladya",
             "ru": "Ладья"
         },
@@ -1451,6 +1507,14 @@
         {
             "en": "Leave to Main Menu",
             "ru": "Выйти в главное меню"
+        },
+        {
+            "en": "Left Ctrl",
+            "ru": "Ctrl"
+        },
+        {
+            "en": "Left Shift",
+            "ru": "Shift"
         },
         {
             "en": "Legs",
@@ -1495,6 +1559,10 @@
         {
             "en": "Low",
             "ru": "Низкое"
+        },
+        {
+            "en": "MMB",
+            "ru": "СКМ"
         },
         {
             "en": "MSAA 2x",
@@ -1697,6 +1765,10 @@
             "ru": "Онлайн"
         },
         {
+            "en": "Open crafting ({0}) and make a Wood Hammer - everything is built with it.",
+            "ru": "Откройте ремесло ({0}) и сделайте деревянный молот - им строится всё."
+        },
+        {
             "en": "Open gravestone",
             "ru": "Открыть надгробие"
         },
@@ -1723,6 +1795,10 @@
         {
             "en": "Pick up",
             "ru": "Подобрать"
+        },
+        {
+            "en": "Pick up branches and stones lying on the ground: aim at them and press {0}.",
+            "ru": "Подберите ветки и камни на земле: наведитесь на них и нажмите {0}."
         },
         {
             "en": "Pick up {0}",
@@ -1767,6 +1843,10 @@
         {
             "en": "Quit",
             "ru": "Выход"
+        },
+        {
+            "en": "RMB",
+            "ru": "ПКМ"
         },
         {
             "en": "Rain",
@@ -1823,6 +1903,10 @@
         {
             "en": "Resume",
             "ru": "Продолжить"
+        },
+        {
+            "en": "Right Shift",
+            "ru": "Shift"
         },
         {
             "en": "Right-click to drink - cures poison",
@@ -2037,6 +2121,10 @@
             "ru": "Кораблекрушение"
         },
         {
+            "en": "Show Hints",
+            "ru": "Показывать подсказки"
+        },
+        {
             "en": "Shrine (kapishche)",
             "ru": "Капище"
         },
@@ -2137,6 +2225,10 @@
             "ru": "Мягкое белое олово. Две части меди на одну часть олова дают бронзу."
         },
         {
+            "en": "Space",
+            "ru": "Пробел"
+        },
+        {
             "en": "Spear 5",
             "ru": "Копьё 5"
         },
@@ -2163,6 +2255,10 @@
         {
             "en": "Stake Trap",
             "ru": "Ловушка с кольями"
+        },
+        {
+            "en": "Sticky tree sap - for glue, brews and caulking.",
+            "ru": "Липкая древесная смола - для клея, отваров и конопатки."
         },
         {
             "en": "Sticky tree sap, gathered from trees. Placeholder Tier 1 resource - not final content.",
@@ -2253,6 +2349,10 @@
             "ru": "Забрать всё"
         },
         {
+            "en": "Take the hammer in hand: right-click it in the inventory ({0}) or press its hotbar number. Then {1} turns build mode on.",
+            "ru": "Возьмите молот в руку: ПКМ по нему в инвентаре ({0}) или цифра его ячейки на панели. Затем {1} включает режим стройки."
+        },
+        {
             "en": "Take {0}",
             "ru": "Забрать: {0}"
         },
@@ -2287,6 +2387,10 @@
         {
             "en": "The basic building tool - Tier 1 of the hammer progression (Wood -> Bronze -> Iron -> Silver -> Bulat -> Skymetal). Placeholder Tier 1 content - not final.",
             "ru": "Простейший строительный инструмент - тир 1 молотов (дерево -> бронза -> железо -> серебро -> булат -> небесное железо). Временный контент тира 1 - не финальный."
+        },
+        {
+            "en": "The builder's tool: with it in hand you build and take things down.",
+            "ru": "Инструмент строителя: с ним в руке можно строить и разбирать."
         },
         {
             "en": "The coarse black pelt of a volkolak, still smelling of the forest. For cloaks and armour linings.",
@@ -2345,6 +2449,10 @@
             "ru": "Использовать / подобрать"
         },
         {
+            "en": "Use the workbench ({0}) and craft a Stone Axe - it fells trees for logs.",
+            "ru": "Подойдите к верстаку ({0}) и сделайте каменный топор - им рубят деревья на брёвна."
+        },
+        {
             "en": "Use {0}",
             "ru": "Использовать: {0}"
         },
@@ -2371,6 +2479,10 @@
         {
             "en": "W",
             "ru": "З"
+        },
+        {
+            "en": "Walk with {0} {1} {2} {3} and look around with the mouse. {4} - sprint, {5} - jump.",
+            "ru": "Ходите на {0} {1} {2} {3} и осматривайтесь мышью. {4} - бег, {5} - прыжок."
         },
         {
             "en": "Warhammer 10",

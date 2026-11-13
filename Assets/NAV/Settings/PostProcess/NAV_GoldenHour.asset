@@ -44,6 +44,7 @@ MonoBehaviour:
   - {fileID: 6162886116806034942}
   - {fileID: -4693649927953080011}
   - {fileID: 1754975833030475524}
+  - {fileID: 3505956022999580766}
 --- !u!114 &1754975833030475524
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -94,6 +95,34 @@ MonoBehaviour:
   dirtIntensity:
     m_OverrideState: 0
     m_Value: 0
+--- !u!114 &3505956022999580766
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8434fb2f7f634944aa3e3236fe32169, type: 3}
+  m_Name: SunShaftsVolume
+  m_EditorClassIdentifier: Assembly-CSharp::NAV.Presentation.Lighting.SunShaftsVolume
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 1.4
+  threshold:
+    m_OverrideState: 0
+    m_Value: 0.2
+  length:
+    m_OverrideState: 1
+    m_Value: 0.75
+  sunRadius:
+    m_OverrideState: 0
+    m_Value: 1
+  tint:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 0.85, b: 0.65, a: 1}
 --- !u!114 &6162886116806034942
 MonoBehaviour:
   m_ObjectHideFlags: 3

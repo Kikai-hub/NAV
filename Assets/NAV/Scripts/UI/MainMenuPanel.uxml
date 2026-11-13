@@ -2,6 +2,16 @@
     <Style src="NAVTheme.uss" />
     <Style src="MainMenuPanel.uss" />
     <ui:VisualElement name="main-menu-root" class="main-menu-root">
+        <ui:VisualElement name="main-menu-shade" class="main-menu-shade" picking-mode="Ignore">
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--1" picking-mode="Ignore" />
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--2" picking-mode="Ignore" />
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--3" picking-mode="Ignore" />
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--4" picking-mode="Ignore" />
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--5" picking-mode="Ignore" />
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--6" picking-mode="Ignore" />
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--7" picking-mode="Ignore" />
+            <ui:VisualElement class="main-menu-shade__band main-menu-shade__band--8" picking-mode="Ignore" />
+        </ui:VisualElement>
         <ui:VisualElement name="main-menu-panel" class="main-menu-panel">
             <ui:VisualElement name="main-menu-logo" class="main-menu-logo" picking-mode="Ignore" />
             <ui:Button name="play-button" text="Play" class="main-menu-button nav-button" />

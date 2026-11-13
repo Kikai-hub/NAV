@@ -219,6 +219,7 @@ namespace NAV.UI
                 NAV.Core.Localization.Loc.SetLanguage(languages[i].Code);
                 ScheduleNextFrame(BuildAllPages);
             }, false);
+            AddToggle(page, "Show Hints", data.ShowHints, v => data.ShowHints = v);
 
             AddSection(page, "Mouse");
             AddSlider(page, "Mouse Sensitivity", 0.2f, 3f, data.MouseSensitivity, v => v.ToString("0.00") + "x", v => data.MouseSensitivity = v);
